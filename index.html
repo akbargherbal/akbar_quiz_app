@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geography Quiz</title>
+    <!-- Link to the CSS file -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Alpine.js CDN (Core loaded first) -->
+    <!-- Using non-defer version to ensure it loads immediately -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- App Logic loaded after Alpine.js -->
+    <script src="app.js"></script>
+</head>
+<body>
+    <div class="quiz-container" x-data="quizApp" x-init="init()">
+        <!-- Quiz Active State -->
+        <template x-if="!quizCompleted">
+            <div>
+                <!-- Top Bar -->
+                <div class="top-bar">
+                    <div class="quiz-progress">
+                        <template x-for="(question, index) in questions" :key="index">
+                            <div class="progress-dot" :class="{ 'active': index === currentQuestionIndex }"></div>
+                        </template>
+                    </div>
+                    <!-- You can add functionality to the home icon if needed -->
+                    <div class="home-icon">🏠</div>
+                </div>
+
+                <!-- Question Card -->
+                <div class="question-card" x-show="!quizCompleted">
+                    <div class="progress-indicator" x-text="`${currentQuestionIndex + 1}/${questions.length}`"></div>
+                    <div class="question-text" x-text="currentQuestion.text"></div>
+                    <div class="question-subtitle">Choose the correct answer below</div>
+                </div>
+
+                <!-- Options -->
+                <div class="options-container" x-show="!quizCompleted">
+                    <template x-for="(option, index) in currentQuestion.options" :key="index">
+                        <button
+                            class="option-button"
+                            :class="getOptionClass(index)"
+                            x-text="option"
+                            @click="selectOption(index)"
+                            :disabled="isAnswered">
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- Quiz Completed State -->
+        <template x-if="quizCompleted">
+            <div class="results-card">
+                <h2 class="results-title">Quiz Completed!</h2>
+                <p class="results-score">Your Score: <span x-text="score"></span> out of <span x-text="questions.length"></span></p>
+                <div class="results-summary">
+                    <template x-for="(question, index) in questions" :key="index">
+                        <div class="result-item">
+                            <span class="result-icon" x-html="userAnswers[index] === question.answerIndex ? '✅' : '❌'"></span>
+                             <span x-text="`${index + 1}. ${question.text}`"></span>
+                             <template x-if="userAnswers[index] !== question.answerIndex">
+                                <span class="correct-answer-info">(Correct: <span x-text="question.options[question.answerIndex]"></span>)</span>
+                             </template>
+                        </div>
+                    </template>
+                </div>
+                <button class="restart-button" @click="restartQuiz">Play Again?</button>
+            </div>
+        </template>
+
+        <!-- Modal Dialog for Feedback -->
+        <div class="modal-overlay" x-show="showModal" x-transition>
+            <div class="modal-container"
+                 :class="{ 'modal-correct': isCorrect, 'modal-incorrect': !isCorrect }"
+                 @click.away="showModal = false" x-show="showModal" x-transition.scale.origin.center>
+                <div class="modal-icon" x-html="isCorrect ? '✅' : '✘'""></div>
+                <div class="modal-message" x-text="isCorrect ? 'Correct!' : 'Incorrect!'"></div>
+                <div class="modal-explanation" x-show="!isCorrect" x-text="`The correct answer was: ${currentQuestion.options[currentQuestion.answerIndex]}`"></div>
+                <button class="modal-button" @click="nextQuestion">Continue</button>
+            </div>
+        </div>
+    </div> <!-- End of quiz-container -->
+</body>
+</html>
