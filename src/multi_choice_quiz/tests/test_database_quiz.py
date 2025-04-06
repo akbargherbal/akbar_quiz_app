@@ -8,14 +8,17 @@ import signal
 import subprocess
 from playwright.sync_api import Page, expect, Error
 from django.core.management import call_command
+import logging
 
-# Import the shared logging utility
-from .test_utils import setup_test_logging
 
 # --- Constants ---
 DJANGO_SERVER_PORT = 8000
 DJANGO_SERVER_HOST = "localhost"
 DJANGO_SERVER_URL = f"http://{DJANGO_SERVER_HOST}:{DJANGO_SERVER_PORT}"
+
+
+# Define current_dir before any functions
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 # --- Helper function to check if port is available ---
@@ -25,7 +28,7 @@ def is_port_in_use(port, host="localhost"):
 
 
 # --- Setup Logging ---
-logger = setup_test_logging("test_database_quiz")
+logger = logging.getLogger(__name__)
 
 
 # --- Django Server Fixture ---
@@ -249,7 +252,7 @@ def test_specific_quiz_route(page: Page, django_server):
     This should demonstrate the URL routing works correctly.
     """
     # Assuming there's at least one quiz with ID 1
-    quiz_url = f"{django_server}quiz/1/"
+    quiz_url = f"{django_server}/quiz/1/"
 
     logger.info(f"Testing specific quiz route: {quiz_url}")
     try:

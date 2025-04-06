@@ -1,3 +1,5 @@
+# src/multi_choice_quiz/test_runner.py
+
 import os
 import sys
 import time
@@ -22,8 +24,10 @@ class LoggingTestRunner(DiscoverRunner):
             format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             handlers=[
                 logging.FileHandler(log_file_path, mode="w"),
-                logging.StreamHandler(sys.stdout),
+                logging.StreamHandler(sys.stdout),  # Keep console output too
             ],
+            # Force=True might be needed if basicConfig was called elsewhere
+            # force=True
         )
 
         self.logger = logging.getLogger("django.tests")
@@ -34,15 +38,20 @@ class LoggingTestRunner(DiscoverRunner):
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
         """Run tests with logging."""
         self.logger.info(f"Starting test run: {test_labels}")
-        # Pass kwargs to the parent method to match the signature
-        result = super().run_tests(test_labels, extra_tests)
-        self.logger.info(f"Test run completed. Failures: {result}")
+        # Pass extra_tests as a keyword argument and forward **kwargs
+        result = super().run_tests(
+            test_labels, extra_tests=extra_tests, **kwargs
+        )  # <-- CORRECTED LINE
+        # Note: result is typically the number of failures (an integer)
+        self.logger.info(f"Test run completed. Number of failures: {result}")
         return result
 
     def run_suite(self, suite, **kwargs):
         """Log the beginning and end of each test suite."""
         self.logger.info(f"Running test suite with {suite.countTestCases()} test cases")
-        result = super().run_suite(suite, **kwargs)
+        result = super().run_suite(
+            suite, **kwargs
+        )  # Pass kwargs here too for consistency
         self.logger.info(
             f"Test suite complete. Errors: {len(result.errors)}, Failures: {len(result.failures)}"
         )
@@ -51,11 +60,15 @@ class LoggingTestRunner(DiscoverRunner):
         if result.errors:
             self.logger.error("--- ERRORS ---")
             for test, error in result.errors:
-                self.logger.error(f"\n{test}:\n{error}")
+                # Ensure test representation is string
+                test_repr = getattr(test, "id", lambda: str(test))()
+                self.logger.error(f"\nTest: {test_repr}\nError:\n{error}")
 
         if result.failures:
             self.logger.error("--- FAILURES ---")
             for test, failure in result.failures:
-                self.logger.error(f"\n{test}:\n{failure}")
+                # Ensure test representation is string
+                test_repr = getattr(test, "id", lambda: str(test))()
+                self.logger.error(f"\nTest: {test_repr}\nFailure:\n{failure}")
 
         return result

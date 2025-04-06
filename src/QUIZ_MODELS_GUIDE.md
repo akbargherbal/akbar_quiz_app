@@ -32,7 +32,7 @@ This document explains how our Django Quiz App handles quiz data and the transfo
       text='How can you pass initial state from your Django view context to an Alpine.js x-data directive?',
       # other fields...
   )
-  
+
   Option.objects.create(question=question, text='Store the context in browser cookies...', position=1, is_correct=False)
   Option.objects.create(question=question, text='Fetch the data using HTMX...', position=2, is_correct=False)
   Option.objects.create(question=question, text='Alpine automatically detects...', position=3, is_correct=False)
@@ -158,11 +158,49 @@ df = pd.read_csv('quiz_data.csv')
 quiz = import_from_dataframe(df, "CSV Imported Quiz", "CSV Topic")
 ```
 
-## Unit Testing the Transformation
+## Running Tests
 
-The transformation functions are thoroughly tested to ensure correct indexing:
+This project includes unit tests to verify the functionality, especially the data transformations.
+
+### Standard Test Execution
+
+The primary way to run the entire test suite is using Django's built-in `manage.py` command from the `src/` directory:
 
 ```bash
-# Run tests to ensure transformations work as expected
-python manage.py test multi_choice_quiz.tests
+# Navigate to the directory containing manage.py
+cd src/
+
+# Run all tests discovered in the project
+python manage.py test
 ```
+
+This project uses a custom test runner (`LoggingTestRunner`) specified in `core/settings.py`. When you run the tests using the command above:
+1.  Test results (including standard output and errors) will be displayed on the console.
+2.  A detailed log file will be created inside the `src/multi_choice_quiz/` directory.
+    *   **Log File Name Pattern:** `django_tests_YYYYMMDD-HHMMSS.log` (e.g., `django_tests_20231027-153000.log`)
+    *   **Log File Location:** `src/multi_choice_quiz/django_tests_YYYYMMDD-HHMMSS.log`
+    This log contains timestamps and detailed information about the test execution, including any errors or failures.
+
+### Running Tests for a Specific App
+
+To run tests only for the `multi_choice_quiz` application:
+
+```bash
+# Ensure you are in the src/ directory
+python manage.py test multi_choice_quiz
+```
+This is useful for focusing on the tests relevant to the quiz logic and models. A log file specific to this run will still be created in the location mentioned above.
+
+### Using Pytest (Optional)
+
+If you have `pytest` and `pytest-django` installed in your Python environment, you can often leverage `pytest` for running tests. It typically offers more detailed output and integrates well with other testing tools like coverage reporters. From the `src/` directory:
+
+```bash
+# Ensure you are in the src/ directory
+pytest
+```
+Pytest should automatically discover and run the Django tests using your project's settings. **Note:** When using `pytest` directly, it might not utilize the custom `LoggingTestRunner` unless specifically configured, so the log file might not be generated in the same way. Running via `python manage.py test` ensures the custom runner is used.
+
+### Checking Test Output
+
+Regardless of the method used, carefully review the console output for any reported `FAILURES` or `ERRORS`. If you used `python manage.py test`, the custom log file in `src/multi_choice_quiz/` provides a persistent record of the test run, which can be helpful for debugging.
