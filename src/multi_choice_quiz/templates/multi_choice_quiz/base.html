@@ -8,11 +8,11 @@
     <!-- Common CSS -->
     <link rel="stylesheet" href="{% static 'multi_choice_quiz/style.css' %}">
     
-    <!-- Alpine.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
     {% block extra_css %}{% endblock %}
     {% block extra_js_head %}{% endblock %}
+    
+    <!-- Alpine.js loaded LAST, after your app's scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body>
     {% block content %}{% endblock %}
