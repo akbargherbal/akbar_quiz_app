@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Django Quiz App{% endblock %}</title>
+    <!-- Common CSS -->
+    <link rel="stylesheet" href="{% static 'multi_choice_quiz/style.css' %}">
+    
+    <!-- Alpine.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    {% block extra_css %}{% endblock %}
+    {% block extra_js_head %}{% endblock %}
+</head>
+<body>
+    {% block content %}{% endblock %}
+    
+    {% block extra_js_body %}{% endblock %}
+</body>
+</html>

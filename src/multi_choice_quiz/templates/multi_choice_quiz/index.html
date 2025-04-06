@@ -1,0 +1,181 @@
+{% extends 'multi_choice_quiz/base.html' %}
+{% load static %}
+
+{% block title %}Quiz App{% endblock %}
+
+{% block extra_js_head %}
+<script src="{% static 'multi_choice_quiz/app.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="quiz-container" x-data="quizApp" x-init="init()">
+    <!-- Quiz Active State -->
+    <template x-if="!quizCompleted">
+        <div>
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="quiz-progress">
+                    <template x-for="(question, index) in questions" :key="index">
+                        <div class="progress-dot" :class="{ 'active': index === currentQuestionIndex }"></div>
+                    </template>
+                </div>
+                <!-- You can add functionality to the home icon if needed -->
+                <div class="home-icon">🏠</div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="question-card" x-show="!quizCompleted">
+                <div class="progress-indicator" x-text="`${currentQuestionIndex + 1}/${questions.length}`"></div>
+                <div class="question-text" x-text="currentQuestion.text"></div>
+                <div class="question-subtitle">Choose the correct answer below</div>
+            </div>
+
+            <!-- Options -->
+            <div class="options-container" x-show="!quizCompleted">
+                <template x-for="(option, index) in currentQuestion.options" :key="index">
+                    <button
+                        class="option-button"
+                        :class="getOptionClass(index)"
+                        x-text="option"
+                        @click="selectOption(index)"
+                        :disabled="isAnswered">
+                    </button>
+                </template>
+            </div>
+        </div>
+    </template>
+
+    <!-- Quiz Completed State -->
+    <template x-if="quizCompleted">
+        <div class="results-card">
+            <h2 class="results-title">Quiz Completed!</h2>
+            <p class="results-score">Your Score: <span x-text="score"></span> out of <span x-text="questions.length"></span></p>
+            <div class="results-summary">
+                <template x-for="(question, index) in questions" :key="index">
+                    <div class="result-item">
+                        <span class="result-icon" x-html="userAnswers[index] === question.answerIndex ? '✅' : '❌'"></span>
+                            <span x-text="`${index + 1}. ${question.text}`"></span>
+                            <template x-if="userAnswers[index] !== question.answerIndex">
+                            <span class="correct-answer-info">(Correct: <span x-text="question.options[question.answerIndex]"></span>)</span>
+                            </template>
+                    </div>
+                </template>
+            </div>
+            <button class="restart-button" @click="restartQuiz">Play Again?</button>
+        </div>
+    </template>
+
+    <!-- Modal Dialog for Feedback -->
+    <div class="modal-overlay" x-show="showModal" x-transition>
+        <div class="modal-container"
+                :class="{ 'modal-correct': isCorrect, 'modal-incorrect': !isCorrect }"
+                @click.away="showModal = false" x-show="showModal" x-transition.scale.origin.center>
+            <div class="modal-icon" x-html="isCorrect ? '✅' : '✘'"></div>
+            <div class="modal-message" x-text="isCorrect ? 'Correct!' : 'Incorrect!'"></div>
+            <div class="modal-explanation" x-show="!isCorrect" x-text="`The correct answer was: ${currentQuestion.options[currentQuestion.answerIndex]}`"></div>
+            <button class="modal-button" @click="nextQuestion">Continue</button>
+        </div>
+    </div>
+</div> <!-- End of quiz-container -->
+{% endblock %}
+
+{% block extra_js_body %}
+<script>
+    // Initialize Alpine with questions data from Django context
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('quizApp', () => ({
+            // --- State ---
+            questions: {% autoescape off %}{{ quiz_data }}{% endautoescape %},
+            currentQuestionIndex: 0,
+            userAnswers: [], // Stores index of user's answer for each question
+            selectedOptionIndex: null, // Index of the currently selected option (before confirming)
+            isAnswered: false, // Has the current question been answered?
+            showModal: false, // Show correct/incorrect feedback modal?
+            quizCompleted: false, // Has the user finished all questions?
+            score: 0, // User's score
+
+            // --- Computed Properties (Getters) ---
+            get currentQuestion() {
+                return this.questions[this.currentQuestionIndex];
+            },
+            get isCorrect() {
+                // Check if the selected answer for the *current* question is correct
+                return this.selectedOptionIndex === this.currentQuestion.answerIndex;
+            },
+
+            // --- Methods ---
+            init() {
+                // Initialize userAnswers array with nulls when component loads
+                this.userAnswers = Array(this.questions.length).fill(null);
+                // Reset other state just in case
+                this.currentQuestionIndex = 0;
+                this.selectedOptionIndex = null;
+                this.isAnswered = false;
+                this.showModal = false;
+                this.quizCompleted = false;
+                this.score = 0;
+            },
+
+            selectOption(index) {
+                if (this.isAnswered) return; // Prevent changing answer after selection
+
+                this.selectedOptionIndex = index;
+                this.isAnswered = true;
+                this.userAnswers[this.currentQuestionIndex] = index; // Store the answer
+
+                if (this.isCorrect) {
+                    this.score++;
+                }
+
+                this.showModal = true; // Show feedback modal
+            },
+
+            nextQuestion() {
+                this.showModal = false; // Hide modal
+
+                if (this.currentQuestionIndex < this.questions.length - 1) {
+                    // Move to the next question
+                    this.currentQuestionIndex++;
+                    // Reset state for the new question
+                    this.isAnswered = false;
+                    this.selectedOptionIndex = null;
+                } else {
+                    // End of quiz
+                    this.quizCompleted = true;
+                }
+            },
+
+            restartQuiz() {
+                this.init(); // Re-initialize the component state
+            },
+
+            // --- Dynamic Class Logic ---
+            getOptionClass(index) {
+                const baseClasses = ['option-button'];
+                const colorClasses = [ // Assign colors consistently
+                    'blue-option', 'teal-option', 'orange-option', 'red-option', 'turquoise-option'
+                ];
+                baseClasses.push(colorClasses[index % colorClasses.length]);
+
+                if (!this.isAnswered) {
+                    // Before answering, just return base + color
+                    return baseClasses.join(' ');
+                } else {
+                    // After answering:
+                    if (index === this.currentQuestion.answerIndex) {
+                        // This is the correct answer
+                        baseClasses.push('correct-answer');
+                    } else if (index === this.selectedOptionIndex) {
+                        // This is the incorrect answer the user selected
+                        baseClasses.push('incorrect-answer');
+                    } else {
+                        // This is an incorrect option the user did *not* select
+                        baseClasses.push('disabled-option'); // Visually disable it
+                    }
+                    return baseClasses.join(' ');
+                }
+            }
+        }));
+    });
+</script>
+{% endblock %}
