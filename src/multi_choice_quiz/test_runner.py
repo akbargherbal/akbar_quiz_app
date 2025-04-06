@@ -2,32 +2,34 @@
 
 import os
 import sys
-import time
 import logging
 from django.test.runner import DiscoverRunner
+from django.conf import settings
 
 
 class LoggingTestRunner(DiscoverRunner):
-    """Custom test runner that logs test results to a file."""
+    """Custom test runner that logs test results to a fixed-name file in a logs directory."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Set up logging
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        timestamp = time.strftime("%Y%m%d-%H%M%S")
-        log_file_path = os.path.join(current_dir, f"django_tests_{timestamp}.log")
+        # Set up logging directory
+        logs_dir = os.path.join(settings.BASE_DIR, "logs")
+
+        # Create logs directory if it doesn't exist
+        os.makedirs(logs_dir, exist_ok=True)
+
+        # Use fixed filename instead of timestamp
+        log_file_path = os.path.join(logs_dir, "django_tests.log")
 
         # Configure root logger to write to the file
         logging.basicConfig(
             level=logging.INFO,
             format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             handlers=[
-                logging.FileHandler(log_file_path, mode="w"),
+                logging.FileHandler(log_file_path, mode="w"),  # Overwrite previous log
                 logging.StreamHandler(sys.stdout),  # Keep console output too
             ],
-            # Force=True might be needed if basicConfig was called elsewhere
-            # force=True
         )
 
         self.logger = logging.getLogger("django.tests")
@@ -38,20 +40,14 @@ class LoggingTestRunner(DiscoverRunner):
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
         """Run tests with logging."""
         self.logger.info(f"Starting test run: {test_labels}")
-        # Pass extra_tests as a keyword argument and forward **kwargs
-        result = super().run_tests(
-            test_labels, extra_tests=extra_tests, **kwargs
-        )  # <-- CORRECTED LINE
-        # Note: result is typically the number of failures (an integer)
+        result = super().run_tests(test_labels, extra_tests=extra_tests, **kwargs)
         self.logger.info(f"Test run completed. Number of failures: {result}")
         return result
 
     def run_suite(self, suite, **kwargs):
         """Log the beginning and end of each test suite."""
         self.logger.info(f"Running test suite with {suite.countTestCases()} test cases")
-        result = super().run_suite(
-            suite, **kwargs
-        )  # Pass kwargs here too for consistency
+        result = super().run_suite(suite, **kwargs)
         self.logger.info(
             f"Test suite complete. Errors: {len(result.errors)}, Failures: {len(result.failures)}"
         )

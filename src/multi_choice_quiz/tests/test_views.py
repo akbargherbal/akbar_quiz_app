@@ -7,7 +7,9 @@ import pytest
 from playwright.sync_api import Page, expect, Error
 import os
 import sys
-from .helpers import setup_test_logging
+
+# Import our standardized test logging
+from multi_choice_quiz.tests.test_logging import setup_test_logging
 
 # Set environment variable to allow Django database operations in async context
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"

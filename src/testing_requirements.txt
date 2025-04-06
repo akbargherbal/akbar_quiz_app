@@ -1,0 +1,4 @@
+# testing_requirements.txt
+pytest==7.4.0
+pytest-django==4.5.2
+playwright==1.38.0
