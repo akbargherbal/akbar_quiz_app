@@ -1,29 +1,93 @@
-# src/multi_choice_quiz/views.py
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.core.exceptions import ValidationError
 import json
+import logging
+
+from .models import Quiz, Question
+from .transform import models_to_frontend
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
 def home(request):
-    # Quiz data that was previously hardcoded in app.js
-    quiz_data = [
-        {
-            "text": "What is the capital of France?",
-            "options": ["London", "Paris", "Berlin", "Madrid", "Rome"],
-            "answerIndex": 1,
-        },
-        {
-            "text": "Which river is the longest in the world?",
-            "options": ["Amazon", "Nile", "Mississippi", "Yangtze", "Congo"],
-            "answerIndex": 1,  # Traditionally Nile, sometimes debated with Amazon
-        },
-        {
-            "text": "What is the highest mountain peak in the world?",
-            "options": ["K2", "Kangchenjunga", "Makalu", "Mount Everest", "Lhotse"],
-            "answerIndex": 3,
-        },
-    ]
+    """
+    Display the home page with the first quiz found in the database.
+    If no quizzes exist, fall back to hardcoded demo questions.
+    """
+    try:
+        # Try to get the first active quiz from the database
+        quiz = Quiz.objects.filter(is_active=True).first()
+
+        if quiz and quiz.questions.exists():
+            # Get all questions for this quiz, ordered by position
+            questions = quiz.questions.filter(is_active=True).order_by("position")
+
+            # Transform questions to frontend format (handling the index conversion)
+            quiz_data = models_to_frontend(questions)
+
+            logger.info(f"Loaded quiz '{quiz.title}' with {len(quiz_data)} questions")
+
+        else:
+            # Fallback to hardcoded demo questions if no quiz is found
+            logger.warning("No active quizzes found in database, using demo questions")
+            quiz_data = get_demo_questions()
+
+    except Exception as e:
+        # Log the error and fall back to demo questions
+        logger.error(f"Error loading quiz from database: {str(e)}")
+        quiz_data = get_demo_questions()
 
     # Convert quiz data to JSON for use in the template
     context = {"quiz_data": json.dumps(quiz_data)}
 
     return render(request, "multi_choice_quiz/index.html", context)
+
+
+def quiz_detail(request, quiz_id):
+    """
+    Display a specific quiz by ID.
+    """
+    try:
+        quiz = get_object_or_404(Quiz, id=quiz_id, is_active=True)
+        questions = quiz.questions.filter(is_active=True).order_by("position")
+
+        # Transform questions to frontend format
+        quiz_data = models_to_frontend(questions)
+
+        context = {"quiz": quiz, "quiz_data": json.dumps(quiz_data)}
+
+        return render(request, "multi_choice_quiz/index.html", context)
+
+    except Exception as e:
+        logger.error(f"Error loading quiz {quiz_id}: {str(e)}")
+        return render(
+            request,
+            "multi_choice_quiz/error.html",
+            {"error_message": "The requested quiz could not be loaded."},
+        )
+
+
+def get_demo_questions():
+    """
+    Return a set of demo questions for use when no database content exists.
+    These are the same questions that were previously hardcoded.
+    """
+    return [
+        {
+            "text": "What is the capital of France?",
+            "options": ["London", "Paris", "Berlin", "Madrid", "Rome"],
+            "answerIndex": 1,  # 0-based index for frontend
+        },
+        {
+            "text": "Which river is the longest in the world?",
+            "options": ["Amazon", "Nile", "Mississippi", "Yangtze", "Congo"],
+            "answerIndex": 1,  # 0-based index for frontend
+        },
+        {
+            "text": "What is the highest mountain peak in the world?",
+            "options": ["K2", "Kangchenjunga", "Makalu", "Mount Everest", "Lhotse"],
+            "answerIndex": 3,  # 0-based index for frontend
+        },
+    ]
