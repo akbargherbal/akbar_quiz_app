@@ -77,20 +77,18 @@
         </div>
     </template>
 
-    <!-- Modal Dialog for Feedback -->
-    {# Only show modal if currentQuestion exists #}
-    <template x-if="currentQuestion">
-        <div class="modal-overlay" x-show="showModal" x-transition>
-            <div class="modal-container"
-                    :class="{ 'modal-correct': isCorrect, 'modal-incorrect': !isCorrect }"
-                    @click.away="showModal = false" x-show="showModal" x-transition.scale.origin.center>
-                <div class="modal-icon" x-html="isCorrect ? '✔' : '✘'"></div>
-                <div class="modal-message" x-text="isCorrect ? 'Correct!' : 'Incorrect!'"></div>
-                <div class="modal-explanation" x-show="!isCorrect" x-text="`The correct answer was: ${currentQuestion.options[currentQuestion.answerIndex]}`"></div>
-                <button class="modal-button" @click="nextQuestion">Continue</button>
-            </div>
+    <!-- Modal Dialog for Feedback - Notice we use x-cloak to prevent flickering on init -->
+    <div class="modal-overlay" x-show="showModal" x-transition x-cloak>
+        <div class="modal-container"
+             :class="{ 'modal-correct': isCorrect, 'modal-incorrect': !isCorrect }"
+             x-show="showModal" 
+             x-transition.scale.origin.center>
+            <div class="modal-icon" x-html="isCorrect ? '✔' : '✘'"></div>
+            <div class="modal-message" x-text="isCorrect ? 'Correct!' : 'Incorrect!'"></div>
+            <div class="modal-explanation" x-show="!isCorrect" x-text="`The correct answer was: ${currentQuestion ? currentQuestion.options[currentQuestion.answerIndex] : ''}`"></div>
+            <button class="modal-button" @click="nextQuestion">Continue</button>
         </div>
-    </template>
+    </div>
 
 </div> <!-- End of quiz-container -->
 {% endblock %}

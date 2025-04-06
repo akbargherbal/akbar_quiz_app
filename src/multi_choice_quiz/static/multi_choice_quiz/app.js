@@ -70,8 +70,13 @@ window.quizApp = function() {
         },
 
         selectOption(index) {
+            console.log(`Option selected: ${index}`); // Add logging
+            
             // Prevent action if already answered or if there's no current question
-            if (this.isAnswered || !this.currentQuestion) return;
+            if (this.isAnswered || !this.currentQuestion) {
+                console.log("Selection ignored - already answered or no current question");
+                return;
+            }
 
             this.selectedOptionIndex = index;
             this.isAnswered = true;
@@ -83,45 +88,55 @@ window.quizApp = function() {
                 console.error("userAnswers array issue at index:", this.currentQuestionIndex);
             }
 
-
             if (this.isCorrect) {
                 this.score++;
             }
 
+            console.log(`Setting showModal to true. isCorrect: ${this.isCorrect}`); // Add logging
             this.showModal = true; // Show feedback modal
+            console.log(`showModal is now: ${this.showModal}`); // Verify the value was set
         },
 
         nextQuestion() {
+            console.log("nextQuestion() called"); // Add logging
+            
+            // Important: Force modal to close FIRST - do this before any other operations
             this.showModal = false; // Hide modal
-
-            // Check if there are more questions left
-            if (this.currentQuestionIndex < this.questions.length - 1) {
-                // Move to the next question
-                this.currentQuestionIndex++;
-                // Reset state for the new question
-                this.isAnswered = false;
-                this.selectedOptionIndex = null;
-            } else {
-                // End of quiz
-                this.quizCompleted = true;
-                console.log("Quiz completed. Final score:", this.score);
-            }
+            console.log(`showModal set to false: ${this.showModal}`); // Verify it's false
+            
+            // Small delay to ensure Alpine.js has time to process the state change
+            // before proceeding with other operations
+            setTimeout(() => {
+                // Check if there are more questions left
+                if (this.currentQuestionIndex < this.questions.length - 1) {
+                    // Move to the next question
+                    this.currentQuestionIndex++;
+                    console.log(`Advanced to question ${this.currentQuestionIndex + 1}`);
+                    
+                    // Reset state for the new question
+                    this.isAnswered = false;
+                    this.selectedOptionIndex = null;
+                } else {
+                    // End of quiz
+                    this.quizCompleted = true;
+                    console.log("Quiz completed. Final score:", this.score);
+                }
+            }, 50); // Short delay to ensure modal closure is processed first
         },
 
         restartQuiz() {
             console.log("Restarting quiz...");
-            // Re-initialize the component state - init() will reload data if needed
-            // but typically we just reset progress state with existing data.
-            // Let's just reset progress state here:
+            
+            // Force modal closed if it's somehow still open
+            this.showModal = false;
+            
+            // Re-initialize the component state
             this.currentQuestionIndex = 0;
             this.userAnswers = Array(this.questions.length).fill(null);
             this.selectedOptionIndex = null;
             this.isAnswered = false;
-            this.showModal = false;
             this.quizCompleted = false;
             this.score = 0;
-            // If you wanted to *force* reloading data from the DOM (e.g., if it could change dynamically),
-            // you would call this.init() instead. But for a simple restart, resetting state is sufficient.
         },
 
         // --- Dynamic Class Logic ---

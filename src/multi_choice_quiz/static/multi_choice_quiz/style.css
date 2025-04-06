@@ -1,4 +1,7 @@
 /* Base styles from Iteration 3, adapted for external file */
+/* AlpineJS helper for transitions - MUST BE AT THE TOP */
+[x-cloak] { display: none !important; }
+
 body {
     background-color: #4b0082; /* Deep purple background */
     font-family: "Segoe UI", Arial, sans-serif;
@@ -378,6 +381,3 @@ body {
         font-size: 18px;
     }
 }
-
-/* AlpineJS helper for transitions */
-[x-cloak] { display: none !important; }

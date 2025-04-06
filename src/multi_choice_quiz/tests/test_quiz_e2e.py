@@ -1,9 +1,10 @@
 # src/multi_choice_quiz/tests/test_quiz_e2e.py
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 import pytest
 import os
 import sys
+import time
 from django.conf import settings
 
 # Import our standardized test logging
@@ -25,8 +26,8 @@ def test_quiz_loads_and_functions():
 
     with sync_playwright() as p:
         # Launch browser
-        browser = p.chromium.launch(headless=True)
-        context = browser.new_context()
+        browser = p.chromium.launch(headless=True)  # Set to True for CI/production
+        context = browser.new_context(viewport={"width": 1280, "height": 720})
         page = context.new_page()
 
         try:
@@ -36,6 +37,7 @@ def test_quiz_loads_and_functions():
 
             # Check if the quiz loads
             logger.info("Checking if quiz loads")
+            page.wait_for_selector(".quiz-container", state="visible", timeout=5000)
             assert page.is_visible(".quiz-container"), "Quiz container not visible"
 
             # Check if question is displayed
@@ -50,17 +52,29 @@ def test_quiz_loads_and_functions():
             logger.info("Selecting the first option")
             page.locator(".option-button").first.click()
 
+            # Wait for the modal to appear
+            logger.info("Waiting for feedback modal to appear")
+            page.wait_for_selector(".modal-container", state="visible", timeout=5000)
+
             # Check if feedback modal appears
             logger.info("Checking for feedback modal")
             assert page.is_visible(
                 ".modal-container"
             ), "Feedback modal not shown after selecting an option"
 
-            # Click continue button
+            # Get the continue button and click it
             logger.info("Clicking continue button")
-            page.locator(".modal-button").click()
+            continue_button = page.locator(".modal-button")
+            # Ensure the button is visible and enabled
+            continue_button.wait_for(state="visible", timeout=3000)
+            # Click the button
+            continue_button.click()
 
-            # Verify modal closed
+            # Wait for the modal to disappear with a longer timeout
+            logger.info("Waiting for modal to disappear")
+            page.wait_for_selector(".modal-container", state="hidden", timeout=5000)
+
+            # Double-check that the modal is really gone
             assert not page.is_visible(
                 ".modal-container"
             ), "Feedback modal still visible after clicking continue"
@@ -69,6 +83,10 @@ def test_quiz_loads_and_functions():
             logger.info("E2E test completed successfully")
 
         except Exception as e:
+            # Take a screenshot on failure
+            if not os.path.exists("logs"):
+                os.makedirs("logs")
+            page.screenshot(path="logs/test_failure.png")
             logger.error(f"Test failed: {str(e)}")
             raise
         finally:
