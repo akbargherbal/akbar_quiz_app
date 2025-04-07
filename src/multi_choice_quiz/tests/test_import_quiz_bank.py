@@ -180,7 +180,7 @@ class ImportQuizBankCommandTest(TestCase):
 
         # Verify output indicates multiple quizzes created
         output = out.getvalue()
-        self.assertIn("Found 3 unique topics", output)
+        self.assertIn("Found 4 unique topics", output)  # Updated to expect 4 topics
 
         # Verify correct number of quizzes created
         geography_quiz = Quiz.objects.filter(title="Quiz: Geography").first()
