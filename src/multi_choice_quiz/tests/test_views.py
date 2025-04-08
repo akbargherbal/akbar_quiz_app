@@ -53,8 +53,6 @@ def test_django_quiz_flow(page: Page, django_server):
     # Define locators once for reuse
     question_text_locator = page.locator(".question-text")
     progress_indicator_locator = page.locator(".progress-indicator")
-    modal_overlay = page.locator(".modal-overlay")
-    modal_button = modal_overlay.locator(".modal-button")
 
     # --- Check that the quiz has loaded properly ---
     logger.info("--- Checking quiz structure ---")
@@ -107,35 +105,43 @@ def test_django_quiz_flow(page: Page, django_server):
         logger.info(f"Selecting option: {option_text}")
         first_option.click()
 
-        # Wait for feedback modal
-        expect(modal_overlay).to_be_visible(timeout=3000)
-
-        # Check if our answer was correct - using synchronous evaluate
-        modal_container_class = page.evaluate(
-            'document.querySelector(".modal-container").className'
+        # Wait for visual feedback (either correct or incorrect)
+        page.wait_for_selector(
+            ".option-button.correct-answer", state="visible", timeout=3000
         )
-        is_correct = "modal-correct" in modal_container_class
-        if is_correct:
+
+        # Check if our answer was correct by seeing if the first option has the correct-answer class
+        correct_answer_visible = (
+            page.locator(".option-button.correct-answer").count() > 0
+        )
+        incorrect_answer_visible = (
+            page.locator(".option-button.incorrect-answer").count() > 0
+        )
+
+        # If the first option has correct-answer class OR if incorrect-answer is not visible, our answer was correct
+        # (This assumes only one option can be correct, which is true in our quiz structure)
+        if first_option.evaluate("el => el.classList.contains('correct-answer')"):
             logger.info("Answer was correct!")
             correct_answers += 1
         else:
             logger.info("Answer was incorrect")
 
-        # Click continue
-        modal_button.click()
-        expect(modal_overlay).to_be_hidden()
-
-        # If not the last question, verify we moved to the next question
+        # For all questions except the last, verify we move to the next question after delay
         if q_num < total_questions:
-            # Wait for next question to load
-            page.wait_for_timeout(500)  # Small delay for Alpine.js transitions
+            # Wait for auto-progression
+            page.wait_for_timeout(2500)  # Wait a bit longer than the feedback duration
 
             # Verify the question text changed
             new_question = question_text_locator.text_content()
             logger.info(f"Next question: {new_question}")
             assert (
                 new_question != current_question
-            ), "Question did not change after continuing"
+            ), "Question did not change after auto-progression"
+        else:
+            # On last question, wait a bit longer for the results to appear
+            page.wait_for_timeout(
+                2500
+            )  # Wait for feedback duration and transition to results
 
     # --- Results Screen ---
     logger.info("--- Testing Results Screen ---")

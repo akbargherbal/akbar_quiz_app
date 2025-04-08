@@ -10,9 +10,10 @@ window.quizApp = function() {
         userAnswers: [], // Stores index of user's answer for each question
         selectedOptionIndex: null, // Index of the currently selected option (before confirming)
         isAnswered: false, // Has the current question been answered?
-        showModal: false, // Show correct/incorrect feedback modal?
         quizCompleted: false, // Has the user finished all questions?
         score: 0, // User's score
+        feedbackTimer: null, // Timer for feedback duration
+        feedbackDuration: 2000, // Feedback duration in milliseconds (2 seconds)
 
         // --- Computed Properties (Getters) ---
         get currentQuestion() {
@@ -56,7 +57,6 @@ window.quizApp = function() {
             this.currentQuestionIndex = 0;
             this.selectedOptionIndex = null;
             this.isAnswered = false;
-            this.showModal = false;
             this.quizCompleted = false;
             this.score = 0;
 
@@ -92,43 +92,44 @@ window.quizApp = function() {
                 this.score++;
             }
 
-            console.log(`Setting showModal to true. isCorrect: ${this.isCorrect}`); // Add logging
-            this.showModal = true; // Show feedback modal
-            console.log(`showModal is now: ${this.showModal}`); // Verify the value was set
+            // Clear any existing timer
+            if (this.feedbackTimer) {
+                clearTimeout(this.feedbackTimer);
+            }
+
+            // Set timer to move to next question after feedback duration
+            this.feedbackTimer = setTimeout(() => {
+                this.nextQuestion();
+            }, this.feedbackDuration);
         },
 
         nextQuestion() {
             console.log("nextQuestion() called"); // Add logging
             
-            // Important: Force modal to close FIRST - do this before any other operations
-            this.showModal = false; // Hide modal
-            console.log(`showModal set to false: ${this.showModal}`); // Verify it's false
-            
-            // Small delay to ensure Alpine.js has time to process the state change
-            // before proceeding with other operations
-            setTimeout(() => {
-                // Check if there are more questions left
-                if (this.currentQuestionIndex < this.questions.length - 1) {
-                    // Move to the next question
-                    this.currentQuestionIndex++;
-                    console.log(`Advanced to question ${this.currentQuestionIndex + 1}`);
-                    
-                    // Reset state for the new question
-                    this.isAnswered = false;
-                    this.selectedOptionIndex = null;
-                } else {
-                    // End of quiz
-                    this.quizCompleted = true;
-                    console.log("Quiz completed. Final score:", this.score);
-                }
-            }, 50); // Short delay to ensure modal closure is processed first
+            // Check if there are more questions left
+            if (this.currentQuestionIndex < this.questions.length - 1) {
+                // Move to the next question
+                this.currentQuestionIndex++;
+                console.log(`Advanced to question ${this.currentQuestionIndex + 1}`);
+                
+                // Reset state for the new question
+                this.isAnswered = false;
+                this.selectedOptionIndex = null;
+            } else {
+                // End of quiz
+                this.quizCompleted = true;
+                console.log("Quiz completed. Final score:", this.score);
+            }
         },
 
         restartQuiz() {
             console.log("Restarting quiz...");
             
-            // Force modal closed if it's somehow still open
-            this.showModal = false;
+            // Force clear any timers
+            if (this.feedbackTimer) {
+                clearTimeout(this.feedbackTimer);
+                this.feedbackTimer = null;
+            }
             
             // Re-initialize the component state
             this.currentQuestionIndex = 0;
@@ -158,16 +159,16 @@ window.quizApp = function() {
                 // Before answering, just return base + color
                 return baseClasses.join(' ');
             } else {
-                // After answering:
+                // After answering and during feedback period:
                 if (index === this.currentQuestion.answerIndex) {
-                    // This is the correct answer
+                    // This is the correct answer - always show and make it glow
                     baseClasses.push('correct-answer');
-                } else if (index === this.selectedOptionIndex) {
-                    // This is the incorrect answer the user selected
+                } else if (index === this.selectedOptionIndex && index !== this.currentQuestion.answerIndex) {
+                    // This is the incorrect answer the user selected - show in red
                     baseClasses.push('incorrect-answer');
                 } else {
-                    // This is an incorrect option the user did *not* select
-                    baseClasses.push('disabled-option'); // Visually disable it
+                    // This is an option the user did not select - make it disappear
+                    baseClasses.push('disappear');
                 }
                 return baseClasses.join(' ');
             }

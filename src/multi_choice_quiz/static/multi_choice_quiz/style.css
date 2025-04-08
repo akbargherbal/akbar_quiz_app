@@ -1,4 +1,3 @@
-/* Base styles from Iteration 3, adapted for external file */
 /* AlpineJS helper for transitions - MUST BE AT THE TOP */
 [x-cloak] { display: none !important; }
 
@@ -30,8 +29,8 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    position: relative; /* Added for potential absolute positioning within */
-    min-height: 40px; /* Ensure it has some height */
+    position: relative;
+    min-height: 40px;
 }
 
 .home-icon {
@@ -44,7 +43,7 @@ body {
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 20px; /* Make emoji slightly bigger */
+    font-size: 20px;
 }
 
 .home-icon:hover {
@@ -52,30 +51,61 @@ body {
     transform: scale(1.05);
 }
 
-/* Progress Dots */
+/* Progress Bar */
 .quiz-progress {
-    /* If you want dots centered, uncomment below and remove from top-bar justify-content */
-    /* position: absolute;
-    left: 50%;
-    transform: translateX(-50%); */
     display: flex;
-    justify-content: center; /* Or remove if using absolute positioning */
+    justify-content: center;
     align-items: center;
-    /* margin-bottom: 20px; Removed as it's inside top-bar */
+    flex: 1 0 auto;
 }
 
-.progress-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.3);
-    margin: 0 5px;
-    transition: all 0.3s ease; /* Added transition */
+.progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-right: 15px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-.progress-dot.active {
-    background-color: white;
-    transform: scale(1.3); /* Made active dot slightly larger */
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3498db, #2ecc71);
+    border-radius: 4px;
+    transition: width 0.4s ease-in-out;
+    position: relative;
+    box-shadow: 0 0 8px rgba(46, 204, 113, 0.6);
+}
+
+/* Add a subtle pulsing effect to the progress bar */
+.progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Progress Indicator */
+.progress-indicator {
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    border-radius: 15px;
+    padding: 5px 12px;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: 'Courier New';
+    margin-left: auto;
+    margin-right: 10px;
 }
 
 /* Question Card */
@@ -95,32 +125,59 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-.progress-indicator {
+/* Question container with animation */
+.question-container {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    text-align: center;
+    position: relative;
+}
+
+/* Subtle drawing animation for question highlight - only shows when not answered */
+.question-container.active-question::before {
+    content: '';
     position: absolute;
-    top: 15px;
-    right: 15px;
-    background-color: rgba(0, 0, 0, 0.4);
-    color: white;
-    border-radius: 15px;
-    padding: 5px 12px;
-    font-size: 14px;
-    font-weight: bold;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    pointer-events: none;
+    border: 2px solid transparent;
+    animation: drawBorder 3s linear infinite;
+}
+
+@keyframes drawBorder {
+    0% {
+        border-color: transparent;
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+    25% {
+        border-color: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 0 5px 0 rgba(255, 255, 255, 0.2);
+    }
+    50% {
+        border-color: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 8px 0 rgba(255, 255, 255, 0.1);
+    }
+    75% {
+        border-color: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 0 5px 0 rgba(255, 255, 255, 0.2);
+    }
+    100% {
+        border-color: transparent;
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
 }
 
 .question-text {
-    font-size: 22px; /* Slightly adjusted */
-    font-weight: bold;
+    font-size: 24px;
     text-align: center;
     margin-top: 15px;
-    margin-bottom: 5px;
-    line-height: 1.4; /* Improved line spacing for longer questions */
-}
-
-.question-subtitle {
-    text-align: center;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 25px; /* Adjusted */
-    font-size: 15px; /* Adjusted */
+    margin-bottom: 10px;
+    line-height: 1.4;
+    font-family: 'Segoe UI', Tahoma, Poppins, Verdana;
 }
 
 /* Options */
@@ -131,18 +188,18 @@ body {
 }
 
 .option-button {
-    padding: 16px; /* Adjusted */
+    padding: 16px;
     border-radius: 12px;
     font-weight: bold;
-    font-size: 16px; /* Adjusted */
+    font-size: 16px;
     text-align: center;
-    transition: all 0.3s ease, background-color 0.1s linear, color 0.1s linear; /* Refined transition */
+    transition: all 0.3s ease;
     border: none;
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    background-color: grey; /* Default background */
-    color: white; /* Default text color */
+    color: white;
+    font-family: 'Segoe UI', 'Source Code Pro', Poppins, Verdana, Roboto, 'Open Sans', Arial;
 }
 
 /* Hover effect base - pseudo element for wipe */
@@ -153,16 +210,16 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.15); /* Slightly more visible wipe */
+    background-color: rgba(255, 255, 255, 0.15);
     transform: translateX(-100%);
     transition: transform 0.3s ease;
-    z-index: 1; /* Ensure wipe is above base color */
+    z-index: 1;
 }
-.option-button span { /* If text is wrapped in span, ensure it's above */
+
+.option-button span {
     position: relative;
     z-index: 2;
 }
-
 
 .option-button:not(:disabled):hover::before {
     transform: translateX(0);
@@ -174,7 +231,7 @@ body {
 }
 
 .option-button:active {
-    transform: translateY(0); /* Reset on active */
+    transform: translateY(0);
 }
 
 /* Specific Option Colors */
@@ -182,113 +239,38 @@ body {
 .option-button.teal-option { background-color: #1abc9c; }
 .option-button.orange-option { background-color: #f39c12; }
 .option-button.red-option { background-color: #e74c3c; }
-.option-button.turquoise-option { background-color: #00CED1; } /* Changed from purple to turquoise */
+.option-button.turquoise-option { background-color: #00CED1; }
 
-/* Feedback Styles on Options */
+/* Feedback Styles for Options */
 .option-button.correct-answer {
     background-color: #2ecc71 !important; /* Green for correct */
     color: white !important;
-    transform: scale(1.02); /* Slightly emphasize correct */
+    transform: scale(1.02);
     box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+    animation: glow 1.5s ease-in-out infinite;
 }
-.option-button.correct-answer::before {
-    display: none; /* Disable wipe effect on feedback */
-}
-
 
 .option-button.incorrect-answer {
     background-color: #e74c3c !important; /* Red for incorrect selected */
     color: white !important;
-    opacity: 0.9; /* Slightly dim incorrect */
-}
-.option-button.incorrect-answer::before {
-    display: none; /* Disable wipe effect on feedback */
-}
-
-
-.option-button:disabled:not(.correct-answer):not(.incorrect-answer) {
-    opacity: 0.6; /* Fade out non-selected, non-correct options */
-    cursor: not-allowed;
-}
-.option-button:disabled:not(.correct-answer):not(.incorrect-answer):hover {
-     transform: none; /* Disable hover effects when disabled */
-     box-shadow: none;
-}
-.option-button:disabled:not(.correct-answer):not(.incorrect-answer)::before {
-    display: none; /* Disable wipe effect on feedback */
-}
-
-
-/* Modal Styles */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.75);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 50;
-    /* Alpine handles transitions via x-transition */
-}
-
-.modal-container {
-    width: 90%;
-    max-width: 400px;
-    border-radius: 15px;
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-    padding: 30px;
-    text-align: center;
-    /* Alpine handles transitions via x-transition */
-}
-
-/* Keyframes for scaleIn are implicitly handled by Alpine's default scale transition */
-
-.modal-correct {
-    background-color: #2ecc71;
-    color: white;
-}
-
-.modal-incorrect {
-    background-color: #e74c3c;
-    color: white;
-}
-
-.modal-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
-}
-
-.modal-message {
-    font-size: 28px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.modal-explanation {
-    margin-bottom: 25px; /* More space before button */
     opacity: 0.9;
-    font-size: 16px;
-    line-height: 1.5;
 }
 
-.modal-button {
-    background-color: rgba(255, 255, 255, 0.3);
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 8px;
-    font-size: 16px; /* Ensure readable size */
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s;
+.option-button.disappear {
+    opacity: 0;
+    transform: scale(0.9);
+    pointer-events: none;
+    transition: all 0.3s ease;
 }
 
-.modal-button:hover {
-    background-color: rgba(255, 255, 255, 0.4);
-    transform: translateY(-2px);
+/* Glow animation for correct answer */
+@keyframes glow {
+    0%, 100% { 
+        box-shadow: 0 0 15px rgba(46, 204, 113, 0.6); 
+    }
+    50% { 
+        box-shadow: 0 0 30px rgba(46, 204, 113, 0.9), 0 0 40px rgba(46, 204, 113, 0.6); 
+    }
 }
 
 /* Results Screen Styles */
@@ -313,6 +295,7 @@ body {
     margin-bottom: 30px;
     color: rgba(255, 255, 255, 0.9);
 }
+
 .results-score span {
     font-weight: bold;
     color: white;
@@ -321,9 +304,9 @@ body {
 .results-summary {
     margin-bottom: 30px;
     text-align: left;
-    max-height: 30vh; /* Limit height and allow scrolling if needed */
-    overflow-y: auto; /* Add scrollbar if content overflows */
-    padding-right: 10px; /* Space for scrollbar */
+    max-height: 30vh;
+    overflow-y: auto;
+    padding-right: 10px;
 }
 
 .result-item {
@@ -333,15 +316,18 @@ body {
     align-items: center;
     line-height: 1.4;
 }
+
 .result-icon {
     margin-right: 10px;
     font-size: 18px;
 }
+
 .correct-answer-info {
     font-size: 0.9em;
     color: rgba(255, 255, 255, 0.7);
     margin-left: 8px;
 }
+
 .correct-answer-info span {
     font-style: italic;
     font-weight: bold;
@@ -349,7 +335,7 @@ body {
 }
 
 .restart-button {
-    background-color: #e67e22; /* Orange color for restart */
+    background-color: #e67e22;
     color: white;
     border: none;
     padding: 14px 30px;
@@ -366,18 +352,14 @@ body {
     box-shadow: 0 5px 10px rgba(0,0,0,0.2);
 }
 
-
 /* Responsive adjustments */
 @media (min-width: 768px) {
     .question-text {
-        font-size: 26px; /* Larger text on desktop */
+        font-size: 26px;
     }
 
     .option-button {
-        padding: 18px; /* Larger buttons on desktop */
-        font-size: 18px;
-    }
-    .modal-explanation {
+        padding: 18px;
         font-size: 18px;
     }
 }

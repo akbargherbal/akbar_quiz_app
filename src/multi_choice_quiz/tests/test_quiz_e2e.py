@@ -52,32 +52,29 @@ def test_quiz_loads_and_functions():
             logger.info("Selecting the first option")
             page.locator(".option-button").first.click()
 
-            # Wait for the modal to appear
-            logger.info("Waiting for feedback modal to appear")
-            page.wait_for_selector(".modal-container", state="visible", timeout=5000)
+            # Wait for feedback (correct option highlighting or incorrect selection) to appear
+            logger.info("Waiting for visual feedback")
+            # Either the correct answer should be visible or incorrect selection
+            page.wait_for_selector(
+                ".option-button.correct-answer, .option-button.incorrect-answer",
+                state="visible",
+                timeout=3000,
+            )
 
-            # Check if feedback modal appears
-            logger.info("Checking for feedback modal")
-            assert page.is_visible(
-                ".modal-container"
-            ), "Feedback modal not shown after selecting an option"
+            # Verify feedback is visible
+            assert page.is_visible(".option-button.correct-answer") or page.is_visible(
+                ".option-button.incorrect-answer"
+            ), "Visual feedback not shown after selecting an option"
 
-            # Get the continue button and click it
-            logger.info("Clicking continue button")
-            continue_button = page.locator(".modal-button")
-            # Ensure the button is visible and enabled
-            continue_button.wait_for(state="visible", timeout=3000)
-            # Click the button
-            continue_button.click()
+            # Wait for auto-progression
+            logger.info("Waiting for automatic progression...")
+            page.wait_for_timeout(2500)  # Slightly longer than feedbackDuration
 
-            # Wait for the modal to disappear with a longer timeout
-            logger.info("Waiting for modal to disappear")
-            page.wait_for_selector(".modal-container", state="hidden", timeout=5000)
-
-            # Double-check that the modal is really gone
-            assert not page.is_visible(
-                ".modal-container"
-            ), "Feedback modal still visible after clicking continue"
+            # Verify auto-progression (check for new options being enabled)
+            # This assumes we've progressed to a new question where options should be clickable
+            assert page.locator(
+                ".option-button"
+            ).first.is_enabled(), "Options not enabled after auto-progression"
 
             # Log success
             logger.info("E2E test completed successfully")

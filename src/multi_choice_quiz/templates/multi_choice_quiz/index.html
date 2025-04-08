@@ -23,26 +23,25 @@
             <!-- Top Bar -->
             <div class="top-bar">
                 <div class="quiz-progress">
-                    {# Ensure questions array exists before iterating #}
-                    <template x-if="questions.length > 0">
-                        <template x-for="(question, index) in questions" :key="index">
-                            <div class="progress-dot" :class="{ 'active': index === currentQuestionIndex }"></div>
-                        </template>
-                    </template>
+                    <div class="progress-bar-container">
+                        <!-- Use dynamic progress calculation based on question index -->
+                        <div class="progress-bar-fill" :style="`width: ${Math.max(5, (currentQuestionIndex / (questions.length - 1)) * 100)}%`"></div>
+                    </div>
                 </div>
-                <!-- You can add functionality to the home icon if needed -->
+                <div class="progress-indicator" x-text="`${currentQuestionIndex + 1}/${questions.length}`"></div>
+                <!-- Home icon (can add functionality later) -->
                 <div class="home-icon">🏠</div>
             </div>
 
             <!-- Question Card -->
-            {# Only show if not completed AND currentQuestion is available #}
             <div class="question-card" x-show="!quizCompleted && currentQuestion">
-                <div class="progress-indicator" x-text="`${currentQuestionIndex + 1}/${questions.length}`"></div>
-                <div class="question-text" x-text="currentQuestion.text"></div>
+                <!-- Question container with subtle border animation -->
+                <div class="question-container" :class="{ 'active-question': !isAnswered }">
+                    <div class="question-text" x-text="currentQuestion.text"></div>
+                </div>
             </div>
 
             <!-- Options -->
-            {# Only show if not completed AND currentQuestion is available #}
             <div class="options-container" x-show="!quizCompleted && currentQuestion">
                 <template x-for="(option, index) in currentQuestion.options" :key="index">
                     <button
@@ -76,19 +75,5 @@
             <button class="restart-button" @click="restartQuiz">Play Again?</button>
         </div>
     </template>
-
-    <!-- Modal Dialog for Feedback - Notice we use x-cloak to prevent flickering on init -->
-    <div class="modal-overlay" x-show="showModal" x-transition x-cloak>
-        <div class="modal-container"
-             :class="{ 'modal-correct': isCorrect, 'modal-incorrect': !isCorrect }"
-             x-show="showModal" 
-             x-transition.scale.origin.center>
-            <div class="modal-icon" x-html="isCorrect ? '✔' : '✘'"></div>
-            <div class="modal-message" x-text="isCorrect ? 'Correct!' : 'Incorrect!'"></div>
-            <div class="modal-explanation" x-show="!isCorrect" x-text="`The correct answer was: ${currentQuestion ? currentQuestion.options[currentQuestion.answerIndex] : ''}`"></div>
-            <button class="modal-button" @click="nextQuestion">Continue</button>
-        </div>
-    </div>
-
 </div> <!-- End of quiz-container -->
 {% endblock %}

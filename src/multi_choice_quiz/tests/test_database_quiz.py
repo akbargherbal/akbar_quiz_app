@@ -181,22 +181,21 @@ def test_database_quiz_flow(page: Page, django_server):
         correct_option = page.locator(".option-button", has_text=correct_option_text)
         correct_option.click()
 
-        # Check that we get a "Correct!" modal
-        modal_overlay = page.locator(".modal-overlay")
-        expect(modal_overlay).to_be_visible(timeout=3000)
-        expect(modal_overlay.locator(".modal-container.modal-correct")).to_be_visible()
-        expect(modal_overlay.locator(".modal-message")).to_have_text("Correct!")
+        # Check that we get correct visual feedback (option glows green)
+        correct_option_class = page.locator(".option-button.correct-answer")
+        expect(correct_option_class).to_be_visible(timeout=3000)
 
-        # Close the modal
-        modal_button = modal_overlay.locator(".modal-button")
-        modal_button.click()
-        expect(modal_overlay).to_be_hidden()
+        # Wait for auto-progression to next question
+        logger.info("Waiting for auto-progression...")
+        page.wait_for_timeout(2500)  # Slightly longer than feedbackDuration
 
         # --- Complete the entire quiz ---
         logger.info("Completing the rest of the quiz...")
 
         # For each remaining question, click any option and continue
-        for i in range(1, len(json_data)):
+        for i in range(
+            1, len(json_data) - 1
+        ):  # Skip last question as we handle it separately
             # Wait for the question to be visible
             expect(question_text_locator).to_be_visible()
 
@@ -204,15 +203,27 @@ def test_database_quiz_flow(page: Page, django_server):
             option = page.locator(".option-button >> nth=0")
             option.click()
 
-            # Wait for the modal and close it
-            expect(modal_overlay).to_be_visible()
-            modal_button.click()
+            # Wait for auto-progression to next question
+            page.wait_for_timeout(2500)  # Slightly longer than feedbackDuration
 
-            if i < len(json_data) - 1:
-                # Verify we're on the next question
-                expect(progress_indicator_locator).to_have_text(
-                    f"{i+2}/{len(json_data)}"
-                )
+            # Verify we're on the next question
+            expect(progress_indicator_locator).to_have_text(f"{i+2}/{len(json_data)}")
+
+        # Handle the last question separately
+        # Wait for the last question to be visible
+        expect(question_text_locator).to_be_visible()
+
+        # Verify we're on the last question
+        expect(progress_indicator_locator).to_have_text(
+            f"{len(json_data)}/{len(json_data)}"
+        )
+
+        # Click any option on the last question
+        option = page.locator(".option-button >> nth=0")
+        option.click()
+
+        # Wait for feedback and transition to results
+        page.wait_for_timeout(2500)  # Slightly longer than feedbackDuration
 
         # --- Test the results screen ---
         results_card = page.locator(".results-card")
