@@ -221,3 +221,46 @@ class ImportQuizBankCommandTest(TestCase):
 
         math_question = Question.objects.filter(text__contains="2+2").first()
         self.assertEqual(math_question.chapter_no, "1")
+
+    # Add this test to the ImportQuizBankCommandTest class:
+    def test_improved_title_and_topic_names(self):
+        """Test importing with chapter titles and better topic names."""
+        # Clear any existing data
+        Quiz.objects.all().delete()
+        Topic.objects.all().delete()
+
+        # Create test data with chapter titles
+        data = self.data.copy()
+        data["CHAPTER_TITLE"] = [
+            "Earth Science",
+            "Space Science",
+            "Chemistry",
+            "Mathematics",
+            "Chemistry",
+        ]
+        df = pd.DataFrame(data)
+
+        # Save as CSV
+        csv_path = os.path.join(self.temp_dir.name, "test_with_titles.csv")
+        df.to_csv(csv_path, index=False)
+
+        # Run the command
+        out = StringIO()
+        call_command("import_quiz_bank", csv_path, split_by_topic=True, stdout=out)
+
+        # Verify output indicates quizzes created with better titles
+        output = out.getvalue()
+
+        # Check Geography quiz
+        geography_quiz = Quiz.objects.filter(title__contains="Earth Science").first()
+        self.assertIsNotNone(geography_quiz)
+        self.assertEqual(geography_quiz.title, "Earth Science: Geography Quiz")
+
+        # Check Chemistry quiz
+        chemistry_quiz = Quiz.objects.filter(title__contains="Chemistry").first()
+        self.assertIsNotNone(chemistry_quiz)
+        self.assertEqual(chemistry_quiz.title, "Chemistry: Chemistry Quiz")
+
+        # Check that actual topic names were used
+        self.assertTrue(Topic.objects.filter(name="Geography").exists())
+        self.assertTrue(Topic.objects.filter(name="Chemistry").exists())

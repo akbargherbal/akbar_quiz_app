@@ -20,8 +20,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--quiz-title",
             type=str,
-            default="Quiz Bank Import",
-            help="Title for the imported quiz",
+            default=None,
+            help="Title for the imported quiz (defaults to chapter title from data)",
         )
         parser.add_argument(
             "--topic", type=str, help="Topic to associate with the imported questions"
@@ -48,15 +48,22 @@ class Command(BaseCommand):
             default="chapter_no",
             help="Column name containing chapter information",
         )
+        parser.add_argument(
+            "--chapter-title-column",
+            type=str,
+            default="chapter_title",
+            help="Column name containing chapter title information",
+        )
 
     def handle(self, *args, **options):
         file_path = options["file_path"]
-        quiz_title = options["quiz_title"]
+        provided_quiz_title = options["quiz_title"]
         topic_name = options["topic"]
         max_questions = options["max_questions"]
         split_by_topic = options["split_by_topic"]
         topic_column = options["topic_column"]
         chapter_column = options["chapter_column"]
+        chapter_title_column = options["chapter_title_column"]
 
         # Configure logging
         logger = logging.getLogger(__name__)
@@ -96,13 +103,39 @@ class Command(BaseCommand):
             if chapter_column in df.columns and chapter_column != "chapter_no":
                 df["chapter_no"] = df[chapter_column]
 
+            # Get chapter title if available
+            chapter_title = None
+            if chapter_title_column in df.columns:
+                # Get the most common chapter title
+                chapter_title = df[chapter_title_column].value_counts().index[0]
+                self.stdout.write(
+                    self.style.NOTICE(f"Found chapter title: {chapter_title}")
+                )
+
             # Process the data based on the split option
             if split_by_topic and topic_column in df.columns:
                 # Create separate quizzes for each topic
-                self._import_by_topic(df, topic_column, max_questions)
+                self._import_by_topic(
+                    df, topic_column, chapter_title_column, max_questions
+                )
             else:
                 # Create a single quiz with all questions
-                self._import_as_single_quiz(df, quiz_title, topic_name, max_questions)
+                # Use provided title, chapter title, or default
+                quiz_title = provided_quiz_title
+                if not quiz_title and chapter_title:
+                    quiz_title = chapter_title
+                elif not quiz_title:
+                    quiz_title = "Quiz Bank Import"
+
+                # Use actual topic from data if available
+                actual_topic = None
+                if topic_column in df.columns and not topic_name:
+                    # Get the most common topic
+                    actual_topic = df[topic_column].value_counts().index[0]
+
+                self._import_as_single_quiz(
+                    df, quiz_title, topic_name or actual_topic, max_questions
+                )
 
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Error importing quiz data: {str(e)}"))
@@ -142,7 +175,7 @@ class Command(BaseCommand):
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Error creating quiz: {str(e)}"))
 
-    def _import_by_topic(self, df, topic_column, max_questions):
+    def _import_by_topic(self, df, topic_column, chapter_title_column, max_questions):
         """Import data split into multiple quizzes by topic"""
         # Get unique topics
         if topic_column not in df.columns:
@@ -177,8 +210,21 @@ class Command(BaseCommand):
             if topic_max and topic_max > len(topic_df):
                 topic_max = None  # Use all available questions if less than max
 
-            # Generate quiz title based on topic
-            quiz_title = f"Quiz: {topic}"
+            # Get chapter title if available
+            chapter_title = None
+            # Check for both upper and lowercase column names
+            if chapter_title_column in topic_df.columns:
+                # Get the most common chapter title for this topic
+                chapter_title = topic_df[chapter_title_column].value_counts().index[0]
+            elif "CHAPTER_TITLE" in topic_df.columns:  # Add this check
+                # Get the most common chapter title for this topic
+                chapter_title = topic_df["CHAPTER_TITLE"].value_counts().index[0]
+
+            # Generate quiz title based on topic and chapter title
+            if chapter_title:
+                quiz_title = f"{chapter_title}: {topic} Quiz"
+            else:
+                quiz_title = f"Quiz: {topic}"
 
             try:
                 # Import this topic's questions

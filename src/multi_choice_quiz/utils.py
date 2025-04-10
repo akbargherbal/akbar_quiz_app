@@ -85,13 +85,24 @@ def curate_data(input_df, no_questions=10):
     if "correct_answer" in df.columns and "answerIndex" not in df.columns:
         df = df.rename(columns={"correct_answer": "answerIndex"})
 
-    # Select required columns
-    columns = ["text", "options", "answerIndex"]
-    available_columns = [col for col in columns if col in df.columns]
+    # Select required columns - now including tag and chapter_no if available
+    base_columns = ["text", "options", "answerIndex"]
+    extra_columns = ["tag", "chapter_no", "topic", "CHAPTER_TITLE"]
 
-    if len(available_columns) < len(columns):
-        missing = set(columns) - set(available_columns)
+    # Get available base columns (required)
+    available_base_columns = [col for col in base_columns if col in df.columns]
+
+    # Get available extra columns (optional)
+    available_extra_columns = [col for col in extra_columns if col in df.columns]
+
+    # Check for required columns
+    if len(available_base_columns) < len(base_columns):
+        missing = set(base_columns) - set(available_base_columns)
         raise ValueError(f"DataFrame is missing required columns: {missing}")
 
-    result = df[columns].sample(min(no_questions, len(df))).to_dict("records")
+    # Combine all available columns
+    columns_to_use = available_base_columns + available_extra_columns
+
+    # Sample and convert to dict
+    result = df[columns_to_use].sample(min(no_questions, len(df))).to_dict("records")
     return result

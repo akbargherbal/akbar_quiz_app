@@ -23,6 +23,14 @@ logging.basicConfig(
 
 logger = logging.getLogger("quiz_import")
 
+# Constants for formatting
+CHAPTER_PREFIX_ENABLED = (
+    True  # Default value, can be overridden with --no-chapter-prefix
+)
+CHAPTER_PREFIX_ZFILL = (
+    2  # Default padding for chapter numbers, can be changed here or via argument
+)
+
 try:
     # Set up Django
     logger.info("Initializing Django...")
@@ -53,7 +61,6 @@ def load_quiz_bank(file_path):
         # Validate DataFrame structure
         required_columns = [
             "chapter_no",
-            "topic",
             "question_text",
             "options",
             "answerIndex",
@@ -65,9 +72,25 @@ def load_quiz_bank(file_path):
                 f"Missing required columns in quiz bank: {', '.join(missing_columns)}"
             )
 
+        # Log all available columns for reference
+        logger.info(f"Available columns in quiz bank: {', '.join(df.columns.tolist())}")
         logger.info(f"Quiz bank loaded successfully with {len(df)} questions")
-        logger.info(f"Topics: {df['topic'].nunique()} unique topics")
         logger.info(f"Chapters: {df['chapter_no'].nunique()} unique chapters")
+
+        # Log chapter titles if available
+        if "CHAPTER_TITLE" in df.columns:
+            chapter_titles = df.groupby("chapter_no")["CHAPTER_TITLE"].first().to_dict()
+            logger.info(f"Chapter titles: {chapter_titles}")
+        elif "chapter_title" in df.columns:
+            chapter_titles = df.groupby("chapter_no")["chapter_title"].first().to_dict()
+            logger.info(f"Chapter titles: {chapter_titles}")
+
+        # Log topic information if available
+        if "topic" in df.columns:
+            topics = df["topic"].unique().tolist()
+            logger.info(f"Topics: {len(topics)} unique topics")
+            if len(topics) <= 10:  # Only show if not too many
+                logger.info(f"Topic values: {topics}")
 
         return df
     except Exception as e:
@@ -76,7 +99,14 @@ def load_quiz_bank(file_path):
         return None
 
 
-def import_questions_by_chapter(df, questions_per_quiz=20, quizzes_per_chapter=2):
+def import_questions_by_chapter(
+    df,
+    questions_per_quiz=20,
+    quizzes_per_chapter=2,
+    use_descriptive_titles=True,
+    use_chapter_prefix=True,
+    chapter_zfill=2,
+):
     """Import questions organized by chapter with comprehensive error handling."""
     if df is None:
         logger.error("Cannot import questions: DataFrame is None")
@@ -104,12 +134,72 @@ def import_questions_by_chapter(df, questions_per_quiz=20, quizzes_per_chapter=2
                     logger.warning(f"Chapter {chapter} has no questions, skipping")
                     continue
 
+                # Create chapter prefix if enabled
+                chapter_prefix = ""
+                if use_chapter_prefix:
+                    try:
+                        # Try to convert chapter to integer for zfill
+                        chapter_num = int(chapter)
+                        chapter_prefix = str(chapter_num).zfill(chapter_zfill) + " "
+                    except (ValueError, TypeError):
+                        # If chapter is not a simple number, use as is
+                        chapter_prefix = str(chapter) + " "
+                    logger.info(f"Using chapter prefix: '{chapter_prefix}'")
+
+                # Extract key metadata from DataFrame
+                chapter_metadata = {}
+
+                # Look for chapter title in either CHAPTER_TITLE or chapter_title columns
+                if "CHAPTER_TITLE" in chapter_df.columns:
+                    chapter_metadata["title"] = (
+                        chapter_df["CHAPTER_TITLE"].value_counts().index[0]
+                    )
+                elif "chapter_title" in chapter_df.columns:
+                    chapter_metadata["title"] = (
+                        chapter_df["chapter_title"].value_counts().index[0]
+                    )
+                else:
+                    chapter_metadata["title"] = f"Chapter {chapter}"
+
+                logger.info(f"Chapter {chapter} title: {chapter_metadata['title']}")
+
+                # Extract topic information if available
+                if "topic" in chapter_df.columns:
+                    # Get the most common topic(s) for this chapter
+                    topic_counts = chapter_df["topic"].value_counts()
+                    chapter_metadata["primary_topic"] = topic_counts.index[0]
+                    if len(topic_counts) > 1:
+                        chapter_metadata["secondary_topics"] = topic_counts.index[
+                            1:3
+                        ].tolist()
+                    else:
+                        chapter_metadata["secondary_topics"] = []
+
+                    logger.info(f"Primary topic: {chapter_metadata['primary_topic']}")
+                    if chapter_metadata["secondary_topics"]:
+                        logger.info(
+                            f"Secondary topics: {chapter_metadata['secondary_topics']}"
+                        )
+
+                # Extract tags if available
+                if "tag" in chapter_df.columns:
+                    chapter_metadata["tags"] = chapter_df["tag"].unique().tolist()
+                    logger.info(f"Tags: {chapter_metadata['tags'][:5]}...")
+
                 # Process each quiz for this chapter
                 for quiz_num in range(1, quizzes_per_chapter + 1):
                     try:
-                        # Generate quiz title and topic
-                        title = f"Chapter {chapter} - Quiz {quiz_num}"
-                        topic_name = f"Chapter {chapter}"
+                        # Create descriptive title and topic based on available metadata
+                        if use_descriptive_titles and chapter_metadata.get(
+                            "primary_topic"
+                        ):
+                            # Use chapter title and primary topic for a more descriptive title
+                            title = f"{chapter_prefix}{chapter_metadata['title']}: {chapter_metadata['primary_topic']} - Quiz {quiz_num}"
+                            topic_name = chapter_metadata["primary_topic"]
+                        else:
+                            # Fallback to simpler naming
+                            title = f"{chapter_prefix}{chapter_metadata['title']} - Quiz {quiz_num}"
+                            topic_name = chapter_metadata["title"]
 
                         # Sample questions for this quiz
                         sample_size = min(questions_per_quiz, len(chapter_df))
@@ -203,13 +293,35 @@ def main():
         logger.info(f"Current working directory: {os.getcwd()}")
         print(f"Current working directory: {os.getcwd()}")
 
-        # Check for test mode arguments
+        # Get the global constants as initial values
+        use_descriptive_titles = True  # Default to using descriptive titles
+        use_chapter_prefix = CHAPTER_PREFIX_ENABLED
+        chapter_zfill = CHAPTER_PREFIX_ZFILL
+
+        # Parse command line arguments
         test_mode = "--test" in sys.argv
         test_file = None
 
+        # Look for arguments
         for i, arg in enumerate(sys.argv):
             if arg == "--test-file" and i + 1 < len(sys.argv):
                 test_file = sys.argv[i + 1]
+            elif arg == "--simple-titles":
+                use_descriptive_titles = False
+                logger.info("Using simple title format (without topic information)")
+            elif arg == "--no-chapter-prefix":
+                use_chapter_prefix = False
+                logger.info("Disabling chapter number prefix in titles")
+            elif arg == "--zfill" and i + 1 < len(sys.argv):
+                try:
+                    chapter_zfill = int(sys.argv[i + 1])
+                    logger.info(
+                        f"Setting chapter number padding to {chapter_zfill} digits"
+                    )
+                except ValueError:
+                    logger.warning(
+                        f"Invalid zfill value: {sys.argv[i + 1]}, using default {chapter_zfill}"
+                    )
 
         # Determine quiz bank path
         if test_file:
@@ -221,32 +333,59 @@ def main():
             logger.info("Running in test mode with generated data")
             df = pd.DataFrame(
                 {
-                    "chapter_no": [1, 1, 2, 2],
+                    "chapter_no": [1, 1, 2, 2, 10, 10],
                     "topic": [
                         "Test Topic A",
                         "Test Topic B",
                         "Test Topic C",
                         "Test Topic D",
+                        "Advanced Testing",
+                        "Advanced Testing",
                     ],
                     "question_text": [
                         "Test question 1?",
                         "Test question 2?",
                         "Test question 3?",
                         "Test question 4?",
+                        "Test question 5?",
+                        "Test question 6?",
                     ],
                     "options": [
                         ["Option A", "Option B", "Option C"],
                         ["Option D", "Option E", "Option F"],
                         ["Option G", "Option H", "Option I"],
                         ["Option J", "Option K", "Option L"],
+                        ["Option M", "Option N", "Option O"],
+                        ["Option P", "Option Q", "Option R"],
                     ],
-                    "answerIndex": [1, 2, 3, 1],
+                    "answerIndex": [1, 2, 3, 1, 2, 3],
+                    "CHAPTER_TITLE": [
+                        "Introduction to Testing",
+                        "Introduction to Testing",
+                        "Advanced Testing",
+                        "Advanced Testing",
+                        "Expert Testing",
+                        "Expert Testing",
+                    ],
+                    "tag": [
+                        "test-topic-a",
+                        "test-topic-b",
+                        "test-topic-c",
+                        "test-topic-d",
+                        "test-topic-e",
+                        "test-topic-f",
+                    ],
                 }
             )
 
             # Skip the load_quiz_bank call
             quiz_count, question_count = import_questions_by_chapter(
-                df, questions_per_quiz=2, quizzes_per_chapter=1
+                df,
+                questions_per_quiz=2,
+                quizzes_per_chapter=1,
+                use_descriptive_titles=use_descriptive_titles,
+                use_chapter_prefix=use_chapter_prefix,
+                chapter_zfill=chapter_zfill,
             )
 
             # Print summary and exit
@@ -271,7 +410,12 @@ def main():
 
         # Import questions by chapter
         quiz_count, question_count = import_questions_by_chapter(
-            df, questions_per_quiz=20, quizzes_per_chapter=2
+            df,
+            questions_per_quiz=20,
+            quizzes_per_chapter=2,
+            use_descriptive_titles=use_descriptive_titles,
+            use_chapter_prefix=use_chapter_prefix,
+            chapter_zfill=chapter_zfill,
         )
 
         # Print summary

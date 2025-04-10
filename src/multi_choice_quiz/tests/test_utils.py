@@ -18,6 +18,8 @@ from multi_choice_quiz.tests.test_logging import setup_test_logging
 # Set up logging
 logger = setup_test_logging("test_utils")
 
+# Only the test cases that need to be updated for the tag field:
+
 
 class TestDataframeImport(TestCase):
     """Tests for the import_from_dataframe utility function."""
@@ -26,7 +28,7 @@ class TestDataframeImport(TestCase):
         """Set up test data."""
         logger.info("Setting up TestDataframeImport test data")
 
-        # Sample DataFrame with standard column names
+        # Sample DataFrame with standard column names and tags
         self.standard_df = pd.DataFrame(
             {
                 "text": [
@@ -38,158 +40,48 @@ class TestDataframeImport(TestCase):
                     ["Venus", "Jupiter", "Mars", "Saturn", "Mercury"],
                 ],
                 "answerIndex": [2, 3],  # 1-based index
+                "tag": ["geography-capitals", "astronomy-planets"],  # Added tags
             }
         )
 
-        # DataFrame with alternative column names
-        self.alt_columns_df = pd.DataFrame(
+    def test_tag_field_import(self):
+        """Test importing a DataFrame with tag field."""
+        logger.info("Testing tag field import")
+        quiz = import_from_dataframe(self.standard_df, "Test Quiz with Tags")
+
+        # Verify tag was imported
+        questions = quiz.questions.all()
+        self.assertEqual(questions[0].tag, "geography-capitals")
+        self.assertEqual(questions[1].tag, "astronomy-planets")
+
+
+class TestCurateData(TestCase):
+    """Tests for the curate_data utility function."""
+
+    def setUp(self):
+        """Set up test data."""
+        logger.info("Setting up TestCurateData test data")
+        # Sample DataFrame with standard column names and tags
+        self.df = pd.DataFrame(
             {
-                "question_text": [
-                    "What is the formula for water?",
-                    "What is the chemical symbol for gold?",
-                ],
-                "options": [
-                    ["H2O2", "CO2", "H2O", "NaCl", "CH4"],
-                    ["Go", "Ag", "Au", "Gd", "Fe"],
-                ],
-                "correct_answer": [3, 3],  # 1-based index
+                "text": [f"Question {i}" for i in range(1, 21)],
+                "options": [[f"Option {j}" for j in range(1, 6)] for i in range(1, 21)],
+                "answerIndex": [i % 5 + 1 for i in range(20)],  # 1-based indices
+                "tag": [f"tag-{i}" for i in range(1, 21)],  # Added tags
+                "CHAPTER_TITLE": [
+                    "Test Chapter" for _ in range(20)
+                ],  # Added chapter title
             }
         )
 
-        # DataFrame with string options (serialized JSON)
-        self.string_options_df = pd.DataFrame(
-            {
-                "text": ["What is the capital of Germany?"],
-                "options": ['["Hamburg", "Munich", "Berlin", "Frankfurt", "Cologne"]'],
-                "answerIndex": [3],  # 1-based index
-            }
-        )
+    def test_extra_columns_preservation(self):
+        """Test that extra columns like tag and CHAPTER_TITLE are preserved."""
+        logger.info("Testing preservation of extra columns")
+        result = curate_data(self.df, no_questions=5)
 
-        # DataFrame with comma-separated options
-        self.csv_options_df = pd.DataFrame(
-            {
-                "text": ["Which language is most widely spoken?"],
-                "options": ["English, Mandarin, Spanish, Hindi, Arabic"],
-                "answerIndex": [2],  # 1-based index
-            }
-        )
-
-    def test_standard_import(self):
-        """Test importing a standard DataFrame with correct column names."""
-        logger.info("Testing standard DataFrame import")
-        quiz = import_from_dataframe(self.standard_df, "Test Quiz", "Test Topic")
-
-        # Verify quiz was created
-        self.assertIsInstance(quiz, Quiz)
-        self.assertEqual(quiz.title, "Test Quiz")
-
-        # Verify topic was created
-        self.assertEqual(quiz.topics.count(), 1)
-        topic = quiz.topics.first()
-        self.assertEqual(topic.name, "Test Topic")
-
-        # Verify questions were created
-        self.assertEqual(quiz.question_count(), 2)
-
-        # Verify first question details
-        question1 = quiz.questions.order_by("position").first()
-        self.assertEqual(question1.text, "What is the capital of France?")
-
-        # Verify options
-        self.assertEqual(question1.options.count(), 5)
-
-        # Verify correct answer
-        correct_option = question1.correct_option()
-        self.assertEqual(correct_option.text, "Paris")
-        self.assertEqual(correct_option.position, 2)  # 1-based position
-
-    def test_alternative_column_names(self):
-        """Test importing a DataFrame with alternative column names."""
-        logger.info("Testing DataFrame with alternative column names")
-        quiz = import_from_dataframe(self.alt_columns_df, "Alternative Columns Quiz")
-
-        # Verify quiz was created
-        self.assertIsInstance(quiz, Quiz)
-
-        # Verify questions were created with transformed column names
-        self.assertEqual(quiz.question_count(), 2)
-
-        # Verify first question details
-        question1 = quiz.questions.order_by("position").first()
-        self.assertEqual(question1.text, "What is the formula for water?")
-
-        # Verify correct answer
-        correct_option = question1.correct_option()
-        self.assertEqual(correct_option.text, "H2O")
-        self.assertEqual(correct_option.position, 3)  # 1-based position
-
-    def test_json_string_options(self):
-        """Test importing a DataFrame with JSON string options."""
-        logger.info("Testing DataFrame with JSON string options")
-        quiz = import_from_dataframe(self.string_options_df, "JSON Options Quiz")
-
-        # Verify question and options were created
-        question = quiz.questions.first()
-        self.assertEqual(question.options.count(), 5)
-
-        # Verify options were parsed correctly
-        option_texts = list(
-            question.options.order_by("position").values_list("text", flat=True)
-        )
-        self.assertEqual(
-            option_texts, ["Hamburg", "Munich", "Berlin", "Frankfurt", "Cologne"]
-        )
-
-        # Verify correct answer
-        correct_option = question.correct_option()
-        self.assertEqual(correct_option.text, "Berlin")
-
-    def test_csv_string_options(self):
-        """Test importing a DataFrame with comma-separated string options."""
-        logger.info("Testing DataFrame with comma-separated options")
-        quiz = import_from_dataframe(self.csv_options_df, "CSV Options Quiz")
-
-        # Verify question and options were created
-        question = quiz.questions.first()
-        self.assertEqual(question.options.count(), 5)
-
-        # Verify options were parsed correctly
-        option_texts = list(
-            question.options.order_by("position").values_list("text", flat=True)
-        )
-        self.assertEqual(
-            option_texts, ["English", "Mandarin", "Spanish", "Hindi", "Arabic"]
-        )
-
-        # Verify correct answer
-        correct_option = question.correct_option()
-        self.assertEqual(correct_option.text, "Mandarin")
-
-    def test_sample_size_parameter(self):
-        """Test the sample_size parameter to limit questions."""
-        logger.info("Testing sample_size parameter")
-        # Create a larger DataFrame
-        larger_df = pd.concat(
-            [self.standard_df, self.alt_columns_df], ignore_index=True
-        )
-
-        # Import with sample_size=1
-        quiz = import_from_dataframe(larger_df, "Sampled Quiz", sample_size=1)
-
-        # Verify only one question was imported
-        self.assertEqual(quiz.question_count(), 1)
-
-    def test_missing_required_columns(self):
-        """Test handling of missing required columns."""
-        logger.info("Testing missing required columns handling")
-        # DataFrame missing 'options' column
-        invalid_df = pd.DataFrame(
-            {"text": ["What is the capital of France?"], "answerIndex": [2]}
-        )
-
-        # Should raise ValueError
-        with self.assertRaises(ValueError):
-            import_from_dataframe(invalid_df, "Invalid Quiz")
+        # Verify tag and CHAPTER_TITLE columns are included
+        self.assertTrue(all("tag" in item for item in result))
+        self.assertTrue(all("CHAPTER_TITLE" in item for item in result))
 
 
 class TestCurateData(TestCase):

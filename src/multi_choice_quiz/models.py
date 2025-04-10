@@ -56,6 +56,9 @@ class Question(models.Model):
     )
     text = models.TextField()
     chapter_no = models.CharField(max_length=20, blank=True)
+    tag = models.CharField(
+        max_length=100, blank=True, help_text="Tag for categorizing questions"
+    )
     position = models.PositiveIntegerField(
         default=0, help_text="Position of this question within the quiz"
     )
@@ -100,6 +103,7 @@ class Question(models.Model):
             "text": self.text,
             "options": self.options_list(),
             "answerIndex": self.correct_option_index(),
+            "tag": self.tag,  # Include tag in the dictionary
         }
 
     class Meta:

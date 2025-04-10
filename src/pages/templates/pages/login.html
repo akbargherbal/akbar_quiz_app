@@ -1,0 +1,70 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Login | QuizMaster{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="card auth-card">
+        <h1 class="auth-title">Login to Your Account</h1>
+        
+        <form class="auth-form">
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" id="email" class="form-input" placeholder="Enter your email">
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" class="form-input" placeholder="Enter your password">
+            </div>
+            
+            <div class="form-group form-checkbox">
+                <input type="checkbox" id="remember" class="form-checkbox-input">
+                <label for="remember" class="form-checkbox-label">Remember me</label>
+                <a href="#" class="form-link forget-link">Forgot Password?</a>
+            </div>
+            
+            <button type="submit" class="form-button auth-button">Login</button>
+        </form>
+        
+        <div class="auth-divider">
+            <span>or</span>
+        </div>
+        
+        <div class="social-login">
+            <button class="social-button google-button">
+                <span class="social-icon">G</span>
+                <span>Continue with Google</span>
+            </button>
+            
+            <button class="social-button facebook-button">
+                <span class="social-icon">f</span>
+                <span>Continue with Facebook</span>
+            </button>
+        </div>
+        
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="{% url 'pages:signup' %}" class="form-link">Sign up</a></p>
+        </div>
+    </div>
+    
+    <div class="auth-info">
+        <div class="auth-info-content">
+            <h2>Welcome Back to QuizMaster!</h2>
+            <p>Login to access your saved quizzes, track your progress, and continue your learning journey.</p>
+            <ul class="auth-benefits">
+                <li>Track your progress across different topics</li>
+                <li>Save your favorite quizzes for later</li>
+                <li>Compare your scores with other users</li>
+                <li>Create and share your own quizzes</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Note: This page is non-functional in the current iteration -->
+<div class="notice-banner">
+    <p><strong>Note:</strong> This is a placeholder page. Login functionality will be implemented in a future iteration.</p>
+</div>
+{% endblock %}

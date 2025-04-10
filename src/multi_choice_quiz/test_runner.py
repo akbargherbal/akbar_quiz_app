@@ -8,19 +8,17 @@ from django.conf import settings
 
 
 class LoggingTestRunner(DiscoverRunner):
-    """Custom test runner that logs test results to a fixed-name file in a logs directory."""
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Set up logging directory
-        logs_dir = os.path.join(settings.BASE_DIR, "logs")
+        # Define the app-specific log directory
+        app_log_dir = os.path.join(settings.BASE_DIR, "logs", "multi_choice_quiz")
 
-        # Create logs directory if it doesn't exist
-        os.makedirs(logs_dir, exist_ok=True)
+        # Create the app-specific directory if it doesn't exist
+        os.makedirs(app_log_dir, exist_ok=True)
 
-        # Use fixed filename instead of timestamp
-        log_file_path = os.path.join(logs_dir, "django_tests.log")
+        # Use fixed filename within the app-specific directory
+        log_file_path = os.path.join(app_log_dir, "django_tests.log")  # Changed path
 
         # Configure root logger to write to the file
         logging.basicConfig(

@@ -1,0 +1,96 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Home | QuizMaster{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Challenge Your Knowledge with QuizMaster</h1>
+        <p class="hero-subtitle">Test yourself with our collection of quizzes on various topics. Learn, have fun, and track your progress!</p>
+        <div class="hero-buttons">
+            <a href="{% url 'pages:quizzes' %}" class="hero-button hero-primary">Browse Quizzes</a>
+            <a href="{% url 'pages:signup' %}" class="hero-button hero-secondary">Create Account</a>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Quizzes Section -->
+<section>
+    <h2 class="section-title">Featured Quizzes</h2>
+    <div class="quiz-grid">
+        {% if featured_quizzes %}
+            {% for quiz in featured_quizzes %}
+                <div class="quiz-card">
+                    <h3 class="quiz-card-title">{{ quiz.title }}</h3>
+                    <div class="quiz-card-info">
+                        <span>{{ quiz.questions.count }} questions</span>
+                    </div>
+                    <p class="quiz-card-description">
+                        {{ quiz.description|default:"Test your knowledge with this engaging quiz!" }}
+                    </p>
+                    <div class="quiz-card-footer">
+                        <div class="quiz-card-topics">
+                            {% for topic in quiz.topics.all %}
+                                <span class="quiz-card-topic">{{ topic.name }}</span>
+                            {% endfor %}
+                        </div>
+                        <a href="{% url 'multi_choice_quiz:quiz_detail' quiz.id %}" class="quiz-card-button">Start Quiz</a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="card">
+                <p>No featured quizzes available yet. Check back soon!</p>
+            </div>
+        {% endif %}
+    </div>
+    <div class="text-center my-lg">
+        <a href="{% url 'pages:quizzes' %}" class="btn btn-signup">View All Quizzes</a>
+    </div>
+</section>
+
+<!-- Popular Topics Section -->
+<section>
+    <h2 class="section-title">Popular Topics</h2>
+    <div class="topics-container">
+        {% if topics %}
+            <div class="topic-list">
+                {% for topic in topics %}
+                    <a href="{% url 'pages:quizzes' %}?topic={{ topic.id }}" class="topic-item">
+                        <h3>{{ topic.name }}</h3>
+                        <p>{{ topic.quizzes.count }} quizzes</p>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card">
+                <p>No topics available yet. Check back soon!</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section>
+    <h2 class="section-title">How It Works</h2>
+    <div class="steps-container">
+        <div class="step-item">
+            <div class="step-icon">🔍</div>
+            <h3>1. Choose a Quiz</h3>
+            <p>Browse our collection of quizzes across various topics and difficulty levels.</p>
+        </div>
+        <div class="step-item">
+            <div class="step-icon">✏️</div>
+            <h3>2. Take the Quiz</h3>
+            <p>Answer questions at your own pace and get immediate feedback.</p>
+        </div>
+        <div class="step-item">
+            <div class="step-icon">📊</div>
+            <h3>3. Track Your Progress</h3>
+            <p>See your results and track your improvement over time.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

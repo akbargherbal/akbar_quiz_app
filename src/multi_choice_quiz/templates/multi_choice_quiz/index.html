@@ -30,14 +30,18 @@
                 </div>
                 <div class="progress-indicator" x-text="`${currentQuestionIndex + 1}/${questions.length}`"></div>
                 <!-- Home icon (can add functionality later) -->
-                <div class="home-icon">🏠</div>
+                <div class="home-icon">
+                    <a href="{% url 'pages:home' %}">
+                        <span>🏠</span>
+                    </a>
+                </div>
             </div>
 
             <!-- Question Card -->
             <div class="question-card" x-show="!quizCompleted && currentQuestion">
                 <!-- Question container with subtle border animation -->
                 <div class="question-container" :class="{ 'active-question': !isAnswered }">
-                    <div class="question-text" x-text="currentQuestion.text"></div>
+                    <div class="question-text" x-html="currentQuestion.text"></div>
                 </div>
             </div>
 
@@ -47,7 +51,7 @@
                     <button
                         class="option-button"
                         :class="getOptionClass(index)"
-                        x-text="option"
+                        x-html="option"
                         @click="selectOption(index)"
                         :disabled="isAnswered">
                     </button>
@@ -65,9 +69,9 @@
                 <template x-for="(question, index) in questions" :key="index">
                     <div class="result-item">
                         <span class="result-icon" x-html="userAnswers[index] === question.answerIndex ? '✅' : '❌'"></span>
-                            <span x-text="`${index + 1}. ${question.text}`"></span>
+                            <span x-html="`${index + 1}. ${question.text}`"></span>
                             <template x-if="userAnswers[index] !== question.answerIndex">
-                            <span class="correct-answer-info">(Correct: <span x-text="question.options[question.answerIndex]"></span>)</span>
+                            <span class="correct-answer-info">(Correct: <span x-html="question.options[question.answerIndex]"></span>)</span>
                             </template>
                     </div>
                 </template>

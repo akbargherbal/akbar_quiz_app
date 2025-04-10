@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.core.exceptions import ValidationError
 import json
 import logging
+from django.utils.safestring import mark_safe
 
 from .models import Quiz, Question
 from .transform import models_to_frontend
@@ -39,8 +40,8 @@ def home(request):
         logger.error(f"Error loading quiz from database: {str(e)}")
         quiz_data = get_demo_questions()
 
-    # Convert quiz data to JSON for use in the template
-    context = {"quiz_data": json.dumps(quiz_data)}
+    # Mark the JSON as safe to prevent double-escaping of HTML entities
+    context = {"quiz_data": mark_safe(json.dumps(quiz_data))}
 
     return render(request, "multi_choice_quiz/index.html", context)
 
@@ -56,7 +57,8 @@ def quiz_detail(request, quiz_id):
         # Transform questions to frontend format
         quiz_data = models_to_frontend(questions)
 
-        context = {"quiz": quiz, "quiz_data": json.dumps(quiz_data)}
+        # Mark the JSON as safe to prevent double-escaping of HTML entities
+        context = {"quiz": quiz, "quiz_data": mark_safe(json.dumps(quiz_data))}
 
         return render(request, "multi_choice_quiz/index.html", context)
 

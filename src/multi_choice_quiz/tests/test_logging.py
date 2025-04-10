@@ -9,7 +9,7 @@ from django.conf import settings
 def setup_test_logging(test_name):
     """
     Set up standardized logging for test files.
-    Uses the logs directory and consistent naming without timestamps.
+    Uses the logs/multi_choice_quiz directory and consistent naming.
 
     Args:
         test_name: Name for the logger (typically the test module name)
@@ -17,9 +17,11 @@ def setup_test_logging(test_name):
     Returns:
         configured logger instance
     """
-    # Ensure logs directory exists
-    logs_dir = os.path.join(settings.BASE_DIR, "logs")
-    os.makedirs(logs_dir, exist_ok=True)
+    # Define the app-specific log directory
+    app_log_dir = os.path.join(settings.BASE_DIR, "logs", "multi_choice_quiz")
+
+    # Create the app-specific directory if it doesn't exist
+    os.makedirs(app_log_dir, exist_ok=True)
 
     # Create a logger
     logger = logging.getLogger(test_name)
@@ -31,8 +33,8 @@ def setup_test_logging(test_name):
     # Set level
     logger.setLevel(logging.INFO)
 
-    # Create file handler with consistent naming (no timestamps)
-    log_file = os.path.join(logs_dir, f"{test_name}.log")
+    # Create file handler within the app-specific directory
+    log_file = os.path.join(app_log_dir, f"{test_name}.log")  # Changed path
     file_handler = logging.FileHandler(log_file, mode="w")
 
     # Create formatter

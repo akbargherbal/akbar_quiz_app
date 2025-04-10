@@ -45,15 +45,20 @@ def quiz_bank_to_models(
 
         # Create questions and options
         for i, item in enumerate(quiz_data):
-            # Extract chapter_no if available
+            # Extract chapter_no and tag if available
             chapter_no = item.get("chapter_no", "")
+            tag = item.get("tag", "")
+
+            # Use question_text if available, otherwise use text
+            question_text = item.get("question_text", item.get("text", ""))
 
             question = Question.objects.create(
                 quiz=quiz,
                 topic=topic,
-                text=item["text"],
+                text=question_text,
                 position=i + 1,  # 1-based position
                 chapter_no=chapter_no,
+                tag=tag,
             )
 
             # Get the correct answer index (1-based in quiz bank)

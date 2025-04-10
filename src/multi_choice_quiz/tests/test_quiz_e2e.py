@@ -31,9 +31,12 @@ def test_quiz_loads_and_functions():
         page = context.new_page()
 
         try:
-            # Navigate to the quiz page
-            logger.info("Navigating to homepage")
-            page.goto(SERVER_URL)
+            # Define the correct URL for the quiz app's entry point
+            quiz_app_url = f"{SERVER_URL}/quiz/"
+
+            # Navigate to the quiz app page
+            logger.info(f"Navigating to quiz app URL: {quiz_app_url}")
+            page.goto(quiz_app_url)  # Use the specific quiz app URL
 
             # Check if the quiz loads
             logger.info("Checking if quiz loads")
@@ -80,11 +83,24 @@ def test_quiz_loads_and_functions():
             logger.info("E2E test completed successfully")
 
         except Exception as e:
-            # Take a screenshot on failure
-            if not os.path.exists("logs"):
-                os.makedirs("logs")
-            page.screenshot(path="logs/test_failure.png")
+            # Define the app-specific log directory for screenshots
+            app_log_dir = os.path.join(settings.BASE_DIR, "logs", "multi_choice_quiz")
+
+            # Create the app-specific directory if it doesn't exist
+            os.makedirs(
+                app_log_dir, exist_ok=True
+            )  # Use exist_ok=True to avoid error if it already exists
+
+            # Define the full path for the screenshot within the app directory
+            screenshot_path = os.path.join(
+                app_log_dir, "test_failure.png"
+            )  # Changed path
+
+            # Take a screenshot on failure using the new path
+            page.screenshot(path=screenshot_path)
+
             logger.error(f"Test failed: {str(e)}")
+            logger.error(f"Screenshot saved to: {screenshot_path}")  # Log the path
             raise
         finally:
             # Clean up

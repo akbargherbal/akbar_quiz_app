@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Quiz App{% endblock %}</title>
+    
+    <!-- Common CSS -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    {% block extra_css %}{% endblock %}
+    
+    <!-- Common JS in head -->
+    {% block extra_js_head %}{% endblock %}
+    
+    <!-- Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body>
+    <div class="site-container">
+        <!-- Header with navigation -->
+        <header class="site-header">
+            <div class="header-container">
+                <div class="brand">
+                    <a href="{% url 'pages:home' %}">
+                        <span class="brand-logo">🧠</span>
+                        <span class="brand-name">QuizMaster</span>
+                    </a>
+                </div>
+                
+                <!-- Mobile menu toggle (only visible on small screens) -->
+                <div class="menu-toggle" x-data="{ open: false }">
+                    <button @click="open = !open" class="mobile-menu-button">
+                        <span>☰</span>
+                    </button>
+                    
+                    <!-- Mobile navigation menu -->
+                    <nav class="mobile-nav" x-show="open" x-transition x-cloak>
+                        <a href="{% url 'pages:home' %}">Home</a>
+                        <a href="{% url 'pages:quizzes' %}">Quizzes</a>
+                        <a href="{% url 'pages:about' %}">About</a>
+                        <a href="{% url 'pages:login' %}">Login</a>
+                        <a href="{% url 'pages:signup' %}">Sign Up</a>
+                    </nav>
+                </div>
+                
+                <!-- Desktop navigation (hidden on small screens) -->
+                <nav class="desktop-nav">
+                    <a href="{% url 'pages:home' %}">Home</a>
+                    <a href="{% url 'pages:quizzes' %}">Quizzes</a>
+                    <a href="{% url 'pages:about' %}">About</a>
+                    
+                    <div class="auth-buttons">
+                        <a href="{% url 'pages:login' %}" class="btn btn-login">Login</a>
+                        <a href="{% url 'pages:signup' %}" class="btn btn-signup">Sign Up</a>
+                    </div>
+                </nav>
+            </div>
+        </header>
+        
+        <!-- Main content area -->
+        <main class="content-container">
+            {% block content %}{% endblock %}
+        </main>
+        
+        <!-- Footer -->
+        <footer class="site-footer">
+            <div class="footer-container">
+                <div class="footer-info">
+                    <p>&copy; {% now "Y" %} QuizMaster. All rights reserved.</p>
+                </div>
+                <div class="footer-links">
+                    <a href="{% url 'pages:about' %}">About</a>
+                    <a href="{% url 'pages:privacy' %}">Privacy Policy</a>
+                    <a href="{% url 'pages:terms' %}">Terms of Service</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Additional JS at end of body -->
+    {% block extra_js_body %}{% endblock %}
+</body>
+</html>

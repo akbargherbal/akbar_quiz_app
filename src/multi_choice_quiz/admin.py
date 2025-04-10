@@ -15,12 +15,13 @@ class QuestionAdmin(admin.ModelAdmin):
         "text_preview",
         "quiz",
         "topic",
+        "tag",
         "position",
         "option_count",
         "has_correct_answer",
     ]
-    list_filter = ["quiz", "topic", "is_active"]
-    search_fields = ["text", "quiz__title", "topic__name"]
+    list_filter = ["quiz", "topic", "tag", "is_active"]
+    search_fields = ["text", "quiz__title", "topic__name", "tag"]
     inlines = [OptionInline]
 
     def text_preview(self, obj):
@@ -45,7 +46,7 @@ class QuestionAdmin(admin.ModelAdmin):
 class QuestionInline(admin.TabularInline):
     model = Question
     extra = 0
-    fields = ["text", "position"]
+    fields = ["text", "tag", "position"]
     show_change_link = True
 
 

@@ -1,0 +1,80 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Sign Up | QuizMaster{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="card auth-card">
+        <h1 class="auth-title">Create Your Account</h1>
+        
+        <form class="auth-form">
+            <div class="form-group">
+                <label for="name" class="form-label">Full Name</label>
+                <input type="text" id="name" class="form-input" placeholder="Enter your full name">
+            </div>
+            
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" id="email" class="form-input" placeholder="Enter your email">
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" class="form-input" placeholder="Create a password">
+                <p class="form-hint">Password must be at least 8 characters with a mix of letters, numbers and symbols</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirm-password" class="form-label">Confirm Password</label>
+                <input type="password" id="confirm-password" class="form-input" placeholder="Confirm your password">
+            </div>
+            
+            <div class="form-group form-checkbox">
+                <input type="checkbox" id="terms" class="form-checkbox-input">
+                <label for="terms" class="form-checkbox-label">I agree to the <a href="{% url 'pages:terms' %}" class="form-link">Terms of Service</a> and <a href="{% url 'pages:privacy' %}" class="form-link">Privacy Policy</a></label>
+            </div>
+            
+            <button type="submit" class="form-button auth-button">Create Account</button>
+        </form>
+        
+        <div class="auth-divider">
+            <span>or</span>
+        </div>
+        
+        <div class="social-login">
+            <button class="social-button google-button">
+                <span class="social-icon">G</span>
+                <span>Sign up with Google</span>
+            </button>
+            
+            <button class="social-button facebook-button">
+                <span class="social-icon">f</span>
+                <span>Sign up with Facebook</span>
+            </button>
+        </div>
+        
+        <div class="auth-footer">
+            <p>Already have an account? <a href="{% url 'pages:login' %}" class="form-link">Login</a></p>
+        </div>
+    </div>
+    
+    <div class="auth-info">
+        <div class="auth-info-content">
+            <h2>Join QuizMaster Today!</h2>
+            <p>Create your free account to unlock all the features QuizMaster has to offer.</p>
+            <ul class="auth-benefits">
+                <li>Access to hundreds of quizzes across various topics</li>
+                <li>Track your progress and see how you improve</li>
+                <li>Compete with friends and see who scores the highest</li>
+                <li>Create and share your own quizzes</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Note: This page is non-functional in the current iteration -->
+<div class="notice-banner">
+    <p><strong>Note:</strong> This is a placeholder page. Registration functionality will be implemented in a future iteration.</p>
+</div>
+{% endblock %}

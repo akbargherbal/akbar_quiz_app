@@ -149,11 +149,24 @@ def test_new_quiz_ui_functionality():
             logger.info("E2E test for new UI completed successfully")
 
         except Exception as e:
-            # Take a screenshot on failure
-            if not os.path.exists("logs"):
-                os.makedirs("logs")
-            page.screenshot(path="logs/new_ui_test_failure.png")
+            # Define the app-specific log directory for screenshots
+            app_log_dir = os.path.join(settings.BASE_DIR, "logs", "multi_choice_quiz")
+
+            # Create the app-specific directory if it doesn't exist
+            os.makedirs(
+                app_log_dir, exist_ok=True
+            )  # Use exist_ok=True to avoid error if it already exists
+
+            # Define the full path for the screenshot within the app directory
+            screenshot_path = os.path.join(
+                app_log_dir, "test_failure.png"
+            )  # Changed path
+
+            # Take a screenshot on failure using the new path
+            page.screenshot(path=screenshot_path)
+
             logger.error(f"Test failed: {str(e)}")
+            logger.error(f"Screenshot saved to: {screenshot_path}")  # Log the path
             raise
         finally:
             # Clean up

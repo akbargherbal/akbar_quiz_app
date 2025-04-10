@@ -1,0 +1,164 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Profile | QuizMaster{% endblock %}
+
+{% block content %}
+<div class="profile-header">
+    <div class="profile-avatar">
+        <span class="avatar-placeholder">JD</span>
+    </div>
+    <div class="profile-info">
+        <h1>John Doe</h1>
+        <p class="profile-email">john.doe@example.com</p>
+        <p class="profile-member-since">Member since: April 2025</p>
+    </div>
+    <div class="profile-actions">
+        <button class="btn btn-login">Edit Profile</button>
+    </div>
+</div>
+
+<div class="profile-stats">
+    <div class="stat-card">
+        <h3>Quizzes Taken</h3>
+        <div class="stat-value">24</div>
+    </div>
+    <div class="stat-card">
+        <h3>Average Score</h3>
+        <div class="stat-value">76%</div>
+    </div>
+    <div class="stat-card">
+        <h3>Topics Explored</h3>
+        <div class="stat-value">8</div>
+    </div>
+    <div class="stat-card">
+        <h3>Perfect Scores</h3>
+        <div class="stat-value">5</div>
+    </div>
+</div>
+
+<div class="profile-tabs" x-data="{ activeTab: 'history' }">
+    <nav class="tabs-nav">
+        <button @click="activeTab = 'history'" :class="{ 'active': activeTab === 'history' }">Quiz History</button>
+        <button @click="activeTab = 'favorites'" :class="{ 'active': activeTab === 'favorites' }">Favorites</button>
+        <button @click="activeTab = 'created'" :class="{ 'active': activeTab === 'created' }">Created Quizzes</button>
+    </nav>
+    
+    <div class="tab-content" x-show="activeTab === 'history'">
+        <h2>Your Quiz History</h2>
+        <div class="quiz-history">
+            <div class="history-item">
+                <div class="history-quiz-info">
+                    <h3>Programming Basics</h3>
+                    <p class="history-date">Completed: April 7, 2025</p>
+                </div>
+                <div class="history-score">
+                    <div class="score-circle">85%</div>
+                </div>
+                <div class="history-actions">
+                    <a href="#" class="btn btn-login">Take Again</a>
+                    <a href="#" class="history-link">View Details</a>
+                </div>
+            </div>
+            
+            <div class="history-item">
+                <div class="history-quiz-info">
+                    <h3>World Geography</h3>
+                    <p class="history-date">Completed: April 5, 2025</p>
+                </div>
+                <div class="history-score">
+                    <div class="score-circle">70%</div>
+                </div>
+                <div class="history-actions">
+                    <a href="#" class="btn btn-login">Take Again</a>
+                    <a href="#" class="history-link">View Details</a>
+                </div>
+            </div>
+            
+            <div class="history-item">
+                <div class="history-quiz-info">
+                    <h3>Science Quiz</h3>
+                    <p class="history-date">Completed: April 3, 2025</p>
+                </div>
+                <div class="history-score">
+                    <div class="score-circle">100%</div>
+                </div>
+                <div class="history-actions">
+                    <a href="#" class="btn btn-login">Take Again</a>
+                    <a href="#" class="history-link">View Details</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-content" x-show="activeTab === 'favorites'" x-cloak>
+        <h2>Your Favorite Quizzes</h2>
+        <div class="quiz-grid">
+            <div class="quiz-card">
+                <h3 class="quiz-card-title">Programming Basics</h3>
+                <div class="quiz-card-info">
+                    <span>10 questions</span>
+                </div>
+                <p class="quiz-card-description">
+                    Test your knowledge of basic programming concepts and syntax.
+                </p>
+                <div class="quiz-card-footer">
+                    <div class="quiz-card-topics">
+                        <span class="quiz-card-topic">Programming</span>
+                    </div>
+                    <a href="#" class="quiz-card-button">Start Quiz</a>
+                </div>
+            </div>
+            
+            <div class="quiz-card">
+                <h3 class="quiz-card-title">Science Quiz</h3>
+                <div class="quiz-card-info">
+                    <span>15 questions</span>
+                </div>
+                <p class="quiz-card-description">
+                    Challenge yourself with questions about physics, chemistry, and biology.
+                </p>
+                <div class="quiz-card-footer">
+                    <div class="quiz-card-topics">
+                        <span class="quiz-card-topic">Science</span>
+                    </div>
+                    <a href="#" class="quiz-card-button">Start Quiz</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-content" x-show="activeTab === 'created'" x-cloak>
+        <h2>Quizzes You've Created</h2>
+        <div class="quiz-grid">
+            <div class="quiz-card">
+                <h3 class="quiz-card-title">My Custom Quiz</h3>
+                <div class="quiz-card-info">
+                    <span>8 questions</span>
+                </div>
+                <p class="quiz-card-description">
+                    A quiz I created to test knowledge on various topics.
+                </p>
+                <div class="quiz-card-footer">
+                    <div class="quiz-card-topics">
+                        <span class="quiz-card-topic">Miscellaneous</span>
+                    </div>
+                    <div class="card-button-group">
+                        <a href="#" class="quiz-card-button">Edit</a>
+                        <a href="#" class="quiz-card-button">Start</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="create-new-quiz">
+            <a href="#" class="btn btn-signup">+ Create New Quiz</a>
+        </div>
+    </div>
+</div>
+
+<!-- Note: This page is non-functional in the current iteration -->
+<div class="notice-banner">
+    <p><strong>Note:</strong> This is a placeholder page. User profile functionality will be implemented in a future iteration.</p>
+</div>
+{% endblock %}
