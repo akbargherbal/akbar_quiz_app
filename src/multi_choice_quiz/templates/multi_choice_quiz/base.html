@@ -4,19 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Django Quiz App{% endblock %}</title>
+    <title>{% block title %}Django Quiz App{% endblock title %}</title>
     <!-- Common CSS -->
     <link rel="stylesheet" href="{% static 'multi_choice_quiz/style.css' %}">
     
-    {% block extra_css %}{% endblock %}
-    {% block extra_js_head %}{% endblock %}
+    {% block extra_css %}{% endblock extra_css %}
+    {% block extra_js_head %}{% endblock extra_js_head %}
     
     <!-- Alpine.js loaded LAST, after your app's scripts -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body>
-    {% block content %}{% endblock %}
+    {% block content %}{% endblock content %}
     
-    {% block extra_js_body %}{% endblock %}
+    {% block extra_js_body %}{% endblock extra_js_body %}
 </body>
 </html>

@@ -5,91 +5,93 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero">
-    <div class="hero-content">
-        <h1 class="hero-title">Challenge Your Knowledge with QuizMaster</h1>
-        <p class="hero-subtitle">Test yourself with our collection of quizzes on various topics. Learn, have fun, and track your progress!</p>
-        <div class="hero-buttons">
-            <a href="{% url 'pages:quizzes' %}" class="hero-button hero-primary">Browse Quizzes</a>
-            <a href="{% url 'pages:signup' %}" class="hero-button hero-secondary">Create Account</a>
+<section class="bg-gradient-to-b from-bg-primary to-bg-secondary py-16 md:py-24">
+    <div class="container mx-auto px-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4 text-accent-heading">Challenge Your Knowledge with QuizMaster</h1>
+        <p class="text-text-secondary text-lg md:text-xl max-w-3xl mx-auto mb-8">Test yourself with our collection of quizzes on various topics. Learn, have fun, and track your progress!</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="{% url 'pages:quizzes' %}" class="bg-accent-primary hover:bg-accent-hover text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:-translate-y-1 hover:shadow-lg">Browse Quizzes</a>
+            <a href="{% url 'pages:signup' %}" class="border border-border hover:bg-tag-bg text-text-secondary font-bold py-3 px-6 rounded-lg transition-all transform hover:-translate-y-1">Create Account</a>
         </div>
     </div>
 </section>
 
 <!-- Featured Quizzes Section -->
-<section>
-    <h2 class="section-title">Featured Quizzes</h2>
-    <div class="quiz-grid">
+<section class="py-12 container mx-auto px-4">
+    <h2 class="text-2xl font-bold mb-8 text-text-secondary">Featured Quizzes</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% if featured_quizzes %}
             {% for quiz in featured_quizzes %}
-                <div class="quiz-card">
-                    <h3 class="quiz-card-title">{{ quiz.title }}</h3>
-                    <div class="quiz-card-info">
-                        <span>{{ quiz.questions.count }} questions</span>
-                    </div>
-                    <p class="quiz-card-description">
-                        {{ quiz.description|default:"Test your knowledge with this engaging quiz!" }}
-                    </p>
-                    <div class="quiz-card-footer">
-                        <div class="quiz-card-topics">
-                            {% for topic in quiz.topics.all %}
-                                <span class="quiz-card-topic">{{ topic.name }}</span>
-                            {% endfor %}
+                <div class="bg-surface rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-border hover:border-accent-primary">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 text-text-secondary">{{ quiz.title }}</h3>
+                        <div class="text-text-muted text-sm mb-4">
+                            <span>{{ quiz.questions.count }} questions</span>
                         </div>
-                        <a href="{% url 'multi_choice_quiz:quiz_detail' quiz.id %}" class="quiz-card-button">Start Quiz</a>
+                        <p class="text-text-primary mb-6">
+                            {{ quiz.description|default:"Test your knowledge with this engaging quiz!" }}
+                        </p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex flex-wrap gap-2">
+                                {% for topic in quiz.topics.all %}
+                                    <span class="bg-tag-bg text-tag-teal text-xs px-2 py-1 rounded-full">{{ topic.name }}</span>
+                                {% endfor %}
+                            </div>
+                            <a href="{% url 'multi_choice_quiz:quiz_detail' quiz.id %}" class="bg-accent-primary hover:bg-accent-hover text-white py-2 px-4 rounded-lg text-sm font-bold transition-colors">Start Quiz</a>
+                        </div>
                     </div>
                 </div>
             {% endfor %}
         {% else %}
-            <div class="card">
-                <p>No featured quizzes available yet. Check back soon!</p>
+            <div class="col-span-full bg-surface rounded-xl p-6 border border-border">
+                <p class="text-text-primary">No featured quizzes available yet. Check back soon!</p>
             </div>
         {% endif %}
     </div>
-    <div class="text-center my-lg">
-        <a href="{% url 'pages:quizzes' %}" class="btn btn-signup">View All Quizzes</a>
+    <div class="mt-8 text-center">
+        <a href="{% url 'pages:quizzes' %}" class="bg-accent-primary hover:bg-accent-hover text-white py-3 px-6 rounded-lg font-bold transition-colors inline-block">View All Quizzes</a>
     </div>
 </section>
 
 <!-- Popular Topics Section -->
-<section>
-    <h2 class="section-title">Popular Topics</h2>
-    <div class="topics-container">
+<section class="py-12 bg-bg-secondary/30">
+    <div class="container mx-auto px-4">
+        <h2 class="text-2xl font-bold mb-8 text-text-secondary">Popular Topics</h2>
         {% if topics %}
-            <div class="topic-list">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {% for topic in topics %}
-                    <a href="{% url 'pages:quizzes' %}?topic={{ topic.id }}" class="topic-item">
-                        <h3>{{ topic.name }}</h3>
-                        <p>{{ topic.quizzes.count }} quizzes</p>
+                    <a href="{% url 'pages:quizzes' %}?topic={{ topic.id }}" class="bg-surface hover:bg-tag-bg rounded-xl p-4 border border-border transition-all hover:-translate-y-1 hover:shadow-md">
+                        <h3 class="font-bold text-text-secondary mb-1">{{ topic.name }}</h3>
+                        <p class="text-sm text-text-muted">{{ topic.quizzes.count }} quizzes</p>
                     </a>
                 {% endfor %}
             </div>
         {% else %}
-            <div class="card">
-                <p>No topics available yet. Check back soon!</p>
+            <div class="bg-surface rounded-xl p-6 border border-border">
+                <p class="text-text-primary">No topics available yet. Check back soon!</p>
             </div>
         {% endif %}
     </div>
 </section>
 
 <!-- How It Works Section -->
-<section>
-    <h2 class="section-title">How It Works</h2>
-    <div class="steps-container">
-        <div class="step-item">
-            <div class="step-icon">🔍</div>
-            <h3>1. Choose a Quiz</h3>
-            <p>Browse our collection of quizzes across various topics and difficulty levels.</p>
+<section class="py-12 container mx-auto px-4">
+    <h2 class="text-2xl font-bold mb-8 text-text-secondary">How It Works</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-surface rounded-xl p-6 border border-border hover:border-accent-primary transition-all hover:-translate-y-2 hover:shadow-lg">
+            <div class="text-4xl mb-4">🔍</div>
+            <h3 class="text-xl font-bold mb-2 text-text-secondary">1. Choose a Quiz</h3>
+            <p class="text-text-primary">Browse our collection of quizzes across various topics and difficulty levels.</p>
         </div>
-        <div class="step-item">
-            <div class="step-icon">✏️</div>
-            <h3>2. Take the Quiz</h3>
-            <p>Answer questions at your own pace and get immediate feedback.</p>
+        <div class="bg-surface rounded-xl p-6 border border-border hover:border-accent-primary transition-all hover:-translate-y-2 hover:shadow-lg">
+            <div class="text-4xl mb-4">✏️</div>
+            <h3 class="text-xl font-bold mb-2 text-text-secondary">2. Take the Quiz</h3>
+            <p class="text-text-primary">Answer questions at your own pace and get immediate feedback.</p>
         </div>
-        <div class="step-item">
-            <div class="step-icon">📊</div>
-            <h3>3. Track Your Progress</h3>
-            <p>See your results and track your improvement over time.</p>
+        <div class="bg-surface rounded-xl p-6 border border-border hover:border-accent-primary transition-all hover:-translate-y-2 hover:shadow-lg">
+            <div class="text-4xl mb-4">📊</div>
+            <h3 class="text-xl font-bold mb-2 text-text-secondary">3. Track Your Progress</h3>
+            <p class="text-text-primary">See your results and track your improvement over time.</p>
         </div>
     </div>
 </section>

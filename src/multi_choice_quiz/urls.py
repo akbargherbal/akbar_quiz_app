@@ -1,3 +1,5 @@
+# src/multi_choice_quiz/urls.py
+
 from django.urls import path
 from . import views
 

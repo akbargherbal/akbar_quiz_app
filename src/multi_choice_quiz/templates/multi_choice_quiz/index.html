@@ -3,81 +3,115 @@
 
 {% block title %}Quiz App{% endblock %}
 
-{% block extra_js_head %}
-    {# Load your app logic BEFORE Alpine initializes #}
-    <script src="{% static 'multi_choice_quiz/app.js' %}"></script>
-    
-    {# Embed the quiz data safely as JSON, accessible via ID #}
-    <script id="quiz-data" type="application/json">
-        {% autoescape off %}
-        {{ quiz_data }}
-        {% endautoescape %}
-    </script>
+{% block extra_js_head %} 
+<script src="{% static 'multi_choice_quiz/app.js' %}"></script>
+
+{# Embed the quiz data safely as JSON, accessible via ID #}
+<script id="quiz-data" type="application/json">
+  {% autoescape off %}
+  {{ quiz_data }}
+  {% endautoescape %}
+</script>
 {% endblock %}
 
 {% block content %}
 <div class="quiz-container" x-data="quizApp()" x-init="init()">
-    <!-- Quiz Active State -->
-    <template x-if="!quizCompleted">
-        <div>
-            <!-- Top Bar -->
-            <div class="top-bar">
-                <div class="quiz-progress">
-                    <div class="progress-bar-container">
-                        <!-- Use dynamic progress calculation based on question index -->
-                        <div class="progress-bar-fill" :style="`width: ${Math.max(5, (currentQuestionIndex / (questions.length - 1)) * 100)}%`"></div>
-                    </div>
-                </div>
-                <div class="progress-indicator" x-text="`${currentQuestionIndex + 1}/${questions.length}`"></div>
-                <!-- Home icon (can add functionality later) -->
-                <div class="home-icon">
-                    <a href="{% url 'pages:home' %}">
-                        <span>🏠</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Question Card -->
-            <div class="question-card" x-show="!quizCompleted && currentQuestion">
-                <!-- Question container with subtle border animation -->
-                <div class="question-container" :class="{ 'active-question': !isAnswered }">
-                    <div class="question-text" x-html="currentQuestion.text"></div>
-                </div>
-            </div>
-
-            <!-- Options -->
-            <div class="options-container" x-show="!quizCompleted && currentQuestion">
-                <template x-for="(option, index) in currentQuestion.options" :key="index">
-                    <button
-                        class="option-button"
-                        :class="getOptionClass(index)"
-                        x-html="option"
-                        @click="selectOption(index)"
-                        :disabled="isAnswered">
-                    </button>
-                </template>
-            </div>
+  <!-- Quiz Active State -->
+  <template x-if="!quizCompleted">
+    <div>
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <!-- Progress Bar -->
+        <div class="quiz-progress">
+          <div class="progress-bar-container">
+            <!-- Use dynamic progress calculation based on question index -->
+            <div
+              class="progress-bar-fill"
+              :style="`width: ${Math.max(5, (currentQuestionIndex / (questions.length - 1)) * 100)}%`"
+            ></div>
+          </div>
         </div>
-    </template>
-
-    <!-- Quiz Completed State -->
-    <template x-if="quizCompleted">
-        <div class="results-card">
-            <h2 class="results-title">Quiz Completed!</h2>
-            <p class="results-score">Your Score: <span x-text="score"></span> out of <span x-text="questions.length"></span></p>
-            <div class="results-summary">
-                <template x-for="(question, index) in questions" :key="index">
-                    <div class="result-item">
-                        <span class="result-icon" x-html="userAnswers[index] === question.answerIndex ? '✅' : '❌'"></span>
-                            <span x-html="`${index + 1}. ${question.text}`"></span>
-                            <template x-if="userAnswers[index] !== question.answerIndex">
-                            <span class="correct-answer-info">(Correct: <span x-html="question.options[question.answerIndex]"></span>)</span>
-                            </template>
-                    </div>
-                </template>
-            </div>
-            <button class="restart-button" @click="restartQuiz">Play Again?</button>
+        <!-- Star Rating -->
+        <div class="star-rating" x-html="starRatingDisplay" title="Your performance rating">
+          <!-- Stars will be rendered here by Alpine -->
         </div>
-    </template>
-</div> <!-- End of quiz-container -->
+        <!-- Progress Indicator -->
+        <div
+          class="progress-indicator"
+          x-text="`${currentQuestionIndex + 1}/${questions.length}`"
+        ></div>
+        <!-- Home icon (links to home) -->
+        <div class="home-icon">
+          <a href="{% url 'pages:home' %}">
+            <span>🏠</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Question Card -->
+      <div class="question-card" x-show="!quizCompleted && currentQuestion">
+        <!-- Question container with subtle border animation -->
+        <div
+          class="question-container"
+          :class="{ 'active-question': !isAnswered }"
+        >
+          <div class="question-text" x-html="currentQuestion.text"></div>
+        </div>
+      </div>
+
+      <!-- Options -->
+      <div class="options-container" x-show="!quizCompleted && currentQuestion">
+        <template
+          x-for="(option, index) in currentQuestion.options"
+          :key="index"
+        >
+          <button
+            class="option-button"
+            :class="getOptionClass(index)"
+            @click="selectOption(index)"
+            :disabled="isAnswered"
+          >
+            <span x-html="option"></span>
+          </button>
+        </template>
+      </div>
+    </div>
+  </template>
+
+  <!-- Quiz Completed State -->
+  <template x-if="quizCompleted">
+    <div class="results-card">
+      <h2 class="results-title">Quiz Completed!</h2>
+      <!-- Display final stars on results -->
+      <div class="star-rating results-stars" x-html="starRatingDisplay" title="Your final performance rating"></div>
+      <p class="results-score">
+        Your Score: <span x-text="score"></span> out of
+        <span x-text="questions.length"></span>
+      </p>
+      <div class="results-summary">
+        <template x-for="(question, index) in questions" :key="index">
+          <div class="result-item">
+            <span
+              class="result-icon"
+              x-html="userAnswers[index] === question.answerIndex ? '✅' : '❌'"
+            ></span>
+            <span x-html="`${index + 1}. ${question.text}`"></span>
+            <template x-if="userAnswers[index] !== question.answerIndex && userAnswers[index] !== null">
+              <span class="correct-answer-info"
+                >(Correct:
+                <span x-html="question.options[question.answerIndex]"></span
+                >)</span
+              >
+            </template>
+            <template x-if="userAnswers[index] === null">
+              <span class="correct-answer-info">(Not Answered)</span>
+            </template>
+          </div>
+        </template>
+      </div>
+      <button class="restart-button" @click="restartQuiz">Play Again?</button>
+    </div>
+  </template>
+</div>
+<!-- End of quiz-container -->
 {% endblock %}

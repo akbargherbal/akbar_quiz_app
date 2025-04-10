@@ -12,8 +12,9 @@ window.quizApp = function() {
         isAnswered: false, // Has the current question been answered?
         quizCompleted: false, // Has the user finished all questions?
         score: 0, // User's score
+        wrongAnswers: 0, // Track wrong answers for star rating
         feedbackTimer: null, // Timer for feedback duration
-        feedbackDuration: 2000, // Feedback duration in milliseconds (2 seconds)
+        feedbackDuration: 4000, // Feedback duration in milliseconds (2 seconds)
 
         // --- Computed Properties (Getters) ---
         get currentQuestion() {
@@ -26,6 +27,38 @@ window.quizApp = function() {
             // Check if the selected answer for the *current* question is correct
             // Ensure currentQuestion is not null before accessing its properties
             return this.currentQuestion && this.selectedOptionIndex === this.currentQuestion.answerIndex;
+        },
+        
+        // New getter for calculating and displaying stars
+        get starRatingDisplay() {
+            const totalQuestions = this.questions.length;
+            if (totalQuestions === 0) return '☆☆☆☆☆'; // Default empty stars if no questions
+            
+            // Formula: Math.ceil((allQuestionsCount - wrongAnswers) / 2) / 2
+            const numericRating = Math.ceil((totalQuestions - this.wrongAnswers) / 2) / 2;
+
+            // Scale the numeric rating to a 0-5 range
+            const maxNumericRating = Math.ceil(totalQuestions / 2) / 2; // Theoretical max from formula
+            const scaledRating = Math.max(0, (numericRating / maxNumericRating) * 5);
+
+            // Round to nearest 0.5 for half-star display
+            const roundedRating = Math.round(scaledRating * 2) / 2;
+
+            let starsHtml = '';
+            const fullStar = '★';
+            const halfStar = '◐'; // Using a different character for half-star
+            const emptyStar = '☆';
+
+            for (let i = 0; i < 5; i++) {
+                if (roundedRating >= i + 1) {
+                    starsHtml += fullStar; // Full star
+                } else if (roundedRating >= i + 0.5) {
+                    starsHtml += halfStar; // Half star
+                } else {
+                    starsHtml += emptyStar; // Empty star
+                }
+            }
+            return starsHtml;
         },
 
         // --- Methods ---
@@ -59,6 +92,7 @@ window.quizApp = function() {
             this.isAnswered = false;
             this.quizCompleted = false;
             this.score = 0;
+            this.wrongAnswers = 0;
 
             // Check if there are any questions to start with
             if (this.questions.length === 0) {
@@ -90,6 +124,8 @@ window.quizApp = function() {
 
             if (this.isCorrect) {
                 this.score++;
+            } else {
+                this.wrongAnswers++; // Track wrong answers for star rating
             }
 
             // Clear any existing timer
@@ -138,20 +174,22 @@ window.quizApp = function() {
             this.isAnswered = false;
             this.quizCompleted = false;
             this.score = 0;
+            this.wrongAnswers = 0;
         },
 
-        // --- Dynamic Class Logic ---
+        // --- Dynamic Class Logic for new color scheme ---
         getOptionClass(index) {
             // Ensure currentQuestion exists before proceeding
             if (!this.currentQuestion) {
                 // Return default classes if no question is loaded
-                return 'option-button grey-option'; // Added a fallback color class
+                return 'option-button option-teal'; // Default color class
             }
 
             const baseClasses = ['option-button'];
-            const colorClasses = [ // Assign colors consistently
-                'blue-option', 'teal-option', 'orange-option', 'red-option', 'turquoise-option'
+            const colorClasses = [
+                'option-teal', 'option-blue', 'option-yellow', 'option-purple', 'option-pink'
             ];
+            
             // Use modulo to cycle through colors if more options than colors
             baseClasses.push(colorClasses[index % colorClasses.length]);
 

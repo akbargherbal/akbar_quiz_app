@@ -8,6 +8,8 @@ import signal
 import subprocess
 from playwright.sync_api import Page, expect, Error
 from django.core.management import call_command
+from django.conf import settings  # Import settings
+from datetime import datetime  # Import datetime
 
 # Import our standardized logging setup
 from multi_choice_quiz.tests.test_logging import setup_test_logging
@@ -21,108 +23,13 @@ DJANGO_SERVER_URL = f"http://{DJANGO_SERVER_HOST}:{DJANGO_SERVER_PORT}"
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-# --- Helper function to check if port is available ---
-def is_port_in_use(port, host="localhost"):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex((host, port)) == 0
-
-
 # --- Setup Logging ---
-logger = setup_test_logging("test_database_quiz")
+# Pass app_name to the logging setup
+logger = setup_test_logging("test_database_quiz", "multi_choice_quiz")
 
-
-# --- Django Server Fixture ---
-@pytest.fixture(scope="session")
-def django_server():
-    """Start Django development server for testing."""
-    # Check if port is already in use
-    if is_port_in_use(DJANGO_SERVER_PORT):
-        logger.warning(
-            f"Port {DJANGO_SERVER_PORT} is already in use. Assuming Django server is running."
-        )
-        yield DJANGO_SERVER_URL
-        return
-
-    logger.info(f"Starting Django server at {DJANGO_SERVER_URL}")
-
-    # Get the manage.py path (assuming we're in the app directory)
-    src_dir = os.path.abspath(os.path.join(current_dir, os.pardir, os.pardir))
-    manage_py_path = os.path.join(src_dir, "manage.py")
-
-    # First, ensure we have sample data
-    logger.info("Adding sample quiz data...")
-    try:
-        # Use Django's call_command to run the management command
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
-        import django
-
-        django.setup()
-
-        # Call the management command to add sample quizzes
-        call_command("add_sample_quizzes")
-        logger.info("Sample quizzes added successfully")
-    except Exception as e:
-        logger.error(f"Failed to add sample quizzes: {str(e)}")
-
-    # Start the Django server
-    server_process = subprocess.Popen(
-        [
-            sys.executable,
-            manage_py_path,
-            "runserver",
-            f"{DJANGO_SERVER_HOST}:{DJANGO_SERVER_PORT}",
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        cwd=src_dir,
-    )
-
-    # Wait for server to start
-    max_wait_time = 10  # seconds
-    start_time = time.time()
-    server_started = False
-
-    while time.time() - start_time < max_wait_time:
-        if is_port_in_use(DJANGO_SERVER_PORT):
-            server_started = True
-            break
-        time.sleep(0.5)
-
-    if not server_started:
-        stdout, stderr = server_process.communicate(timeout=1)
-        logger.error(f"Django server failed to start in {max_wait_time} seconds.")
-        logger.error(f"STDOUT: {stdout.decode('utf-8')}")
-        logger.error(f"STDERR: {stderr.decode('utf-8')}")
-        server_process.terminate()
-        pytest.fail("Django server failed to start")
-
-    logger.info(f"Django server started successfully at {DJANGO_SERVER_URL}")
-
-    # Yield the server URL
-    yield DJANGO_SERVER_URL
-
-    # Cleanup: Shutdown the server
-    logger.info("Stopping Django server")
-    os.kill(server_process.pid, signal.SIGTERM)
-    server_process.wait(timeout=5)
-    logger.info("Django server stopped")
-
-
-# --- Console Errors Fixture ---
-@pytest.fixture(scope="function")
-def capture_console_errors(page: Page):
-    """Capture JavaScript console errors during test."""
-    errors = []
-    page.on("pageerror", lambda exc: errors.append(str(exc)))
-    yield
-    if errors:
-        logger.error(">>> JavaScript console errors detected during test run:")
-        for i, error in enumerate(errors):
-            logger.error(f"  Console Error {i+1}: {error}")
-        pytest.fail(
-            f"{len(errors)} JavaScript console error(s) detected. Check logs.",
-            pytrace=False,
-        )
+# Note: The django_server and capture_console_errors fixtures are now defined
+# in conftest.py and will be automatically discovered by pytest.
+# We remove their definitions from this file to avoid duplication.
 
 
 # --- Tests ---
@@ -132,7 +39,12 @@ def test_database_quiz_flow(page: Page, django_server):
     Test that the quiz loads data from the database correctly.
     Verify the transformation from database format to frontend format works.
     """
-    quiz_url = django_server
+    # Define the app name for logging/screenshots
+    app_name = "multi_choice_quiz"
+    app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
+    os.makedirs(app_log_dir, exist_ok=True)
+
+    quiz_url = django_server + "/quiz/1/"  # Try loading quiz 1 explicitly
 
     logger.info(f"Starting database quiz test. Loading: {quiz_url}")
     try:
@@ -156,6 +68,13 @@ def test_database_quiz_flow(page: Page, django_server):
         json_data = page.evaluate(
             "() => { return JSON.parse(document.getElementById('quiz-data').textContent); }"
         )
+
+        # Handle potential empty data scenario
+        if not json_data:
+            logger.error("No quiz data found embedded in the page.")
+            pytest.fail("Quiz data JSON is empty or missing.")
+            return
+
         logger.info(f"Quiz data loaded: {len(json_data)} questions")
 
         # Verify that the data has been transformed correctly (0-based indexing)
@@ -178,7 +97,9 @@ def test_database_quiz_flow(page: Page, django_server):
         logger.info(f"Correct option text: {correct_option_text}")
 
         # Click the correct option
-        correct_option = page.locator(".option-button", has_text=correct_option_text)
+        correct_option = page.locator(
+            ".option-button", has_text=correct_option_text
+        ).first
         correct_option.click()
 
         # Check that we get correct visual feedback (option glows green)
@@ -187,43 +108,44 @@ def test_database_quiz_flow(page: Page, django_server):
 
         # Wait for auto-progression to next question
         logger.info("Waiting for auto-progression...")
-        page.wait_for_timeout(2500)  # Slightly longer than feedbackDuration
+        page.wait_for_timeout(4500)  # Increased wait time
 
         # --- Complete the entire quiz ---
         logger.info("Completing the rest of the quiz...")
+        total_questions = len(json_data)
 
-        # For each remaining question, click any option and continue
-        for i in range(
-            1, len(json_data) - 1
-        ):  # Skip last question as we handle it separately
-            # Wait for the question to be visible
-            expect(question_text_locator).to_be_visible()
+        for i in range(1, total_questions):
+            logger.info(f"Answering question {i+1}/{total_questions}")
+            # Wait for the question to be visible and options ready
+            expect(question_text_locator).to_be_visible(timeout=5000)
+            expect(progress_indicator_locator).to_have_text(f"{i+1}/{total_questions}")
+            expect(page.locator(".option-button").first).to_be_enabled(timeout=5000)
 
             # Click the first option
             option = page.locator(".option-button >> nth=0")
             option.click()
 
-            # Wait for auto-progression to next question
-            page.wait_for_timeout(2500)  # Slightly longer than feedbackDuration
+            # Wait for feedback display before progression starts
+            page.wait_for_selector(
+                ".option-button.correct-answer, .option-button.incorrect-answer",
+                state="visible",
+                timeout=3000,
+            )
 
-            # Verify we're on the next question
-            expect(progress_indicator_locator).to_have_text(f"{i+2}/{len(json_data)}")
+            # Wait for auto-progression to next question or results
+            page.wait_for_timeout(4500)  # Increased wait time
 
-        # Handle the last question separately
-        # Wait for the last question to be visible
-        expect(question_text_locator).to_be_visible()
-
-        # Verify we're on the last question
-        expect(progress_indicator_locator).to_have_text(
-            f"{len(json_data)}/{len(json_data)}"
-        )
-
-        # Click any option on the last question
-        option = page.locator(".option-button >> nth=0")
-        option.click()
-
-        # Wait for feedback and transition to results
-        page.wait_for_timeout(2500)  # Slightly longer than feedbackDuration
+            # Verify progression (unless it's the last question)
+            if i < total_questions - 1:
+                expect(progress_indicator_locator).to_have_text(
+                    f"{i+2}/{total_questions}", timeout=5000
+                )
+            else:
+                # On last question, expect results card
+                logger.info("Last question answered, expecting results card.")
+                expect(page.locator(".results-card")).to_be_visible(
+                    timeout=10000
+                )  # Longer timeout for results
 
         # --- Test the results screen ---
         results_card = page.locator(".results-card")
@@ -232,10 +154,9 @@ def test_database_quiz_flow(page: Page, django_server):
 
         # Verify results title and score
         expect(results_card.locator(".results-title")).to_have_text("Quiz Completed!")
-        # We don't know the exact score since we just clicked randomly, so just check format
         expect(results_card.locator(".results-score")).to_contain_text("Your Score:")
         expect(results_card.locator(".results-score")).to_contain_text(
-            f"out of {len(json_data)}"
+            f"out of {total_questions}"
         )
 
         # Verify the restart button works
@@ -244,39 +165,23 @@ def test_database_quiz_flow(page: Page, django_server):
         restart_button.click()
 
         # Verify we're back on the first question
-        expect(question_text_locator).to_be_visible()
-        expect(progress_indicator_locator).to_have_text(f"1/{len(json_data)}")
+        expect(question_text_locator).to_be_visible(timeout=5000)
+        expect(progress_indicator_locator).to_have_text(
+            f"1/{total_questions}", timeout=5000
+        )
 
         logger.info("Database quiz test completed successfully!")
 
-    except Error as e:
-        logger.exception(f"Test failed: {str(e)}")
-        pytest.fail(f"Test failed: {str(e)}")
+    except (Error, Exception) as e:
+        # Screenshot on failure
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        screenshot_filename = f"failure_db_quiz_{timestamp}.png"
+        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
+        try:
+            page.screenshot(path=screenshot_path)
+            logger.error(f"Screenshot saved to: {screenshot_path}")
+        except Exception as ss_error:
+            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
 
-
-@pytest.mark.usefixtures("capture_console_errors")
-def test_specific_quiz_route(page: Page, django_server):
-    """
-    Test that we can load a specific quiz by ID.
-    This should demonstrate the URL routing works correctly.
-    """
-    # Assuming there's at least one quiz with ID 1
-    quiz_url = f"{django_server}/quiz/1/"
-
-    logger.info(f"Testing specific quiz route: {quiz_url}")
-    try:
-        # Go to the page
-        page.goto(quiz_url, wait_until="domcontentloaded")
-
-        # Wait for the quiz to load
-        page.wait_for_selector(".option-button", state="visible", timeout=10000)
-
-        # Verify we have quiz elements
-        expect(page.locator(".question-text")).to_be_visible()
-        expect(page.locator(".progress-indicator")).to_be_visible()
-
-        logger.info("Specific quiz route test passed!")
-
-    except Error as e:
-        logger.exception(f"Specific quiz route test failed: {str(e)}")
+        logger.error(f"Test failed: {str(e)}", exc_info=True)
         pytest.fail(f"Test failed: {str(e)}")

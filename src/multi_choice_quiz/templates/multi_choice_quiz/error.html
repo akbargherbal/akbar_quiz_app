@@ -1,15 +1,15 @@
 {% extends 'multi_choice_quiz/base.html' %}
 
-{% block title %}Error | Quiz App{% endblock %}
+{% block title %}Error | Quiz App{% endblock title %}
 
 {% block content %}
 <div class="quiz-container">
     <div class="results-card">
         <h2 class="results-title">❌ Error</h2>
         <p>{{ error_message|default:"An unexpected error occurred." }}</p>
-        <a href="{% url 'home' %}">
+        <a href="{% url 'pages:home' %}">
             <button class="restart-button">Return to Home</button>
         </a>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}

@@ -64,11 +64,13 @@ def quiz_detail(request, quiz_id):
 
     except Exception as e:
         logger.error(f"Error loading quiz {quiz_id}: {str(e)}")
-        return render(
-            request,
-            "multi_choice_quiz/error.html",
-            {"error_message": "The requested quiz could not be loaded."},
-        )
+
+        # Simplified context to avoid potential errors
+        context = {
+            "error_message": f"The requested quiz (ID: {quiz_id}) could not be loaded."
+        }
+
+        return render(request, "multi_choice_quiz/error.html", context)
 
 
 def get_demo_questions():

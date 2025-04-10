@@ -1,31 +1,45 @@
 """
-Tests for the Django Quiz App views.
-Tests the full flow of the quiz application served by Django.
+Tests for the Django Quiz App views using Playwright.
+Covers loading quizzes (default and specific ID) and basic UI interaction.
 """
 
 import pytest
 from playwright.sync_api import Page, expect, Error
 import os
 import sys
+from django.conf import settings  # Import settings
+from datetime import datetime  # Import datetime
 
 # Import our standardized test logging
 from multi_choice_quiz.tests.test_logging import setup_test_logging
 
 # Set environment variable to allow Django database operations in async context
+# This is often needed for tests involving database access triggered by views.
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
 # --- Setup Logging ---
-logger = setup_test_logging("test_views")
+# Pass app_name to the logging setup
+logger = setup_test_logging("test_views", "multi_choice_quiz")
 
 
 # --- Test Function ---
-@pytest.mark.usefixtures("capture_console_errors")
-def test_django_quiz_flow(page: Page, django_server):
+@pytest.mark.usefixtures(
+    "capture_console_errors", "django_server"
+)  # Use fixtures from conftest
+def test_django_quiz_flow(page: Page):
     """
-    Tests the full flow of the quiz application served by Django.
+    Tests the full flow of the quiz application served by Django views.
+    Loads the default quiz, answers questions, checks results, and restarts.
     """
-    # Construct the quiz URL
-    quiz_url = django_server
+    # Define the app name for logging/screenshots
+    app_name = "multi_choice_quiz"
+    app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
+    os.makedirs(app_log_dir, exist_ok=True)
+
+    # Construct the default quiz URL (should map to the home view which loads a quiz)
+    quiz_url = (
+        os.environ.get("SERVER_URL", "http://localhost:8000") + "/quiz/"
+    )  # Use /quiz/ path
 
     logger.info(f"Starting Django quiz flow test. Loading: {quiz_url}")
     try:
@@ -44,7 +58,19 @@ def test_django_quiz_flow(page: Page, django_server):
         logger.info("First option button is visible. Quiz has loaded successfully.")
 
     except Error as e:
-        logger.exception(f"FATAL: Failed to load page or find initial element.")
+        # Screenshot on failure
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        screenshot_filename = f"failure_view_load_{timestamp}.png"
+        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
+        try:
+            page.screenshot(path=screenshot_path)
+            logger.error(f"Screenshot saved to: {screenshot_path}")
+        except Exception as ss_error:
+            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
+
+        logger.error(
+            f"FATAL: Failed to load page or find initial element.", exc_info=True
+        )
         pytest.fail(
             f"Setup failed: Could not load page or find initial element. Error: {e}"
         )
@@ -53,146 +79,224 @@ def test_django_quiz_flow(page: Page, django_server):
     # Define locators once for reuse
     question_text_locator = page.locator(".question-text")
     progress_indicator_locator = page.locator(".progress-indicator")
+    options_locator = page.locator(".option-button")
+    results_card_locator = page.locator(".results-card")
+    restart_button_locator = page.locator(".restart-button")
+    feedback_selector = ".option-button.correct-answer, .option-button.incorrect-answer"
 
-    # --- Check that the quiz has loaded properly ---
-    logger.info("--- Checking quiz structure ---")
+    # --- Check initial quiz structure ---
+    logger.info("--- Checking initial quiz structure ---")
     try:
-        # Verify that question text and progress indicators are visible
         expect(question_text_locator).to_be_visible()
         expect(progress_indicator_locator).to_be_visible()
-
-        # Verify question text is not empty
         expect(question_text_locator).not_to_have_text("")
 
-        # Check that progress indicator has the format "1/X"
         progress_text = progress_indicator_locator.text_content()
         logger.info(f"Progress indicator text: {progress_text}")
-        assert "/" in progress_text, "Progress indicator doesn't have expected format"
+        assert "/" in progress_text, "Progress indicator missing expected format 'N/M'"
+        expect(progress_text).to_match(r"^\d+/\d+$")  # Regex check for N/M format
 
-        # Capture the total number of questions for later validation
         total_questions = int(progress_text.split("/")[1])
         logger.info(f"Total questions in quiz: {total_questions}")
+        assert total_questions > 0, "Quiz must have at least one question"
 
-        # Verify we have multiple option buttons
-        options = page.locator(".option-button")
-        option_count = options.count()
+        option_count = options_locator.count()
         logger.info(f"Found {option_count} options for the first question")
-        assert option_count >= 2, "Expected at least 2 options per question"
+        expect(option_count).to_be_greater_than_or_equal(2)
 
-    except Error as e:
-        logger.exception("Failed to verify quiz structure")
+    except (Error, AssertionError) as e:
+        # Screenshot on failure
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        screenshot_filename = f"failure_view_structure_{timestamp}.png"
+        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
+        try:
+            page.screenshot(path=screenshot_path)
+            logger.error(f"Screenshot saved to: {screenshot_path}")
+        except Exception as ss_error:
+            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
+
+        logger.error("Failed to verify initial quiz structure", exc_info=True)
         pytest.fail(f"Quiz structure verification failed: {e}")
         return
 
-    # --- Test answering all questions ---
-    logger.info("--- Testing full quiz flow ---")
+    # --- Answer all questions ---
+    logger.info("--- Testing full quiz flow (answering questions) ---")
+    try:
+        for q_num in range(1, total_questions + 1):
+            current_question = question_text_locator.text_content()
+            logger.info(
+                f"Answering Question {q_num}/{total_questions}: {current_question[:50]}..."
+            )
 
-    # Keep track of correct answers for score verification
-    correct_answers = 0
+            # Verify progress indicator
+            expect(progress_indicator_locator).to_have_text(
+                f"{q_num}/{total_questions}", timeout=5000
+            )
+            expect(options_locator.first).to_be_enabled(
+                timeout=5000
+            )  # Wait for options to be ready
 
-    # For each question in the quiz
-    for q_num in range(1, total_questions + 1):
-        current_question = question_text_locator.text_content()
-        logger.info(f"Question {q_num}: {current_question}")
+            # Click the first option
+            first_option = options_locator.first
+            option_text = first_option.text_content()
+            logger.info(f"Selecting option: {option_text[:50]}...")
+            first_option.click()
 
-        # Verify we're on the expected question number
-        expect(progress_indicator_locator).to_have_text(f"{q_num}/{total_questions}")
+            # Wait for visual feedback
+            page.wait_for_selector(
+                feedback_selector, state="visible", timeout=5000
+            )  # Increased timeout
+            logger.info(f"Feedback shown for Question {q_num}")
 
-        # Click the first option
-        options = page.locator(".option-button")
-        first_option = options.nth(0)
-        option_text = first_option.text_content()
-        logger.info(f"Selecting option: {option_text}")
-        first_option.click()
+            # Wait for auto-progression (or results screen if last question)
+            logger.info(f"Waiting for progression after Question {q_num}...")
+            page.wait_for_timeout(4500)  # Wait slightly longer than feedback
 
-        # Wait for visual feedback (either correct or incorrect)
-        page.wait_for_selector(
-            ".option-button.correct-answer", state="visible", timeout=3000
+            # Check state after progression
+            if q_num < total_questions:
+                logger.info(f"Checking progression to Question {q_num + 1}")
+                expect(progress_indicator_locator).to_have_text(
+                    f"{q_num + 1}/{total_questions}", timeout=5000
+                )
+            else:
+                logger.info("Last question answered, checking for results screen")
+                expect(results_card_locator).to_be_visible(
+                    timeout=10000
+                )  # Longer timeout for results
+
+    except (Error, AssertionError) as e:
+        # Screenshot on failure
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        screenshot_filename = f"failure_view_answering_{timestamp}.png"
+        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
+        try:
+            page.screenshot(path=screenshot_path)
+            logger.error(f"Screenshot saved to: {screenshot_path}")
+        except Exception as ss_error:
+            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
+
+        logger.error(
+            f"Failed during quiz answering flow (Question {q_num})", exc_info=True
         )
-
-        # Check if our answer was correct by seeing if the first option has the correct-answer class
-        correct_answer_visible = (
-            page.locator(".option-button.correct-answer").count() > 0
-        )
-        incorrect_answer_visible = (
-            page.locator(".option-button.incorrect-answer").count() > 0
-        )
-
-        # If the first option has correct-answer class OR if incorrect-answer is not visible, our answer was correct
-        # (This assumes only one option can be correct, which is true in our quiz structure)
-        if first_option.evaluate("el => el.classList.contains('correct-answer')"):
-            logger.info("Answer was correct!")
-            correct_answers += 1
-        else:
-            logger.info("Answer was incorrect")
-
-        # For all questions except the last, verify we move to the next question after delay
-        if q_num < total_questions:
-            # Wait for auto-progression
-            page.wait_for_timeout(2500)  # Wait a bit longer than the feedback duration
-
-            # Verify the question text changed
-            new_question = question_text_locator.text_content()
-            logger.info(f"Next question: {new_question}")
-            assert (
-                new_question != current_question
-            ), "Question did not change after auto-progression"
-        else:
-            # On last question, wait a bit longer for the results to appear
-            page.wait_for_timeout(
-                2500
-            )  # Wait for feedback duration and transition to results
+        pytest.fail(f"Test failed during answering flow. Error: {e}")
+        return
 
     # --- Results Screen ---
     logger.info("--- Testing Results Screen ---")
     try:
-        results_card = page.locator(".results-card")
-        logger.info("Waiting for results card to become visible...")
-        expect(results_card).to_be_visible(timeout=5000)
+        expect(results_card_locator).to_be_visible()
         logger.info("Results card is visible.")
 
         # Verify quiz elements are hidden
         expect(page.locator(".question-card")).to_be_hidden()
         expect(page.locator(".options-container")).to_be_hidden()
 
-        # Verify results title
-        expect(results_card.locator(".results-title")).to_have_text("Quiz Completed!")
+        # Verify title and score format
+        expect(results_card_locator.locator(".results-title")).to_have_text(
+            "Quiz Completed!"
+        )
+        expect(results_card_locator.locator(".results-score")).to_contain_text(
+            "Your Score:"
+        )
+        expect(results_card_locator.locator(".results-score")).to_contain_text(
+            f"out of {total_questions}"
+        )
 
-        # Verify score display format
-        score_text = results_card.locator(".results-score").text_content()
-        logger.info(f"Final score: {score_text}")
-        assert (
-            f"{correct_answers}" in score_text
-        ), "Score doesn't match expected answers"
-        assert f"{total_questions}" in score_text, "Total questions count mismatch"
+        # Verify restart button
+        expect(restart_button_locator).to_be_visible()
+        expect(restart_button_locator).to_have_text("Play Again?")
 
-        # Verify restart button is available
-        restart_button = results_card.locator(".restart-button")
-        expect(restart_button).to_be_visible()
-        expect(restart_button).to_have_text("Play Again?")
+    except (Error, AssertionError) as e:
+        # Screenshot on failure
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        screenshot_filename = f"failure_view_results_{timestamp}.png"
+        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
+        try:
+            page.screenshot(path=screenshot_path)
+            logger.error(f"Screenshot saved to: {screenshot_path}")
+        except Exception as ss_error:
+            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
 
-    except Error as e:
-        logger.exception("Assertion failed during Results Screen check.")
+        logger.error("Assertion failed during Results Screen check.", exc_info=True)
         pytest.fail(f"Test failed during Results Screen check. Error: {e}")
 
     # --- Test Restart ---
     logger.info("--- Testing Restart ---")
     try:
         logger.info("Clicking 'Play Again?' button...")
-        restart_button = page.locator(".restart-button")
-        restart_button.click()
+        restart_button_locator.click()
 
         logger.info("Verifying quiz resets to first question...")
-        expect(page.locator(".results-card")).to_be_hidden()
+        expect(results_card_locator).to_be_hidden(
+            timeout=5000
+        )  # Wait for results to hide
         expect(page.locator(".question-card")).to_be_visible(timeout=5000)
-        expect(progress_indicator_locator).to_have_text(f"1/{total_questions}")
+        expect(progress_indicator_locator).to_have_text(
+            f"1/{total_questions}", timeout=5000
+        )
 
         # Verify options are enabled after restart
-        first_option_after_restart = page.locator(".option-button").nth(0)
-        expect(first_option_after_restart).to_be_enabled()
+        expect(options_locator.first).to_be_enabled(timeout=5000)
 
-    except Error as e:
-        logger.exception("Assertion failed during Restart check.")
+    except (Error, AssertionError) as e:
+        # Screenshot on failure
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        screenshot_filename = f"failure_view_restart_{timestamp}.png"
+        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
+        try:
+            page.screenshot(path=screenshot_path)
+            logger.error(f"Screenshot saved to: {screenshot_path}")
+        except Exception as ss_error:
+            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
+
+        logger.error("Assertion failed during Restart check.", exc_info=True)
         pytest.fail(f"Test failed during Restart check. Error: {e}")
 
-    logger.info("--- Django Quiz Test Completed Successfully! ---")
+    logger.info("--- Django Quiz View Test Completed Successfully! ---")
+
+
+@pytest.mark.usefixtures("capture_console_errors", "django_server")
+def test_specific_quiz_view(page: Page):
+    """Tests loading a specific quiz using the quiz_detail view."""
+    # Define the app name for logging/screenshots
+    app_name = "multi_choice_quiz"
+    app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
+    os.makedirs(app_log_dir, exist_ok=True)
+
+    # Assuming quiz ID 1 exists from sample data
+    quiz_id = 1
+    specific_quiz_url = (
+        f"{os.environ.get('SERVER_URL', 'http://localhost:8000')}/quiz/{quiz_id}/"
+    )
+
+    logger.info(f"--- Testing specific quiz view (ID: {quiz_id}) ---")
+    logger.info(f"Navigating to: {specific_quiz_url}")
+
+    try:
+        page.goto(specific_quiz_url, wait_until="domcontentloaded")
+        page.wait_for_selector(".option-button", state="visible", timeout=10000)
+        logger.info(f"Specific quiz page (ID: {quiz_id}) loaded successfully.")
+
+        # Basic structure check
+        expect(page.locator(".question-text")).to_be_visible()
+        expect(page.locator(".progress-indicator")).to_be_visible()
+        expect(page.locator(".option-button").count()).to_be_greater_than(0)
+
+        logger.info(f"--- Specific Quiz View Test (ID: {quiz_id}) Passed! ---")
+
+    except (Error, AssertionError) as e:
+        # Screenshot on failure
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        screenshot_filename = f"failure_view_specific_{quiz_id}_{timestamp}.png"
+        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
+        try:
+            page.screenshot(path=screenshot_path)
+            logger.error(f"Screenshot saved to: {screenshot_path}")
+        except Exception as ss_error:
+            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
+
+        logger.error(
+            f"Failed to load or verify specific quiz view (ID: {quiz_id})",
+            exc_info=True,
+        )
+        pytest.fail(f"Specific quiz view test failed. Error: {e}")

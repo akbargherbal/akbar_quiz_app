@@ -4,161 +4,214 @@
 {% block title %}Profile | QuizMaster{% endblock %}
 
 {% block content %}
-<div class="profile-header">
-    <div class="profile-avatar">
-        <span class="avatar-placeholder">JD</span>
-    </div>
-    <div class="profile-info">
-        <h1>John Doe</h1>
-        <p class="profile-email">john.doe@example.com</p>
-        <p class="profile-member-since">Member since: April 2025</p>
-    </div>
-    <div class="profile-actions">
-        <button class="btn btn-login">Edit Profile</button>
-    </div>
-</div>
-
-<div class="profile-stats">
-    <div class="stat-card">
-        <h3>Quizzes Taken</h3>
-        <div class="stat-value">24</div>
-    </div>
-    <div class="stat-card">
-        <h3>Average Score</h3>
-        <div class="stat-value">76%</div>
-    </div>
-    <div class="stat-card">
-        <h3>Topics Explored</h3>
-        <div class="stat-value">8</div>
-    </div>
-    <div class="stat-card">
-        <h3>Perfect Scores</h3>
-        <div class="stat-value">5</div>
-    </div>
-</div>
-
-<div class="profile-tabs" x-data="{ activeTab: 'history' }">
-    <nav class="tabs-nav">
-        <button @click="activeTab = 'history'" :class="{ 'active': activeTab === 'history' }">Quiz History</button>
-        <button @click="activeTab = 'favorites'" :class="{ 'active': activeTab === 'favorites' }">Favorites</button>
-        <button @click="activeTab = 'created'" :class="{ 'active': activeTab === 'created' }">Created Quizzes</button>
-    </nav>
-    
-    <div class="tab-content" x-show="activeTab === 'history'">
-        <h2>Your Quiz History</h2>
-        <div class="quiz-history">
-            <div class="history-item">
-                <div class="history-quiz-info">
-                    <h3>Programming Basics</h3>
-                    <p class="history-date">Completed: April 7, 2025</p>
+<div class="container mx-auto px-4 py-8">
+    <!-- Profile Header -->
+    <div class="bg-surface rounded-xl p-6 shadow-lg border border-border mb-8">
+        <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+            <div class="flex-shrink-0">
+                <div class="w-24 h-24 bg-accent-primary rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                    JD
                 </div>
-                <div class="history-score">
-                    <div class="score-circle">85%</div>
-                </div>
-                <div class="history-actions">
-                    <a href="#" class="btn btn-login">Take Again</a>
-                    <a href="#" class="history-link">View Details</a>
+            </div>
+            <div class="flex-grow text-center md:text-left">
+                <h1 class="text-2xl font-bold text-text-secondary">John Doe</h1>
+                <p class="text-text-muted mb-1">john.doe@example.com</p>
+                <p class="text-text-muted text-sm">Member since: April 2025</p>
+            </div>
+            <div class="flex-shrink-0">
+                <button class="px-4 py-2 border border-border rounded-lg text-text-secondary hover:bg-tag-bg transition-colors">
+                    Edit Profile
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-surface rounded-xl p-6 border border-border shadow-md">
+            <h3 class="text-text-muted text-sm mb-2">Quizzes Taken</h3>
+            <div class="text-3xl font-bold text-accent-heading">24</div>
+        </div>
+        <div class="bg-surface rounded-xl p-6 border border-border shadow-md">
+            <h3 class="text-text-muted text-sm mb-2">Average Score</h3>
+            <div class="text-3xl font-bold text-accent-heading">76%</div>
+        </div>
+        <div class="bg-surface rounded-xl p-6 border border-border shadow-md">
+            <h3 class="text-text-muted text-sm mb-2">Topics Explored</h3>
+            <div class="text-3xl font-bold text-accent-heading">8</div>
+        </div>
+        <div class="bg-surface rounded-xl p-6 border border-border shadow-md">
+            <h3 class="text-text-muted text-sm mb-2">Perfect Scores</h3>
+            <div class="text-3xl font-bold text-accent-heading">5</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div x-data="{ activeTab: 'history' }" class="bg-surface rounded-xl border border-border shadow-lg overflow-hidden">
+        <!-- Tab Navigation -->
+        <nav class="flex border-b border-border">
+            <button @click="activeTab = 'history'" 
+                    :class="{ 'border-accent-primary text-accent-heading': activeTab === 'history', 'border-transparent': activeTab !== 'history' }"
+                    class="flex-1 py-4 px-6 text-center font-medium border-b-2 transition-colors">
+                Quiz History
+            </button>
+            <button @click="activeTab = 'favorites'" 
+                    :class="{ 'border-accent-primary text-accent-heading': activeTab === 'favorites', 'border-transparent': activeTab !== 'favorites' }"
+                    class="flex-1 py-4 px-6 text-center font-medium border-b-2 transition-colors">
+                Favorites
+            </button>
+            <button @click="activeTab = 'created'" 
+                    :class="{ 'border-accent-primary text-accent-heading': activeTab === 'created', 'border-transparent': activeTab !== 'created' }"
+                    class="flex-1 py-4 px-6 text-center font-medium border-b-2 transition-colors">
+                Created Quizzes
+            </button>
+        </nav>
+
+        <!-- Tab Content -->
+        <div class="p-6">
+            <!-- History Tab -->
+            <div x-show="activeTab === 'history'" class="space-y-6">
+                <h2 class="text-xl font-bold text-text-secondary mb-4">Your Quiz History</h2>
+                
+                <div class="space-y-4">
+                    <!-- History Item 1 -->
+                    <div class="border border-border rounded-lg p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div class="flex-grow">
+                            <h3 class="font-bold text-text-secondary mb-1">Programming Basics</h3>
+                            <p class="text-sm text-text-muted">Completed: April 7, 2025</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 rounded-full bg-tag-bg flex items-center justify-center border-4 border-accent-primary text-text-secondary font-bold">
+                                85%
+                            </div>
+                        </div>
+                        <div class="flex gap-3 flex-shrink-0">
+                            <a href="#" class="px-4 py-2 border border-border rounded-lg text-text-secondary hover:bg-tag-bg transition-colors">Take Again</a>
+                            <a href="#" class="text-accent-heading hover:text-accent-primary underline">View Details</a>
+                        </div>
+                    </div>
+                    
+                    <!-- History Item 2 -->
+                    <div class="border border-border rounded-lg p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div class="flex-grow">
+                            <h3 class="font-bold text-text-secondary mb-1">World Geography</h3>
+                            <p class="text-sm text-text-muted">Completed: April 5, 2025</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 rounded-full bg-tag-bg flex items-center justify-center border-4 border-accent-primary text-text-secondary font-bold">
+                                70%
+                            </div>
+                        </div>
+                        <div class="flex gap-3 flex-shrink-0">
+                            <a href="#" class="px-4 py-2 border border-border rounded-lg text-text-secondary hover:bg-tag-bg transition-colors">Take Again</a>
+                            <a href="#" class="text-accent-heading hover:text-accent-primary underline">View Details</a>
+                        </div>
+                    </div>
+                    
+                    <!-- History Item 3 -->
+                    <div class="border border-border rounded-lg p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div class="flex-grow">
+                            <h3 class="font-bold text-text-secondary mb-1">Science Quiz</h3>
+                            <p class="text-sm text-text-muted">Completed: April 3, 2025</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 rounded-full bg-tag-bg flex items-center justify-center border-4 border-tag-teal text-text-secondary font-bold">
+                                100%
+                            </div>
+                        </div>
+                        <div class="flex gap-3 flex-shrink-0">
+                            <a href="#" class="px-4 py-2 border border-border rounded-lg text-text-secondary hover:bg-tag-bg transition-colors">Take Again</a>
+                            <a href="#" class="text-accent-heading hover:text-accent-primary underline">View Details</a>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <div class="history-item">
-                <div class="history-quiz-info">
-                    <h3>World Geography</h3>
-                    <p class="history-date">Completed: April 5, 2025</p>
-                </div>
-                <div class="history-score">
-                    <div class="score-circle">70%</div>
-                </div>
-                <div class="history-actions">
-                    <a href="#" class="btn btn-login">Take Again</a>
-                    <a href="#" class="history-link">View Details</a>
+            <!-- Favorites Tab -->
+            <div x-show="activeTab === 'favorites'" x-cloak>
+                <h2 class="text-xl font-bold text-text-secondary mb-4">Your Favorite Quizzes</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Favorite Quiz 1 -->
+                    <div class="border border-border rounded-lg overflow-hidden shadow-md">
+                        <div class="p-6">
+                            <h3 class="text-lg font-bold text-text-secondary mb-2">Programming Basics</h3>
+                            <div class="text-text-muted text-sm mb-3">
+                                <span>10 questions</span>
+                            </div>
+                            <p class="text-text-primary mb-4">
+                                Test your knowledge of basic programming concepts and syntax.
+                            </p>
+                            <div class="flex justify-between items-center">
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-tag-bg text-tag-blue text-xs px-2 py-1 rounded-full">Programming</span>
+                                </div>
+                                <a href="#" class="bg-accent-primary hover:bg-accent-hover text-white py-2 px-4 rounded-lg text-sm font-bold transition-colors">Start Quiz</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Favorite Quiz 2 -->
+                    <div class="border border-border rounded-lg overflow-hidden shadow-md">
+                        <div class="p-6">
+                            <h3 class="text-lg font-bold text-text-secondary mb-2">Science Quiz</h3>
+                            <div class="text-text-muted text-sm mb-3">
+                                <span>15 questions</span>
+                            </div>
+                            <p class="text-text-primary mb-4">
+                                Challenge yourself with questions about physics, chemistry, and biology.
+                            </p>
+                            <div class="flex justify-between items-center">
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-tag-bg text-tag-teal text-xs px-2 py-1 rounded-full">Science</span>
+                                </div>
+                                <a href="#" class="bg-accent-primary hover:bg-accent-hover text-white py-2 px-4 rounded-lg text-sm font-bold transition-colors">Start Quiz</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <div class="history-item">
-                <div class="history-quiz-info">
-                    <h3>Science Quiz</h3>
-                    <p class="history-date">Completed: April 3, 2025</p>
-                </div>
-                <div class="history-score">
-                    <div class="score-circle">100%</div>
-                </div>
-                <div class="history-actions">
-                    <a href="#" class="btn btn-login">Take Again</a>
-                    <a href="#" class="history-link">View Details</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="tab-content" x-show="activeTab === 'favorites'" x-cloak>
-        <h2>Your Favorite Quizzes</h2>
-        <div class="quiz-grid">
-            <div class="quiz-card">
-                <h3 class="quiz-card-title">Programming Basics</h3>
-                <div class="quiz-card-info">
-                    <span>10 questions</span>
-                </div>
-                <p class="quiz-card-description">
-                    Test your knowledge of basic programming concepts and syntax.
-                </p>
-                <div class="quiz-card-footer">
-                    <div class="quiz-card-topics">
-                        <span class="quiz-card-topic">Programming</span>
-                    </div>
-                    <a href="#" class="quiz-card-button">Start Quiz</a>
-                </div>
-            </div>
-            
-            <div class="quiz-card">
-                <h3 class="quiz-card-title">Science Quiz</h3>
-                <div class="quiz-card-info">
-                    <span>15 questions</span>
-                </div>
-                <p class="quiz-card-description">
-                    Challenge yourself with questions about physics, chemistry, and biology.
-                </p>
-                <div class="quiz-card-footer">
-                    <div class="quiz-card-topics">
-                        <span class="quiz-card-topic">Science</span>
-                    </div>
-                    <a href="#" class="quiz-card-button">Start Quiz</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="tab-content" x-show="activeTab === 'created'" x-cloak>
-        <h2>Quizzes You've Created</h2>
-        <div class="quiz-grid">
-            <div class="quiz-card">
-                <h3 class="quiz-card-title">My Custom Quiz</h3>
-                <div class="quiz-card-info">
-                    <span>8 questions</span>
-                </div>
-                <p class="quiz-card-description">
-                    A quiz I created to test knowledge on various topics.
-                </p>
-                <div class="quiz-card-footer">
-                    <div class="quiz-card-topics">
-                        <span class="quiz-card-topic">Miscellaneous</span>
-                    </div>
-                    <div class="card-button-group">
-                        <a href="#" class="quiz-card-button">Edit</a>
-                        <a href="#" class="quiz-card-button">Start</a>
+            <!-- Created Quizzes Tab -->
+            <div x-show="activeTab === 'created'" x-cloak>
+                <h2 class="text-xl font-bold text-text-secondary mb-4">Quizzes You've Created</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <!-- Created Quiz 1 -->
+                    <div class="border border-border rounded-lg overflow-hidden shadow-md">
+                        <div class="p-6">
+                            <h3 class="text-lg font-bold text-text-secondary mb-2">My Custom Quiz</h3>
+                            <div class="text-text-muted text-sm mb-3">
+                                <span>8 questions</span>
+                            </div>
+                            <p class="text-text-primary mb-4">
+                                A quiz I created to test knowledge on various topics.
+                            </p>
+                            <div class="flex justify-between items-center">
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-tag-bg text-tag-yellow text-xs px-2 py-1 rounded-full">Miscellaneous</span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <a href="#" class="border border-border hover:bg-tag-bg text-text-secondary py-2 px-4 rounded-lg text-sm font-medium transition-colors">Edit</a>
+                                    <a href="#" class="bg-accent-primary hover:bg-accent-hover text-white py-2 px-4 rounded-lg text-sm font-bold transition-colors">Start</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
+                <div class="text-center">
+                    <a href="#" class="bg-accent-primary hover:bg-accent-hover text-white py-3 px-6 rounded-lg font-bold inline-flex items-center transition-colors">
+                        <span class="mr-2">+</span> Create New Quiz
+                    </a>
+                </div>
             </div>
-        </div>
-        
-        <div class="create-new-quiz">
-            <a href="#" class="btn btn-signup">+ Create New Quiz</a>
         </div>
     </div>
 </div>
 
-<!-- Note: This page is non-functional in the current iteration -->
-<div class="notice-banner">
+<!-- Non-functional notice -->
+<div class="fixed bottom-0 left-0 right-0 bg-accent-primary/70 backdrop-blur-sm text-white text-center py-2 px-4">
     <p><strong>Note:</strong> This is a placeholder page. User profile functionality will be implemented in a future iteration.</p>
 </div>
 {% endblock %}

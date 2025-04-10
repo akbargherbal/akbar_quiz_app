@@ -4,79 +4,104 @@
 {% block title %}Quizzes | QuizMaster{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1>Browse Quizzes</h1>
-    <p>Find the perfect quiz to test your knowledge</p>
-</div>
+<div class="container mx-auto px-4 py-8">
+    <div class="text-center mb-10">
+        <h1 class="text-3xl md:text-4xl font-bold text-text-secondary mb-2">Browse Quizzes</h1>
+        <p class="text-text-muted text-lg">Find the perfect quiz to test your knowledge</p>
+    </div>
 
-<div class="filter-container">
-    <h2>Filter by Topic</h2>
-    <div class="topic-filters">
-        <a href="{% url 'pages:quizzes' %}" class="topic-filter {% if not selected_topic %}active{% endif %}">All</a>
-        {% for topic in topics %}
-            <a href="{% url 'pages:quizzes' %}?topic={{ topic.id }}" 
-               class="topic-filter {% if selected_topic.id == topic.id %}active{% endif %}">
-                {{ topic.name }}
+    <!-- Topic Filters -->
+    <div class="mb-8">
+        <h2 class="text-xl font-bold mb-4 text-text-secondary">Filter by Topic</h2>
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'pages:quizzes' %}" 
+               class="px-4 py-2 rounded-full text-sm font-medium {% if not selected_topic %}bg-accent-primary text-white{% else %}bg-tag-bg text-text-secondary hover:bg-tag-bg/80{% endif %} transition-colors">
+                All
             </a>
-        {% endfor %}
+            {% for topic in topics %}
+                <a href="{% url 'pages:quizzes' %}?topic={{ topic.id }}" 
+                   class="px-4 py-2 rounded-full text-sm font-medium {% if selected_topic.id == topic.id %}bg-accent-primary text-white{% else %}bg-tag-bg text-text-secondary hover:bg-tag-bg/80{% endif %} transition-colors">
+                    {{ topic.name }}
+                </a>
+            {% endfor %}
+        </div>
     </div>
-</div>
 
-{% if selected_topic %}
-    <div class="selected-filter">
-        <p>Showing quizzes for topic: <strong>{{ selected_topic.name }}</strong></p>
-        <a href="{% url 'pages:quizzes' %}" class="clear-filter">Clear filter</a>
-    </div>
-{% endif %}
-
-<div class="quiz-grid">
-    {% if quizzes %}
-        {% for quiz in quizzes %}
-            <div class="quiz-card">
-                <h3 class="quiz-card-title">{{ quiz.title }}</h3>
-                <div class="quiz-card-info">
-                    <span>{{ quiz.questions.count }} questions</span>
-                </div>
-                <p class="quiz-card-description">
-                    {{ quiz.description|default:"Test your knowledge with this engaging quiz!" }}
-                </p>
-                <div class="quiz-card-footer">
-                    <div class="quiz-card-topics">
-                        {% for topic in quiz.topics.all %}
-                            <span class="quiz-card-topic">{{ topic.name }}</span>
-                        {% endfor %}
-                    </div>
-                    <a href="{% url 'multi_choice_quiz:quiz_detail' quiz.id %}" class="quiz-card-button">Start Quiz</a>
-                </div>
-            </div>
-        {% endfor %}
-    {% else %}
-        <div class="no-results">
-            <p>No quizzes found{% if selected_topic %} for topic "{{ selected_topic.name }}"{% endif %}.</p>
-            {% if selected_topic %}
-                <a href="{% url 'pages:quizzes' %}" class="btn btn-login">View All Quizzes</a>
-            {% endif %}
+    {% if selected_topic %}
+        <div class="bg-tag-bg/40 rounded-lg p-4 mb-8 flex justify-between items-center">
+            <p class="text-text-secondary">Showing quizzes for topic: <span class="font-bold">{{ selected_topic.name }}</span></p>
+            <a href="{% url 'pages:quizzes' %}" class="text-accent-heading hover:text-accent-primary font-medium">Clear filter &times;</a>
         </div>
     {% endif %}
-</div>
 
-{% if quizzes.paginator %}
-<div class="pagination">
-    <span class="step-links">
-        {% if quizzes.has_previous %}
-            <a href="?page=1{% if selected_topic %}&topic={{ selected_topic.id }}{% endif %}">&laquo; first</a>
-            <a href="?page={{ quizzes.previous_page_number }}{% if selected_topic %}&topic={{ selected_topic.id }}{% endif %}">previous</a>
+    <!-- Quizzes Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {% if quizzes %}
+            {% for quiz in quizzes %}
+                <div class="bg-surface rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-border hover:border-accent-primary">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 text-text-secondary">{{ quiz.title }}</h3>
+                        <div class="text-text-muted text-sm mb-4">
+                            <span>{{ quiz.questions.count }} questions</span>
+                        </div>
+                        <p class="text-text-primary mb-6">
+                            {{ quiz.description|default:"Test your knowledge with this engaging quiz!" }}
+                        </p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex flex-wrap gap-2">
+                                {% for topic in quiz.topics.all %}
+                                    <span class="bg-tag-bg text-tag-teal text-xs px-2 py-1 rounded-full">{{ topic.name }}</span>
+                                {% endfor %}
+                            </div>
+                            <a href="{% url 'multi_choice_quiz:quiz_detail' quiz.id %}" 
+                               class="bg-accent-primary hover:bg-accent-hover text-white py-2 px-4 rounded-lg text-sm font-bold transition-colors">
+                                Start Quiz
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-span-full bg-surface rounded-xl p-8 border border-border text-center">
+                <p class="text-text-primary text-lg mb-4">No quizzes found{% if selected_topic %} for topic "{{ selected_topic.name }}"{% endif %}.</p>
+                {% if selected_topic %}
+                    <a href="{% url 'pages:quizzes' %}" class="border border-border hover:bg-tag-bg text-text-secondary font-medium py-2 px-4 rounded-lg transition-colors inline-block">View All Quizzes</a>
+                {% endif %}
+            </div>
         {% endif %}
+    </div>
 
-        <span class="current">
-            Page {{ quizzes.number }} of {{ quizzes.paginator.num_pages }}
-        </span>
+    <!-- Pagination -->
+    {% if quizzes.paginator %}
+    <div class="flex justify-center my-8">
+        <div class="inline-flex rounded-md shadow-sm" role="group">
+            {% if quizzes.has_previous %}
+                <a href="?page=1{% if selected_topic %}&topic={{ selected_topic.id }}{% endif %}" 
+                   class="px-4 py-2 text-sm font-medium bg-tag-bg text-text-secondary rounded-l-lg border border-border hover:bg-tag-bg/80">
+                    &laquo; First
+                </a>
+                <a href="?page={{ quizzes.previous_page_number }}{% if selected_topic %}&topic={{ selected_topic.id }}{% endif %}" 
+                   class="px-4 py-2 text-sm font-medium bg-tag-bg text-text-secondary border-t border-b border-border hover:bg-tag-bg/80">
+                    Previous
+                </a>
+            {% endif %}
 
-        {% if quizzes.has_next %}
-            <a href="?page={{ quizzes.next_page_number }}{% if selected_topic %}&topic={{ selected_topic.id }}{% endif %}">next</a>
-            <a href="?page={{ quizzes.paginator.num_pages }}{% if selected_topic %}&topic={{ selected_topic.id }}{% endif %}">last &raquo;</a>
-        {% endif %}
-    </span>
+            <span class="px-4 py-2 text-sm font-medium bg-accent-primary text-white border border-accent-primary">
+                Page {{ quizzes.number }} of {{ quizzes.paginator.num_pages }}
+            </span>
+
+            {% if quizzes.has_next %}
+                <a href="?page={{ quizzes.next_page_number }}{% if selected_topic %}&topic={{ selected_topic.id }}{% endif %}" 
+                   class="px-4 py-2 text-sm font-medium bg-tag-bg text-text-secondary border-t border-b border-border hover:bg-tag-bg/80">
+                    Next
+                </a>
+                <a href="?page={{ quizzes.paginator.num_pages }}{% if selected_topic %}&topic={{ selected_topic.id }}{% endif %}" 
+                   class="px-4 py-2 text-sm font-medium bg-tag-bg text-text-secondary rounded-r-lg border border-border hover:bg-tag-bg/80">
+                    Last &raquo;
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 </div>
-{% endif %}
 {% endblock %}
