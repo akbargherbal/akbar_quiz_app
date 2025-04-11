@@ -103,6 +103,9 @@ def import_questions_by_chapter(
     df,
     questions_per_quiz=20,
     quizzes_per_chapter=2,
+    max_quizzes_per_chapter=5,  # New parameter for upper limit (NEED TO TEST)
+    min_coverage_percentage=40,  # New parameter for minimum question coverage (NEED TO TEST)
+    single_quiz_threshold=1.5,  # New parameter - if questions < threshold*questions_per_quiz, just make one quiz (NEED TO TEST)
     use_descriptive_titles=True,
     use_chapter_prefix=True,
     chapter_zfill=2,
@@ -119,7 +122,7 @@ def import_questions_by_chapter(
         # Get unique chapters
         chapters = sorted(df["chapter_no"].unique())
         logger.info(
-            f"Creating {quizzes_per_chapter} quizzes per chapter, {questions_per_quiz} questions each"
+            f"Creating quizzes with {questions_per_quiz} questions each, adapting quiz count based on available questions"
         )
         logger.info(f"Found {len(chapters)} chapters: {chapters}")
 
@@ -128,11 +131,44 @@ def import_questions_by_chapter(
             try:
                 # Filter to this chapter's questions
                 chapter_df = df[df["chapter_no"] == chapter].copy()
-                logger.info(f"Chapter {chapter}: {len(chapter_df)} questions available")
+                total_chapter_questions = len(chapter_df)
+                logger.info(
+                    f"Chapter {chapter}: {total_chapter_questions} questions available"
+                )
 
-                if len(chapter_df) == 0:
+                if total_chapter_questions == 0:
                     logger.warning(f"Chapter {chapter} has no questions, skipping")
                     continue
+
+                # Determine dynamic quiz count based on available questions
+                if total_chapter_questions < questions_per_quiz * single_quiz_threshold:
+                    # Too few questions or just slightly more than needed for one quiz
+                    # Create just one quiz with all available questions
+                    chapter_quiz_count = 1
+                    logger.info(
+                        f"Chapter {chapter} has only {total_chapter_questions} questions "
+                        + f"(less than {questions_per_quiz * single_quiz_threshold}). "
+                        + "Creating a single quiz with all available questions."
+                    )
+                elif total_chapter_questions > questions_per_quiz * quizzes_per_chapter:
+                    # Many questions - calculate how many quizzes needed for good coverage
+                    min_questions_to_cover = int(
+                        total_chapter_questions * (min_coverage_percentage / 100)
+                    )
+                    chapter_quiz_count = min(
+                        max_quizzes_per_chapter,
+                        (min_questions_to_cover + questions_per_quiz - 1)
+                        // questions_per_quiz,
+                    )
+                    logger.info(
+                        f"Chapter {chapter} has {total_chapter_questions} questions. Creating {chapter_quiz_count} quizzes to cover approximately {min_coverage_percentage}% of content."
+                    )
+                else:
+                    # Default case - use standard number of quizzes
+                    chapter_quiz_count = quizzes_per_chapter
+                    logger.info(
+                        f"Chapter {chapter} has {total_chapter_questions} questions. Creating standard {chapter_quiz_count} quizzes."
+                    )
 
                 # Create chapter prefix if enabled
                 chapter_prefix = ""
@@ -186,8 +222,12 @@ def import_questions_by_chapter(
                     chapter_metadata["tags"] = chapter_df["tag"].unique().tolist()
                     logger.info(f"Tags: {chapter_metadata['tags'][:5]}...")
 
+                # Create a set to track which questions have been used
+                used_question_indices = set()
+                total_questions_used = 0
+
                 # Process each quiz for this chapter
-                for quiz_num in range(1, quizzes_per_chapter + 1):
+                for quiz_num in range(1, chapter_quiz_count + 1):
                     try:
                         # Create descriptive title and topic based on available metadata
                         if use_descriptive_titles and chapter_metadata.get(
@@ -201,14 +241,35 @@ def import_questions_by_chapter(
                             title = f"{chapter_prefix}{chapter_metadata['title']} - Quiz {quiz_num}"
                             topic_name = chapter_metadata["title"]
 
-                        # Sample questions for this quiz
-                        sample_size = min(questions_per_quiz, len(chapter_df))
+                        # Sample questions for this quiz, avoiding already used questions if possible
+                        available_df = chapter_df
+
+                        # If we have more than enough questions, filter out previously used ones
+                        if (
+                            total_chapter_questions - total_questions_used
+                            >= questions_per_quiz
+                        ):
+                            if used_question_indices:
+                                available_df = chapter_df.iloc[
+                                    list(
+                                        set(range(len(chapter_df)))
+                                        - used_question_indices
+                                    )
+                                ]
+
+                        # Sample questions
+                        sample_size = min(questions_per_quiz, len(available_df))
                         if sample_size < questions_per_quiz:
                             logger.warning(
-                                f"Chapter {chapter} has fewer than {questions_per_quiz} questions. Using all {sample_size} available."
+                                f"Only {sample_size} unique questions available for {title}. Using all available."
                             )
 
-                        quiz_sample = chapter_df.sample(sample_size)
+                        quiz_sample = available_df.sample(sample_size)
+
+                        # Track which questions we've used
+                        used_indices = chapter_df.index.get_indexer(quiz_sample.index)
+                        used_question_indices.update(used_indices)
+                        total_questions_used += sample_size
 
                         # Import using transaction to ensure atomicity
                         with transaction.atomic():
