@@ -6,8 +6,8 @@ import logging
 from django.conf import settings  # Assumes settings are configured
 
 # Ensure the base logs directory exists
-logs_base_dir = os.path.join(settings.BASE_DIR, "logs")
-os.makedirs(logs_base_dir, exist_ok=True)
+# logs_base_dir = os.path.join(settings.BASE_DIR, "logs")
+# os.makedirs(logs_base_dir, exist_ok=True)
 
 
 def setup_test_logging(logger_name: str, app_name: str):
@@ -21,7 +21,7 @@ def setup_test_logging(logger_name: str, app_name: str):
     Returns:
         Configured logger instance.
     """
-    # Define the app-specific log directory path
+    # Define the app-specific log directory path INSIDE the function
     app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
 
     # Create the app-specific directory if it doesn't exist

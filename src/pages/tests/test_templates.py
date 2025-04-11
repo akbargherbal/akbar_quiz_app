@@ -1,5 +1,4 @@
-# Test pages templates with Playwright
-# Save as src/pages/tests/test_templates.py
+# src/pages/tests/test_templates.py (Modifications shown)
 
 import pytest
 import os
@@ -18,7 +17,9 @@ logger = setup_test_logging(__name__, "pages")
 SERVER_URL = os.environ.get("SERVER_URL", "http://localhost:8000")
 
 
-@pytest.mark.usefixtures("capture_console_errors")
+@pytest.mark.usefixtures(
+    "capture_console_errors", "django_server"
+)  # Use fixtures from src/conftest.py
 def test_home_page_template(page: Page, django_server):
     """Test that the home page loads with the new template."""
     try:
@@ -31,9 +32,13 @@ def test_home_page_template(page: Page, django_server):
             "text=Challenge Your Knowledge with QuizMaster", timeout=5000
         )
 
-        # Verify key elements using the new color scheme
-        expect(page.locator(".text-accent-heading")).to_be_visible()
-        expect(page.locator("a.bg-accent-primary")).to_be_visible()
+        # Verify key elements using the new color scheme (MORE SPECIFIC LOCATORS)
+        # Target the H1 specifically for the main title
+        expect(page.locator("h1.text-accent-heading")).to_be_visible()
+        # Target the specific "Browse Quizzes" button
+        expect(
+            page.locator("a.bg-accent-primary:has-text('Browse Quizzes')")
+        ).to_be_visible()
 
         # Take a screenshot for reference
         app_log_dir = os.path.join(settings.BASE_DIR, "logs", "pages")
@@ -45,21 +50,13 @@ def test_home_page_template(page: Page, django_server):
         logger.info("Home page test completed successfully")
 
     except Exception as e:
-        # Define the app name for logging/screenshots
+        # (Error handling remains the same)
         app_name = "pages"
-
-        # Define the app-specific log directory for screenshots
         app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
-
-        # Create the app-specific directory if it doesn't exist
         os.makedirs(app_log_dir, exist_ok=True)
-
-        # Define the full path for the screenshot
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_{timestamp}.png"
+        screenshot_filename = f"failure_home_{timestamp}.png"  # Renamed for clarity
         screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-
-        # Take screenshot using the new path
         try:
             if "page" in locals() and hasattr(page, "screenshot"):
                 page.screenshot(path=screenshot_path)
@@ -70,17 +67,14 @@ def test_home_page_template(page: Page, django_server):
                 )
         except Exception as ss_error:
             logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-
-        # Log the primary error
         if "logger" in locals() and hasattr(logger, "error"):
             logger.error(f"Test failed: {str(e)}", exc_info=True)
         else:
             print(f"Test failed (logger not available): {str(e)}")
+        raise
 
-        raise  # Re-raise the original exception
 
-
-@pytest.mark.usefixtures("capture_console_errors")
+@pytest.mark.usefixtures("capture_console_errors", "django_server")
 def test_quizzes_page_template(page: Page, django_server):
     """Test that the quizzes page loads with the new template."""
     try:
@@ -95,9 +89,16 @@ def test_quizzes_page_template(page: Page, django_server):
         # Verify quiz cards with the new design
         quiz_cards = page.locator(".grid .bg-surface").count()
         logger.info(f"Found {quiz_cards} quiz cards")
+        # Ensure at least one card is found if data exists
+        if quiz_cards > 0:
+            expect(page.locator(".grid .bg-surface").first).to_be_visible()
 
-        # Verify color scheme elements
-        expect(page.locator(".bg-tag-bg")).to_be_visible()
+        # Verify color scheme elements (MORE SPECIFIC LOCATOR)
+        # Check the 'All' filter button specifically
+        expect(page.locator("a.bg-tag-bg:has-text('All')")).to_be_visible()
+        # Or check one of the topic spans within a card
+        if quiz_cards > 0:
+            expect(page.locator(".grid .bg-surface .bg-tag-bg").first).to_be_visible()
 
         # Take a screenshot for reference
         app_log_dir = os.path.join(settings.BASE_DIR, "logs", "pages")
@@ -109,21 +110,13 @@ def test_quizzes_page_template(page: Page, django_server):
         logger.info("Quizzes page test completed successfully")
 
     except Exception as e:
-        # Define the app name for logging/screenshots
+        # (Error handling remains the same)
         app_name = "pages"
-
-        # Define the app-specific log directory for screenshots
         app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
-
-        # Create the app-specific directory if it doesn't exist
         os.makedirs(app_log_dir, exist_ok=True)
-
-        # Define the full path for the screenshot
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_{timestamp}.png"
+        screenshot_filename = f"failure_quizzes_{timestamp}.png"  # Renamed
         screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-
-        # Take screenshot using the new path
         try:
             if "page" in locals() and hasattr(page, "screenshot"):
                 page.screenshot(path=screenshot_path)
@@ -134,17 +127,14 @@ def test_quizzes_page_template(page: Page, django_server):
                 )
         except Exception as ss_error:
             logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-
-        # Log the primary error
         if "logger" in locals() and hasattr(logger, "error"):
             logger.error(f"Test failed: {str(e)}", exc_info=True)
         else:
             print(f"Test failed (logger not available): {str(e)}")
+        raise
 
-        raise  # Re-raise the original exception
 
-
-@pytest.mark.usefixtures("capture_console_errors")
+@pytest.mark.usefixtures("capture_console_errors", "django_server")
 def test_about_page_template(page: Page, django_server):
     """Test that the about page loads with the new template."""
     try:
@@ -156,10 +146,11 @@ def test_about_page_template(page: Page, django_server):
         # Check if the page loads
         page.wait_for_selector("text=About QuizMaster", timeout=5000)
 
-        # Verify key content sections
-        expect(page.locator("text=Our Mission")).to_be_visible()
-        expect(page.locator("text=Our Story")).to_be_visible()
-        expect(page.locator("text=Contact Us")).to_be_visible()
+        # Verify key content sections (MORE SPECIFIC LOCATORS)
+        expect(page.locator("h2:has-text('Our Mission')")).to_be_visible()
+        expect(page.locator("h2:has-text('Our Story')")).to_be_visible()
+        # Target the heading specifically
+        expect(page.locator("h2:has-text('Contact Us')")).to_be_visible()
 
         # Take a screenshot for reference
         app_log_dir = os.path.join(settings.BASE_DIR, "logs", "pages")
@@ -171,21 +162,13 @@ def test_about_page_template(page: Page, django_server):
         logger.info("About page test completed successfully")
 
     except Exception as e:
-        # Define the app name for logging/screenshots
+        # (Error handling remains the same)
         app_name = "pages"
-
-        # Define the app-specific log directory for screenshots
         app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
-
-        # Create the app-specific directory if it doesn't exist
         os.makedirs(app_log_dir, exist_ok=True)
-
-        # Define the full path for the screenshot
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_{timestamp}.png"
+        screenshot_filename = f"failure_about_{timestamp}.png"  # Renamed
         screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-
-        # Take screenshot using the new path
         try:
             if "page" in locals() and hasattr(page, "screenshot"):
                 page.screenshot(path=screenshot_path)
@@ -196,17 +179,17 @@ def test_about_page_template(page: Page, django_server):
                 )
         except Exception as ss_error:
             logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-
-        # Log the primary error
         if "logger" in locals() and hasattr(logger, "error"):
             logger.error(f"Test failed: {str(e)}", exc_info=True)
         else:
             print(f"Test failed (logger not available): {str(e)}")
+        raise
 
-        raise  # Re-raise the original exception
+
+# ... (rest of the tests: login, signup, profile - should be okay as they passed) ...
 
 
-@pytest.mark.usefixtures("capture_console_errors")
+@pytest.mark.usefixtures("capture_console_errors", "django_server")
 def test_login_page_template(page: Page, django_server):
     """Test that the login page loads with the new template."""
     try:
@@ -236,21 +219,13 @@ def test_login_page_template(page: Page, django_server):
         logger.info("Login page test completed successfully")
 
     except Exception as e:
-        # Define the app name for logging/screenshots
+        # (Error handling remains the same)
         app_name = "pages"
-
-        # Define the app-specific log directory for screenshots
         app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
-
-        # Create the app-specific directory if it doesn't exist
         os.makedirs(app_log_dir, exist_ok=True)
-
-        # Define the full path for the screenshot
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_{timestamp}.png"
+        screenshot_filename = f"failure_login_{timestamp}.png"  # Renamed
         screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-
-        # Take screenshot using the new path
         try:
             if "page" in locals() and hasattr(page, "screenshot"):
                 page.screenshot(path=screenshot_path)
@@ -261,17 +236,14 @@ def test_login_page_template(page: Page, django_server):
                 )
         except Exception as ss_error:
             logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-
-        # Log the primary error
         if "logger" in locals() and hasattr(logger, "error"):
             logger.error(f"Test failed: {str(e)}", exc_info=True)
         else:
             print(f"Test failed (logger not available): {str(e)}")
+        raise
 
-        raise  # Re-raise the original exception
 
-
-@pytest.mark.usefixtures("capture_console_errors")
+@pytest.mark.usefixtures("capture_console_errors", "django_server")
 def test_signup_page_template(page: Page, django_server):
     """Test that the signup page loads with the new template."""
     try:
@@ -303,21 +275,13 @@ def test_signup_page_template(page: Page, django_server):
         logger.info("Signup page test completed successfully")
 
     except Exception as e:
-        # Define the app name for logging/screenshots
+        # (Error handling remains the same)
         app_name = "pages"
-
-        # Define the app-specific log directory for screenshots
         app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
-
-        # Create the app-specific directory if it doesn't exist
         os.makedirs(app_log_dir, exist_ok=True)
-
-        # Define the full path for the screenshot
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_{timestamp}.png"
+        screenshot_filename = f"failure_signup_{timestamp}.png"  # Renamed
         screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-
-        # Take screenshot using the new path
         try:
             if "page" in locals() and hasattr(page, "screenshot"):
                 page.screenshot(path=screenshot_path)
@@ -328,17 +292,14 @@ def test_signup_page_template(page: Page, django_server):
                 )
         except Exception as ss_error:
             logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-
-        # Log the primary error
         if "logger" in locals() and hasattr(logger, "error"):
             logger.error(f"Test failed: {str(e)}", exc_info=True)
         else:
             print(f"Test failed (logger not available): {str(e)}")
+        raise
 
-        raise  # Re-raise the original exception
 
-
-@pytest.mark.usefixtures("capture_console_errors")
+@pytest.mark.usefixtures("capture_console_errors", "django_server")
 def test_profile_page_template(page: Page, django_server):
     """Test that the profile page loads with the new template."""
     try:
@@ -373,21 +334,13 @@ def test_profile_page_template(page: Page, django_server):
         logger.info("Profile page test completed successfully")
 
     except Exception as e:
-        # Define the app name for logging/screenshots
+        # (Error handling remains the same)
         app_name = "pages"
-
-        # Define the app-specific log directory for screenshots
         app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
-
-        # Create the app-specific directory if it doesn't exist
         os.makedirs(app_log_dir, exist_ok=True)
-
-        # Define the full path for the screenshot
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_{timestamp}.png"
+        screenshot_filename = f"failure_profile_{timestamp}.png"  # Renamed
         screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-
-        # Take screenshot using the new path
         try:
             if "page" in locals() and hasattr(page, "screenshot"):
                 page.screenshot(path=screenshot_path)
@@ -398,14 +351,11 @@ def test_profile_page_template(page: Page, django_server):
                 )
         except Exception as ss_error:
             logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-
-        # Log the primary error
         if "logger" in locals() and hasattr(logger, "error"):
             logger.error(f"Test failed: {str(e)}", exc_info=True)
         else:
             print(f"Test failed (logger not available): {str(e)}")
-
-        raise  # Re-raise the original exception
+        raise
 
 
 if __name__ == "__main__":
