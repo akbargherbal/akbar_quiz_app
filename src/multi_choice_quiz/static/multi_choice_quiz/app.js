@@ -14,7 +14,10 @@ window.quizApp = function() {
         score: 0, // User's score
         wrongAnswers: 0, // Track wrong answers for star rating
         feedbackTimer: null, // Timer for feedback duration
-        feedbackDuration: 4000, // Feedback duration in milliseconds (2 seconds)
+        feedbackDuration: 5000, // Feedback duration in milliseconds (5 seconds)
+        startTime: null, // Time when quiz started
+        endTime: null, // Time when quiz ended
+        quizTime: 0, // Total time spent on quiz in seconds
 
         // --- Computed Properties (Getters) ---
         get currentQuestion() {
@@ -29,7 +32,7 @@ window.quizApp = function() {
             return this.currentQuestion && this.selectedOptionIndex === this.currentQuestion.answerIndex;
         },
         
-        // New getter for calculating and displaying stars
+        // Getter for calculating and displaying stars
         get starRatingDisplay() {
             const totalQuestions = this.questions.length;
             if (totalQuestions === 0) return '☆☆☆☆☆'; // Default empty stars if no questions
@@ -93,6 +96,11 @@ window.quizApp = function() {
             this.quizCompleted = false;
             this.score = 0;
             this.wrongAnswers = 0;
+            
+            // Initialize timer
+            this.startTime = new Date();
+            this.endTime = null;
+            this.quizTime = 0;
 
             // Check if there are any questions to start with
             if (this.questions.length === 0) {
@@ -154,6 +162,8 @@ window.quizApp = function() {
             } else {
                 // End of quiz
                 this.quizCompleted = true;
+                this.endTime = new Date();
+                this.calculateQuizTime();
                 console.log("Quiz completed. Final score:", this.score);
             }
         },
@@ -175,6 +185,35 @@ window.quizApp = function() {
             this.quizCompleted = false;
             this.score = 0;
             this.wrongAnswers = 0;
+            
+            // Reset timer
+            this.startTime = new Date();
+            this.endTime = null;
+            this.quizTime = 0;
+        },
+
+        // --- New helper methods for the results modal ---
+        calculatePercentage() {
+            if (this.questions.length === 0) return 0;
+            return Math.round((this.score / this.questions.length) * 100);
+        },
+
+        calculateQuizTime() {
+            if (!this.startTime || !this.endTime) return 0;
+            
+            // Calculate time difference in seconds
+            this.quizTime = Math.floor((this.endTime - this.startTime) / 1000);
+            return this.quizTime;
+        },
+
+        formatTime(seconds) {
+            if (!seconds) return "00:00";
+            
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            
+            // Format as MM:SS
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
         },
 
         // --- Dynamic Class Logic for new color scheme ---

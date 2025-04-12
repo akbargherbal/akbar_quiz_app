@@ -1,3 +1,4 @@
+```html
 {% extends 'multi_choice_quiz/base.html' %}
 {% load static %}
 
@@ -78,40 +79,60 @@
     </div>
   </template>
 
-  <!-- Quiz Completed State -->
+  <!-- Quiz Completed State - New Responsive Modal -->
   <template x-if="quizCompleted">
-    <div class="results-card">
-      <h2 class="results-title">Quiz Completed!</h2>
-      <!-- Display final stars on results -->
-      <div class="star-rating results-stars" x-html="starRatingDisplay" title="Your final performance rating"></div>
-      <p class="results-score">
-        Your Score: <span x-text="score"></span> out of
-        <span x-text="questions.length"></span>
-      </p>
-      <div class="results-summary">
-        <template x-for="(question, index) in questions" :key="index">
-          <div class="result-item">
-            <span
-              class="result-icon"
-              x-html="userAnswers[index] === question.answerIndex ? '✅' : '❌'"
-            ></span>
-            <span x-html="`${index + 1}. ${question.text}`"></span>
-            <template x-if="userAnswers[index] !== question.answerIndex && userAnswers[index] !== null">
-              <span class="correct-answer-info"
-                >(Correct:
-                <span x-html="question.options[question.answerIndex]"></span
-                >)</span
-              >
-            </template>
-            <template x-if="userAnswers[index] === null">
-              <span class="correct-answer-info">(Not Answered)</span>
-            </template>
+    <div class="quiz-results-panel">
+      <h3 class="results-title">Quiz Results</h3>
+
+      <div class="results-stats">
+        <div class="stat-group">
+          <div class="stat-item">
+            <span class="stat-label">Rating</span>
+            <span class="stat-value star-value" x-html="starRatingDisplay"></span>
           </div>
-        </template>
+          <div class="stat-item">
+            <span class="stat-label">Score</span>
+            <span class="stat-value"><span class="score-highlight" x-text="score"></span> / <span x-text="questions.length"></span></span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Percentage</span>
+            <span class="stat-value percentage-value" x-text="calculatePercentage() + '%'"></span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Time</span>
+            <span class="stat-value" x-text="formatTime(quizTime)"></span>
+          </div>
+        </div>
       </div>
-      <button class="restart-button" @click="restartQuiz">Play Again?</button>
+
+      <!-- Mistakes Review Section -->
+      <div class="mistakes-section">
+        <h4 class="mistakes-heading">Mistakes Review</h4>
+        <ul class="mistake-list">
+          <template x-for="(question, index) in questions" :key="index">
+            <template x-if="userAnswers[index] !== question.answerIndex">
+              <li class="mistake-item">
+                <span class="mistake-mark">❌</span>
+                <div class="mistake-content">
+                  <div class="mistake-question" x-html="`Q${index + 1}. ${question.text}`"></div>
+                  <div class="mistake-answer">
+                    <strong>Correct:</strong> <span x-html="question.options[question.answerIndex]"></span>
+                  </div>
+                </div>
+              </li>
+            </template>
+          </template>
+        </ul>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="results-actions">
+        <a href="{% url 'pages:home' %}" class="action-btn secondary-btn">Go Home</a>
+        <button class="action-btn primary-btn" @click="restartQuiz">Play Again</button>
+      </div>
     </div>
   </template>
 </div>
 <!-- End of quiz-container -->
 {% endblock %}
+```
