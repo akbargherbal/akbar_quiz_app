@@ -14,7 +14,8 @@ window.quizApp = function() {
         score: 0, // User's score
         wrongAnswers: 0, // Track wrong answers for star rating
         feedbackTimer: null, // Timer for feedback duration
-        feedbackDuration: 5000, // Feedback duration in milliseconds (5 seconds)
+        correctFeedbackDuration: 3000, // Feedback duration for correct answers (4 seconds)
+        incorrectFeedbackDuration: 6000, // Feedback duration for incorrect answers (6 seconds)
         startTime: null, // Time when quiz started
         endTime: null, // Time when quiz ended
         quizTime: 0, // Total time spent on quiz in seconds
@@ -130,7 +131,9 @@ window.quizApp = function() {
                 console.error("userAnswers array issue at index:", this.currentQuestionIndex);
             }
 
-            if (this.isCorrect) {
+            // Check if answer is correct and update score/wrongAnswers
+            const isAnswerCorrect = this.isCorrect;
+            if (isAnswerCorrect) {
                 this.score++;
             } else {
                 this.wrongAnswers++; // Track wrong answers for star rating
@@ -141,10 +144,17 @@ window.quizApp = function() {
                 clearTimeout(this.feedbackTimer);
             }
 
-            // Set timer to move to next question after feedback duration
+            // Set timer to move to next question after appropriate feedback duration
+            // Use different durations based on whether the answer was correct or incorrect
+            const feedbackDuration = isAnswerCorrect ? 
+                this.correctFeedbackDuration : 
+                this.incorrectFeedbackDuration;
+            
+            console.log(`Using feedback duration: ${feedbackDuration}ms (${isAnswerCorrect ? 'correct' : 'incorrect'} answer)`);
+            
             this.feedbackTimer = setTimeout(() => {
                 this.nextQuestion();
-            }, this.feedbackDuration);
+            }, feedbackDuration);
         },
 
         nextQuestion() {
