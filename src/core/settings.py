@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,26 +20,53 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Custom test runner to generate log files
 TEST_RUNNER = "multi_choice_quiz.test_runner.LoggingTestRunner"
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+
+# Helper function for environment variables
+def get_env_variable(var_name, default=None):
+    """Gets an environment variable or raises an error if not set (unless default is provided)."""
+    value = os.environ.get(var_name, default)
+    if value is None and default is None:
+        # Only raise error if no default was provided and the variable is missing
+        raise ImproperlyConfigured(
+            f"Required environment variable '{var_name}' is not set."
+        )
+    return value
+
+
+# Environment determination
+ENVIRONMENT = get_env_variable("ENVIRONMENT", "development")
+DEBUG = (
+    ENVIRONMENT == "development"
+)  # DEBUG is True only if ENVIRONMENT is 'development'
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-m2*xxptb5lol_-d+nls$*n0p%1co9k5*vjm2h+to9ko#=q3a_s"
+if DEBUG:
+    SECRET_KEY = get_env_variable(
+        "SECRET_KEY",
+        "django-insecure-m2*xxptb5lol_-d+nls$*n0p%1co9k5*vjm2h+to9ko#=q3a_s",
+    )
+else:
+    # In production, SECRET_KEY MUST be set via the environment
+    SECRET_KEY = get_env_variable("SECRET_KEY")  # No default allowed here
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS configuration
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]  # Default allowed hosts
+# Add App Engine URL to ALLOWED_HOSTS if available
+app_engine_url = get_env_variable("APPENGINE_URL", None)
+if app_engine_url:
+    ALLOWED_HOSTS.append(app_engine_url)
 
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    # Whitenoise - essential for serving static files efficiently in prod
+    # Place it BEFORE django.contrib.staticfiles
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "multi_choice_quiz",
     "pages",
@@ -45,6 +74,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # Whitenoise Middleware: Should be placed high up, right after SecurityMiddleware
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -73,21 +104,31 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+# Database configuration
+# SQLite is NOT persistent on App Engine Standard (filesystem is read-only/ephemeral)
+if DEBUG:
+    # Local development using SQLite for simplicity
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
-
+else:
+    # Production configuration using Cloud SQL
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": get_env_variable("DB_NAME"),
+            "USER": get_env_variable("DB_USER"),
+            "PASSWORD": get_env_variable("DB_PASSWORD"),
+            # HOST: Special path for App Engine to connect via Cloud SQL Auth Proxy
+            "HOST": get_env_variable("DB_HOST"),
+            "PORT": get_env_variable("DB_PORT", "5432"),
+        }
+    }
 
 # Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -103,25 +144,23 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
-
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
 STATIC_URL = "static/"
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
+# STATIC_ROOT: The directory where collectstatic will gather all static files
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# STATICFILES_STORAGE: Use Whitenoise's specialized storage backend
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Login redirect
+LOGIN_REDIRECT_URL = "/"
