@@ -2,6 +2,66 @@
 /* AlpineJS helper for transitions - MUST BE AT THE TOP */
 [x-cloak] { display: none !important; }
 
+
+/* 
+ * FIX FOR MOBILE ZOOM BEHAVIOR - ADDED APRIL 2025
+ * These rules prevent horizontal scrolling when users zoom in on mobile devices.
+ * They force content to reflow vertically instead of extending beyond the viewport width.
+ * Remove this entire block if you prefer the original zooming behavior.
+ */
+ html, body {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  * {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+  }
+  
+  .quiz-container, 
+  .question-card, 
+  .options-container,
+  .option-button,
+  .question-text {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    white-space: normal;
+  }
+  
+  code {
+    white-space: pre-wrap !important;
+    word-break: break-all !important;
+  }
+  
+  /* 
+   * IMPROVED CODE CONTRAST IN BUTTONS - ADDED APRIL 2025
+   * Enhances readability of code elements inside option buttons
+   * Makes code text more visible against button backgrounds
+   */
+  .option-button code {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 3px 6px !important;
+    border-radius: 4px !important;
+    text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.5) !important;
+  }
+  
+  /* Special handling for yellow buttons which need darker text */
+  .option-button.option-yellow code {
+    color: #0F172A !important; /* slate-900 */
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    text-shadow: none !important;
+    font-weight: 700 !important;
+  }
+  /* END OF IMPROVED CODE CONTRAST */
+  /* END OF MOBILE ZOOM FIX */
+  
+
 body {
     background-color: #0F172A; /* slate-900 */
     font-family: "Segoe UI", Arial, sans-serif;

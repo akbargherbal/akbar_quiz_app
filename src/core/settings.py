@@ -52,6 +52,8 @@ else:
 # ALLOWED_HOSTS configuration
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]  # Default allowed hosts
 # Add App Engine URL to ALLOWED_HOSTS if available
+
+
 app_engine_url = get_env_variable("APPENGINE_URL", None)
 if app_engine_url:
     ALLOWED_HOSTS.append(app_engine_url)
@@ -168,18 +170,21 @@ LOGIN_REDIRECT_URL = "/"
 
 
 # --- PWA Settings ---
-
 # Define the icons for your PWA (create these files)
 PWA_APP_ICONS = [
     {
-        "src": "/static/images/icons/icon-192x192.png",  # Example path, adjust as needed
+        # REMOVED '/static/' prefix
+        "src": "images/icons/icon-192x192.png",
         "sizes": "192x192",
+        "type": "image/png",  # Recommended: Add type
     },
     {
-        "src": "/static/images/icons/icon-512x512.png",  # Example path, adjust as needed
+        # REMOVED '/static/' prefix
+        "src": "images/icons/icon-512x512.png",
         "sizes": "512x512",
+        "type": "image/png",  # Recommended: Add type
     },
-    # Add more sizes if needed (e.g., 144x144, etc.)
+    # Add more sizes if needed (e.g., maskable icons)
 ]
 
 # Define the manifest settings
@@ -191,12 +196,10 @@ PWA_APP_BACKGROUND_COLOR = "#0F172A"  # Your primary background (slate-900)
 
 # *** This is key for fullscreen/standalone ***
 PWA_APP_DISPLAY = "standalone"  # Recommended: App-like feel without browser UI
-# OR use 'fullscreen' for a more immersive experience (hides status bars)
-# PWA_APP_DISPLAY = 'fullscreen'
 
 # Define the scope and start URL
 PWA_APP_SCOPE = "/"  # Scope of the PWA (usually the root)
-PWA_APP_START_URL = "/"  # Where the app starts when launched from home screen (e.g., your home page URL)
+PWA_APP_START_URL = "/"  # Where the app starts when launched from home screen
 
 # Optional: Service worker settings (default is usually fine initially)
 # PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'static/js', 'serviceworker.js') # Example custom path
