@@ -1,12 +1,29 @@
-# Django #
+# Django project .gitignore #
+
+# Logs
 *.log
-logs/
+**/logs/
+
+# Translations
 *.pot
-*.pyc
-__pycache__
-db.sqlite3
-media
-staticfiles 
+*.mo
+
+# Python cache
+*.py[cod]
+**/__pycache__/
+
+# SQLite database
+**/db.sqlite3
+
+# Media & static
+/media/
+/**/staticfiles/
+
+# Environment files
+.env
+.env.*
+*.env
+
 
 # Backup files # 
 *.bak 
