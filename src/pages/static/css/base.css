@@ -365,7 +365,7 @@ a:hover {
 
 /* Hero Section for Home Page */
 .hero {
-    background: linear-gradient(rgba(75, 0, 130, 0.7), rgba(75, 0, 130, 0.9)), url('/static/images/quiz-bg.jpg');
+    background: linear-gradient(rgba(75, 0, 130, 0.7), rgba(75, 0, 130, 0.9));
     background-size: cover;
     background-position: center;
     padding: var(--space-xxl) 0;

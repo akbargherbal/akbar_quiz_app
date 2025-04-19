@@ -1,0 +1,40 @@
+# src/app.yaml
+
+runtime: python312 # Or python310, python312 - choose one compatible with your project
+entrypoint: gunicorn -b :$PORT core.wsgi:application --workers 2 --threads 4 # Use 'core.wsgi' based on your settings path
+
+instance_class: F1 # Basic instance class, good starting point
+
+automatic_scaling:
+  min_instances: 0 # Scale down to 0 to save costs when idle
+  max_instances: 2 # Limit max instances for cost control
+  target_cpu_utilization: 0.65 # Default scaling trigger
+
+env_variables:
+  # Point to your production settings file
+  DJANGO_SETTINGS_MODULE: "core.settings"
+  # Add any other non-secret environment variables your app might need
+  # EXAMPLE_SETTING: 'example_value'
+  #
+  # IMPORTANT: Secret environment variables (like SECRET_KEY, DB_PASSWORD etc.)
+  # must be set during deployment (e.g., via 'gcloud app deploy --set-env-vars=...')
+  # or via the Cloud Console, preferably referencing secrets stored in Google Secret Manager.
+  # DO NOT use the invalid 'secret_env_variables' block here.
+
+beta_settings:
+  # --- Cloud SQL Connection ---
+  # Securely connects App Engine to Cloud SQL via Unix socket
+  # !!! REPLACE THE VALUE BELOW WITH YOUR ACTUAL INSTANCE CONNECTION NAME !!!
+  cloud_sql_instances: quiz-app-april-2025:us-central1:quiz-app-db
+
+# --- Static File Handling ---
+handlers:
+  # Serves files from your 'staticfiles' directory (matches STATIC_ROOT)
+  # directly via App Engine's optimized serving.
+- url: /static
+  static_dir: staticfiles/
+
+  # Routes all other requests to your Django application (via entrypoint).
+  # Must come AFTER the static handler.
+- url: /.*
+  script: auto

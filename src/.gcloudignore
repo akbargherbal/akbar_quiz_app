@@ -1,0 +1,58 @@
+# .gcloudignore
+# This file tells gcloud which files and directories to ignore during deployment.
+# Place it in the root directory of your application (e.g., alongside manage.py and app.yaml)
+
+# Git files
+.git/
+.gitignore
+
+# Google Cloud files (avoids uploading itself or previous build artifacts)
+.gcloudignore
+# app.yaml # Usually fine to upload, but can exclude if dynamically generated
+
+# Python specific
+__pycache__/
+*.py[cod]
+*.so
+# IMPORTANT: Ignore virtual environments (assuming it's outside 'src/')
+# If your venv is INSIDE src/, adjust the path or ensure it's named 'venv' or 'env'
+../venv/
+../env/
+venv/
+env/
+# IMPORTANT: Exclude local environment variable files
+*.env
+.env
+
+# Django specific
+db.sqlite3* # Exclude local SQLite database
+staticfiles/ # Exclude locally collected static files (App Engine build process often handles this)
+media/      # Exclude user-uploaded media files (these should use Cloud Storage)
+logs/       # Exclude log directories (like src/logs/)
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# IDE specific
+.vscode/
+.idea/
+
+# Test files (optional, usually not needed in production image)
+# tests/ # You might want to comment this out if you have app-specific test dirs like 'multi_choice_quiz/tests/'
+multi_choice_quiz/tests/
+pages/tests/
+
+# Other potentially unnecessary files from your project
+BUGS/
+# GUIDES/ # Keep if you want docs deployed, ignore if not
+# TUTORIALS/ # Keep if you want docs deployed, ignore if not
+*.log
+*.bak
+
+# Node modules (if using JS build steps locally but not needed in Python runtime)
+# node_modules/
+
+# Ignore documentation/tutorial directories located outside src/
+../GUIDES/
+../TUTORIALS/
