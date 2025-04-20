@@ -34,3 +34,5 @@ typing_extensions==4.13.2
 tzdata==2025.2
 urllib3==2.4.0
 whitenoise[brotli]>=6.6.0,<7.0
+google-cloud-secret-manager>=2.16.0,<3.0
+
