@@ -1,0 +1,56 @@
+# .dockerignore
+
+# Version control
+.git
+.gitignore
+
+# Docker specific
+.dockerignore
+Dockerfile
+
+# Documentation / Readme
+README.md
+*.md
+
+# Python virtual environment
+venv/
+env/
+.venv/
+
+# Environment files
+.env*
+*.env
+
+# Python cache / bytecode
+*.pyc
+__pycache__/
+
+# Log files
+*.log
+logs/
+
+# Local databases (let Cloud SQL handle prod DB)
+db.sqlite3*
+*.sqlite3*
+
+# Static files directory (let collectstatic handle this INSIDE the container)
+staticfiles/
+
+# Media files (if any - usually stored separately like GCS in prod)
+media/
+
+# IDE / Editor config
+.vscode/
+.idea/
+
+# Backup files
+*.bak
+
+# Project specific files/dirs to ignore
+BUGS
+GUIDES
+TODO
+TUTORIALS
+test_requirements.txt
+*.png
+*.log
