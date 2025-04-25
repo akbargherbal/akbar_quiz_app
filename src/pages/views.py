@@ -64,13 +64,3 @@ def signup_view(request):
 def profile_view(request):
     """Placeholder user profile page."""
     return render(request, "pages/profile.html")
-
-
-def privacy_view(request):
-    """Privacy policy page."""
-    return render(request, "pages/privacy.html")
-
-
-def terms_view(request):
-    """Terms of service page."""
-    return render(request, "pages/terms.html")

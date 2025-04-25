@@ -38,10 +38,6 @@ const correctFeedbackEffect = `
 
 // Register the component globally before Alpine.js loads
 window.quizApp = function () {
-  // --- ADDED: Flag to prevent double initialization ---
-  let initialized = false;
-  // ---------------------------------------------------
-
   return {
     // --- State ---
     questions: [],
@@ -130,16 +126,7 @@ window.quizApp = function () {
     },
 
     init() {
-      console.log("DEBUG: quizApp component init() entered.");
-      // --- ADDED: Check if already initialized ---
-      if (initialized) {
-          console.log("DEBUG: init() skipped - already initialized.");
-          return; // Don't re-initialize
-      }
-      initialized = true; // Set the flag
-      // -------------------------------------------
-      console.log("DEBUG: quizApp component init() running for the first time.");
-
+      console.log("DEBUG: quizApp component init() started.");
 
       // ================================== //
       // == TESTING_MODE MOVED TO START === //
@@ -318,10 +305,8 @@ window.quizApp = function () {
 
     restartQuiz() {
       console.log("DEBUG: Restarting quiz...");
-      // --- ADDED: Reset the initialized flag on restart ---
-      initialized = false;
-      // ---------------------------------------------------
       // Re-initialize the component state fully by calling init()
+      // init() already handles resetting state and clearing timers
       this.init();
 
       // Emit quiz restart event

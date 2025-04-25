@@ -5,8 +5,9 @@
 
 {% block extra_js_head %}
 <script src="{% static 'multi_choice_quiz/app.js' %}"></script>
+<link rel="stylesheet" href="{% static 'multi_choice_quiz/style.css' %}">
 
-{# Embed the quiz data safely as JSON, accessible via ID #}
+
 <script id="quiz-data" type="application/json">
   {% autoescape off %}
   {{ quiz_data }}
@@ -17,47 +18,48 @@
 {% block content %}
 <div
     id="quiz-app-container"
-    class="max-w-2xl mx-auto w-11/12 px-4 sm:px-6 py-5 flex-grow flex flex-col justify-center"
+    class="max-w-2xl mx-auto w-11/12 px-4 py-5 sm:px-6 md:py-8 flex-grow flex flex-col justify-center"
     x-data="quizApp()"
     x-init="init()"
     x-cloak
 >
-  <!-- Quiz Active State -->
+
+  <!-- Quiz Question Section -->
   <template x-if="!quizCompleted">
     <div>
-      <!-- Top Bar -->
-      <div class="flex items-center mb-5 relative min-h-[40px] gap-3">
-        <!-- Progress Bar -->
-        <div class="flex justify-center items-center flex-grow flex-basis-0 min-w-[50px]">
-          <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden shadow-inner">
-            <div
-              class="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full transition-all duration-400 ease-in-out shadow-[0_0_8px_rgba(124,58,237,0.5)]"
-              :style="`width: ${Math.max(5, (currentQuestionIndex / Math.max(1, questions.length -1)) * 100)}%`"
-              x-transition:style
-            ></div>
+      <!-- Progress Bar, Stars, Counter, Home Button -->
+      <div class="flex items-center mb-5 relative min-h-[40px] gap-3 md:mb-8">
+        <!-- ... (progress bar, stars, counter, home button code remains the same) ... -->
+          <div class="flex justify-center items-center flex-grow flex-basis-0 min-w-[50px]">
+              <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden shadow-inner">
+                  <div
+                      class="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full transition-all duration-400 ease-in-out shadow-[0_0_8px_rgba(124,58,237,0.5)]"
+                      :style="`width: ${Math.max(5, (currentQuestionIndex / Math.max(1, questions.length -1)) * 100)}%`"
+                      x-transition:style
+                  ></div>
+              </div>
           </div>
-        </div>
-        <!-- Star Rating -->
-        <div class="text-yellow-400 text-xl leading-none flex-shrink-0 whitespace-nowrap"
-             x-html="starRatingDisplay"
-             title="Your performance rating">
-        </div>
-        <!-- Progress Indicator -->
-        <div
-          class="bg-slate-800 text-gray-200 rounded-full px-3 py-1 text-sm font-bold font-mono flex-shrink-0"
-          x-text="questions.length > 0 ? `${currentQuestionIndex + 1}/${questions.length}` : '0/0'"
-        ></div>
-        <!-- Home icon -->
-        <div class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center cursor-pointer transition duration-200 text-gray-200 shadow-md hover:bg-slate-700 hover:scale-105 ml-auto flex-shrink-0">
-          <a href="{% url 'pages:home' %}" class="text-gray-200 no-underline flex items-center justify-center w-full h-full text-lg">
-            <span>🏠</span>
-          </a>
-        </div>
+
+          <div class="text-yellow-400 text-xl md:text-2xl leading-none flex-shrink-0 whitespace-nowrap"
+               x-html="starRatingDisplay"
+               title="Your performance rating">
+          </div>
+
+          <div
+              class="bg-slate-800 text-gray-200 rounded-full px-3 py-1 text-sm md:text-base md:px-4 font-bold font-mono flex-shrink-0"
+              x-text="questions.length > 0 ? `${currentQuestionIndex + 1}/${questions.length}` : '0/0'"
+          ></div>
+
+          <div class="w-10 h-10 md:w-12 md:h-12 bg-slate-800 rounded-full flex items-center justify-center cursor-pointer transition duration-200 text-gray-200 shadow-md hover:bg-slate-700 hover:scale-105 ml-auto flex-shrink-0">
+              <a href="{% url 'pages:home' %}" class="text-gray-200 no-underline flex items-center justify-center w-full h-full text-lg md:text-xl">
+                  <span>🏠</span>
+              </a>
+          </div>
       </div>
 
-      <!-- Question Card -->
+      <!-- Question Text Container -->
       <div
-        class="bg-slate-800/80 rounded-2xl p-5 sm:p-6 relative mb-6 sm:mb-8 backdrop-blur-sm border border-slate-700 shadow-lg"
+        class="bg-slate-800/80 rounded-2xl p-5 sm:p-6 md:p-8 relative mb-4 sm:mb-6 backdrop-blur-sm border border-slate-700 shadow-lg"
         x-show="!quizCompleted && currentQuestion"
         x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 transform scale-95"
@@ -66,16 +68,14 @@
         x-transition:leave-start="opacity-100 transform scale-100"
         x-transition:leave-end="opacity-0 transform scale-95"
       >
-        <!-- Question container -->
-        <div class="p-2 sm:p-4 mb-4 sm:mb-5 rounded-lg text-center relative">
-            <!-- Question Text -->
-            <div class="text-xl sm:text-2xl text-center my-4 leading-normal text-gray-200">
-                 <div x-html="currentQuestion.text"></div> {# Code/Pre styled via CSS in base.html #}
-            </div>
-        </div>
+          <div class="p-2 sm:p-4 mb-4 sm:mb-5 rounded-lg text-center relative">
+              <div class="text-xl sm:text-2xl lg:text-3xl text-center my-4 leading-normal text-gray-200">
+                   <div x-html="currentQuestion.text"></div>
+              </div>
+          </div>
       </div>
 
-      <!-- Options -->
+      <!-- Options Container -->
       <div
           class="flex flex-col gap-3 sm:gap-4"
           x-show="!quizCompleted && currentQuestion"
@@ -88,84 +88,81 @@
           :key="index"
         >
           <button
-            class="option-button" 
-            :class="getOptionClass(index)" 
+            class="option-button"
+            :class="getOptionClass(index)"
             @click="selectOption(index)"
             :disabled="isAnswered"
             x-html="option"
           >
-             {# Content (text, code, pre) injected here by x-html #}
+             <!-- Option content is set by x-html -->
           </button>
         </template>
       </div>
     </div>
   </template>
 
-  <!-- Quiz Completed State - Results Panel -->
+  <!-- Results Panel -->
   <template x-if="quizCompleted">
     <div
-        class="bg-slate-800 rounded-2xl p-5 md:p-7 text-gray-300 my-5 mx-auto border border-slate-700 shadow-lg w-full"
+        id="quiz-results-panel"
+        class="bg-slate-800 rounded-2xl p-5 md:p-7 lg:p-8 text-gray-300 my-5 mx-auto border border-slate-700 shadow-lg w-full"
         x-transition:enter="transition ease-out duration-500"
         x-transition:enter-start="opacity-0 transform scale-95"
         x-transition:enter-end="opacity-100 transform scale-100"
     >
-      <h3 class="text-gray-200 text-2xl md:text-3xl text-center mt-0 mb-6 font-bold">Quiz Results</h3>
+      <h3 class="text-gray-200 text-2xl md:text-3xl lg:text-4xl text-center mt-0 mb-6 font-bold">Quiz Results</h3>
 
-      <!-- Layout container for stats and mistakes -->
+      <!-- Results Content (Stats and Mistakes) -->
       <div class="md:flex md:gap-8">
-          <!-- Stats Section (Left column on desktop) -->
+          <!-- Stats Section -->
           <div class="pb-5 border-b border-slate-700 mb-5 md:border-b-0 md:border-r md:pr-6 md:pb-0 md:mb-0 md:w-48 md:flex-shrink-0">
             <div class="flex flex-wrap justify-around gap-y-4 md:flex-col md:items-start md:gap-y-5">
-              <!-- Stat Items -->
+              <!-- ... (rating, score, percentage, time divs remain the same) ... -->
               <div class="flex flex-col items-center text-center w-1/2 md:w-full md:items-start md:text-left">
-                <span class="text-gray-400 text-sm mb-1">Rating</span>
-                <span class="text-yellow-400 text-2xl md:text-2xl leading-none" x-html="starRatingDisplay"></span>
+                  <span class="text-gray-400 text-sm mb-1">Rating</span>
+                  <span class="text-yellow-400 text-2xl md:text-2xl leading-none" x-html="starRatingDisplay"></span>
               </div>
               <div class="flex flex-col items-center text-center w-1/2 md:w-full md:items-start md:text-left">
-                <span class="text-gray-400 text-sm mb-1">Score</span>
-                <span class="text-gray-200 text-xl md:text-2xl font-semibold"><span class="text-purple-400" x-text="score"></span> / <span x-text="questions.length"></span></span>
+                  <span class="text-gray-400 text-sm mb-1">Score</span>
+                  <span class="text-gray-200 text-xl md:text-2xl font-semibold"><span class="text-purple-400" x-text="score"></span> / <span x-text="questions.length"></span></span>
               </div>
               <div class="flex flex-col items-center text-center w-1/2 md:w-full md:items-start md:text-left">
-                <span class="text-gray-400 text-sm mb-1">Percentage</span>
-                <span class="text-purple-400 text-xl md:text-2xl font-semibold" x-text="calculatePercentage() + '%'"></span>
+                  <span class="text-gray-400 text-sm mb-1">Percentage</span>
+                  <span class="text-purple-400 text-xl md:text-2xl font-semibold" x-text="calculatePercentage() + '%'"></span>
               </div>
               <div class="flex flex-col items-center text-center w-1/2 md:w-full md:items-start md:text-left">
-                <span class="text-gray-400 text-sm mb-1">Time</span>
-                <span class="text-gray-200 text-xl md:text-2xl font-semibold" x-text="formatTime(quizTime)"></span>
+                  <span class="text-gray-400 text-sm mb-1">Time</span>
+                  <span class="text-gray-200 text-xl md:text-2xl font-semibold" x-text="formatTime(quizTime)"></span>
               </div>
             </div>
           </div>
 
-          <!-- Mistakes Review Section (Right column on desktop) -->
+          <!-- Mistakes Review Section -->
           <div class="mt-5 md:mt-0 md:flex-grow">
             <h4 class="text-lg text-center text-gray-200 mb-4 pb-2 border-b border-dashed border-slate-600 md:text-left">Mistakes Review</h4>
-            <ul class="list-none p-0 m-0 max-h-60 md:max-h-72 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-700">
-              <!-- Message if no questions loaded -->
-              <template x-if="questions.length === 0">
-                   <li class="text-center text-gray-400 py-4">No questions were loaded for this quiz.</li>
-              </template>
-              <!-- Message if no mistakes -->
-               <template x-if="score === questions.length && questions.length > 0">
-                   <li class="text-center text-gray-400 py-4">🎉 No mistakes! Well done!</li>
-               </template>
-              <!-- List of mistakes -->
-              <template x-for="(question, index) in questions" :key="index">
-                <template x-if="userAnswers[index] !== question.answerIndex">
-                  <li class="flex items-start mb-4 pb-2.5 border-b border-slate-700 last:border-b-0 last:mb-0">
-                    <span class="text-red-600 mr-2.5 text-lg flex-shrink-0 mt-0.5">❌</span>
-                    <div class="flex-1 min-w-0">
-                       <!-- Question Text -->
-                      <div class="font-medium text-gray-200 mb-1 leading-snug text-sm">
-                         <div x-html="`Q${index + 1}. ${question.text}`"></div> {# Code/Pre styled via CSS #}
-                      </div>
-                       <!-- Answer Text -->
-                      <div class="text-gray-400 text-xs">
-                        <strong class="!text-green-600 font-semibold">Correct:</strong> <span x-html="question.options[question.answerIndex]"></span> {# Code/Pre styled via CSS #}
-                      </div>
-                    </div>
-                  </li>
+            <ul class="list-none p-0 m-0 max-h-60 md:max-h-72 lg:max-h-80 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-700">
+                <!-- ... (mistakes list rendering logic remains the same) ... -->
+                <template x-if="questions.length === 0">
+                     <li class="text-center text-gray-400 py-4">No questions were loaded for this quiz.</li>
                 </template>
-              </template>
+                <template x-if="score === questions.length && questions.length > 0">
+                     <li class="text-center text-gray-400 py-4">🎉 No mistakes! Well done!</li>
+                </template>
+                <template x-for="(question, index) in questions" :key="index">
+                  <template x-if="userAnswers[index] !== question.answerIndex">
+                    <li class="flex items-start mb-4 pb-2.5 md:mb-5 md:pb-3.5 border-b border-slate-700 last:border-b-0 last:mb-0">
+                      <span class="text-red-600 mr-2.5 md:mr-3 text-lg md:text-xl flex-shrink-0 mt-0.5">❌</span>
+                      <div class="flex-1 min-w-0">
+                        <div class="font-medium text-gray-200 mb-1 leading-snug text-sm md:text-base">
+                           <div x-html="`Q${index + 1}. ${question.text}`"></div>
+                        </div>
+                        <div class="text-gray-400 text-xs md:text-sm">
+                          <strong class="!text-green-600 font-semibold">Correct:</strong> <span x-html="question.options[question.answerIndex]"></span>
+                        </div>
+                      </div>
+                    </li>
+                  </template>
+                </template>
             </ul>
           </div>
       </div>
@@ -181,5 +178,5 @@
       </div>
     </div>
   </template>
-</div> <!-- End of quiz-app-container -->
+</div>
 {% endblock %}

@@ -7,34 +7,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>">
 
-    <!-- PWA Meta Tags -->
+    
     {% progressive_web_app_meta %}
-    <!-- End PWA Meta Tags -->
+    
 
-    <style>
-        [x-cloak] {
-            display: none !important;
-        }
-    
-        .option-button {
-            display: inline-block;
-        }
-    
-        .option-button code {
-            font-size: 1em !important;
-            background-color: navy !important; /* Equivalent to Tailwind's bg-cyan-950 */
-            color: #cffafe !important; /* Equivalent to Tailwind's text-cyan-100 */
-            font-family: monospace, 'Courier New' !important;
-            padding: 2px 6px !important;
-        }
-    </style>
+
     <title>{% block title %}Django Quiz App{% endblock title %}</title>
 
-    <!-- Tailwind CSS CDN -->
+    
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
     <style type="text/tailwindcss">
-        /* Define shake animation */
+        
         @keyframes shake {
           10%, 90% { transform: translateX(-1px); }
           20%, 80% { transform: translateX(2px); }
@@ -44,53 +28,54 @@
         .animate-shake {
           animation: shake 0.5s ease-in-out;
         }
-        /* Custom scrollbar */
+        
         .scrollbar-thin { scrollbar-width: thin; scrollbar-color: #475569 #334155; }
         .scrollbar-thin::-webkit-scrollbar { width: 8px; }
         .scrollbar-thin::-webkit-scrollbar-track { background: #334155; border-radius: 4px; }
         .scrollbar-thin::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
         .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        /* --- Base styles for code/pre within the quiz --- */
-        /* Target elements specifically within the quiz container */
+        
+        
         #quiz-app-container code {
             @apply inline bg-black/40 text-gray-100 rounded px-1.5 py-0.5 font-mono text-[0.9em] align-baseline break-words mx-0.5;
-            /* MODIFY CODE STYLING HERE */
+            
         }
 
         #quiz-app-container pre {
             @apply block bg-black/50 border border-white/10 rounded-lg p-3 md:p-4 my-4 mx-auto w-full max-w-full overflow-x-auto text-xs md:text-sm leading-relaxed shadow-inner text-left font-mono;
-             /* MODIFY PRE STYLING HERE */
+             
         }
 
-        /* Optional: Slightly different styles for code/pre inside option buttons */
+        
         #quiz-app-container .option-button code {
             @apply text-inherit bg-black/20 text-[0.85em] px-1 py-0;
-             /* MODIFY CODE-IN-BUTTON STYLING HERE */
+             
         }
 
         #quiz-app-container .option-button pre {
             @apply my-1 md:my-2 p-1.5 md:p-2 text-[0.8em];
-             /* MODIFY PRE-IN-BUTTON STYLING HERE */
+             
         }
 
-        /* Ensure pre>code inherits parent styling correctly */
+        
          #quiz-app-container pre code {
              @apply block w-full p-0 m-0 bg-transparent border-none rounded-none text-inherit text-[1em] whitespace-pre overflow-x-visible align-middle break-normal;
          }
-        /* --- End code/pre styles --- */
+        
+        
 
     </style>
 
     {% block extra_css %}{% endblock extra_css %}
     {% block extra_js_head %}{% endblock extra_js_head %}
 
-    <!-- Alpine.js loaded LAST -->
+    
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body class="bg-slate-900 text-gray-300 font-sans min-h-screen flex flex-col">
     {% block content %}
-    {# Content from child templates will go here #}
+    
     {% endblock content %}
 
     {% block extra_js_body %}

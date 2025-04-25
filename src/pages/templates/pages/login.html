@@ -4,97 +4,85 @@
 {% block title %}Login | QuizMaster{% endblock %}
 
 {% block content %}
-<div class="min-h-[80vh] flex items-center justify-center py-12 px-4">
-    <div class="max-w-md w-full space-y-8 bg-surface rounded-xl shadow-lg p-8 border border-border">
-        <div class="text-center">
-            <h1 class="text-3xl font-extrabold text-accent-heading mb-2">Login to Your Account</h1>
-            <p class="text-text-muted">Welcome back! Please enter your credentials.</p>
-        </div>
-        
-        <form class="mt-8 space-y-6">
-            <div class="space-y-4">
-                <div>
-                    <label for="email" class="block text-sm font-medium text-text-secondary">Email Address</label>
-                    <input type="email" id="email" name="email" required 
-                        class="appearance-none relative block w-full px-3 py-3 mt-1 border border-border placeholder-text-muted text-text-primary bg-tag-bg/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent"
-                        placeholder="Enter your email">
-                </div>
-                
-                <div>
-                    <label for="password" class="block text-sm font-medium text-text-secondary">Password</label>
-                    <input type="password" id="password" name="password" required 
-                        class="appearance-none relative block w-full px-3 py-3 mt-1 border border-border placeholder-text-muted text-text-primary bg-tag-bg/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent"
-                        placeholder="Enter your password">
-                </div>
-            </div>
+<div class="min-h-[calc(100vh-15rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"><div class="max-w-md w-full space-y-8 bg-surface rounded-xl shadow-lg p-6 sm:p-8 border border-border"><div class="text-center">
+ <h1 class="text-2xl sm:text-3xl font-extrabold text-accent-heading mb-2">Login to Your Account</h1><p class="text-text-muted text-sm sm:text-base">Welcome back! Please enter your credentials.</p></div>
 
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <input id="remember" name="remember" type="checkbox" 
-                        class="h-4 w-4 text-accent-primary focus:ring-accent-primary border-border rounded">
-                    <label for="remember" class="ml-2 block text-sm text-text-secondary">
-                        Remember me
-                    </label>
-                </div>
+ <form class="mt-8 space-y-6">
+ <div class="rounded-md shadow-sm -space-y-px"><div>
+ <label for="email" class="sr-only">Email Address</label><input type="email" id="email" name="email" required
+ class="appearance-none relative block w-full px-3 py-3 border border-border placeholder-text-muted text-text-primary bg-tag-bg/40 rounded-t-lg focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent focus:z-10 text-sm sm:text-base"
+ placeholder="Email Address">
+ </div>
+ <div>
+ <label for="password" class="sr-only">Password</label>
+ <input type="password" id="password" name="password" required
+ class="appearance-none relative block w-full px-3 py-3 border border-border placeholder-text-muted text-text-primary bg-tag-bg/40 rounded-b-lg focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent focus:z-10 text-sm sm:text-base"
+ placeholder="Password">
+ </div>
+ </div>
 
-                <div class="text-sm">
-                    <a href="#" class="text-accent-heading hover:text-accent-primary">
-                        Forgot Password?
-                    </a>
-                </div>
-            </div>
+ <div class="flex items-center justify-between">
+ <div class="flex items-center">
+ <input id="remember" name="remember" type="checkbox"
+ class="h-4 w-4 text-accent-primary focus:ring-accent-primary border-border rounded">
+ <label for="remember" class="ml-2 block text-sm text-text-secondary">
+ Remember me
+ </label>
+ </div>
 
-            <div>
-                <button type="submit" 
-                    class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-accent-primary hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-primary transition-colors">
-                    Login
-                </button>
-            </div>
-        </form>
+ <div class="text-sm">
+ <a href="#" class="text-accent-heading hover:text-accent-primary font-medium">
+ Forgot Password?
+ </a>
+ </div>
+ </div>
 
-        <div class="mt-6">
-            <div class="relative">
-                <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-border"></div>
-                </div>
-                <div class="relative flex justify-center text-sm">
-                    <span class="px-2 bg-surface text-text-muted">or continue with</span>
-                </div>
-            </div>
+ <div>
+ <button type="submit"
+ class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-accent-primary hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-accent-primary transition-colors">
+ Login
+ </button>
+ </div>
+ </form>
 
-            <div class="mt-6 grid grid-cols-2 gap-3">
-                <button type="button" 
-                    class="flex-1 py-3 px-4 border border-border rounded-lg bg-tag-bg/40 hover:bg-tag-bg text-text-secondary transition-colors flex justify-center items-center">
-                    <span class="sr-only">Sign in with Google</span>
-                    <svg class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-.06 14.5c-2.485 0-4.5-2.015-4.5-4.5s2.015-4.5 4.5-4.5c1.2 0 2.007.31 2.5.7l-1.026.977c-.262-.247-.722-.535-1.474-.535-1.258 0-2.284 1.055-2.284 2.358 0 1.302 1.026 2.358 2.284 2.358.972 0 1.524-.395 1.862-.723.289-.289.472-.7.546-1.273h-2.408v-1.301h4.004c.057.29.102.562.102.986 0 .867-.252 1.961-1.07 2.723-.8.762-1.82 1.167-3.036 1.167z"/>
-                    </svg>
-                    Google
-                </button>
-                <button type="button" 
-                    class="flex-1 py-3 px-4 border border-border rounded-lg bg-tag-bg/40 hover:bg-tag-bg text-text-secondary transition-colors flex justify-center items-center">
-                    <span class="sr-only">Sign in with Facebook</span>
-                    <svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
-                    </svg>
-                    Facebook
-                </button>
-            </div>
-        </div>
+ <div class="mt-6">
+ <div class="relative">
+ <div class="absolute inset-0 flex items-center" aria-hidden="true">
+ <div class="w-full border-t border-border"></div>
+ </div>
+ <div class="relative flex justify-center text-sm">
+ <span class="px-2 bg-surface text-text-muted">or continue with</span>
+ </div>
+ </div>
 
-        <div class="text-center mt-4">
-            <p class="text-sm text-text-muted">
-                Don't have an account? 
-                <a href="{% url 'pages:signup' %}" class="text-accent-heading hover:text-accent-primary font-medium">
-                    Sign up
-                </a>
-            </p>
-        </div>
-    </div>
+ <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3"><button type="button"
+ class="w-full inline-flex justify-center py-2 px-4 border border-border rounded-lg shadow-sm bg-tag-bg/40 hover:bg-tag-bg text-sm font-medium text-text-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-accent-primary">
+ <span class="sr-only">Sign in with Google</span>
+ <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"> <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.477 0 10c0 4.44 2.94 8.208 6.943 9.513.5.092.682-.217.682-.483 0-.237-.009-.868-.013-1.703-2.855.62-3.457-1.376-3.457-1.376-.455-1.157-1.11-1.465-1.11-1.465-.909-.62.069-.608.069-.608 1.004.07 1.532 1.03 1.532 1.03.89 1.526 2.333 1.085 2.901.83.091-.645.348-1.085.635-1.334-2.214-.251-4.543-1.107-4.543-4.93 0-1.089.39-1.98.1.028-2.608.09-.495.372-.631 1.98-.123.39-.04.81-.04 1.27 0 .46.083.88.243 1.27.16.39.372.631.372.631s.285 2.518.285 2.608c0 .115-.05.218-.148.293-.098.075-.23.113-.372.113-.143 0-.275-.038-.372-.113-.098-.075-.148-.178-.148-.293 0-.09.094-.18.285-.27.19-.09.372-.14.372-.14s-.083-1.527-.083-1.703c0-.176-.04-.33-.123-.461-.084-.13-.208-.237-.372-.318-.164-.082-.358-.123-.582-.123-.224 0-.418.041-.582.123-.164.081-.288.188-.372.318-.083.131-.123.285-.123.461 0 .176.083 1.703.083 1.703s.182.05.372.14c.19.09.285.18.285.27 0 .115-.05.218-.148.293-.098.075-.23.113-.372.113-.143 0-.275-.038-.372-.113-.098-.075-.148-.178-.148-.293 0-.09-.094-.18-.285-.27-.19-.09-.372-.14-.372-.14s-.083-1.527-.083-1.703c0-.176-.04-.33-.123-.461-.084-.13-.208-.237-.372-.318-.164-.082-.358-.123-.582-.123-.224 0-.418.041-.582.123-.164.081-.288.188-.372.318-.083.131-.123.285-.123.461 0 .176.083 1.703.083 1.703s.182.05.372.14c.19.09.285.18.285.27 0 .115-.05.218-.148.293-.098.075-.23.113-.372.113-.143 0-.275-.038-.372-.113C2.94 18.208 0 14.44 0 10 0 4.477 4.477 0 10 0z" clip-rule="evenodd"/> </svg> <!-- Simple Placeholder SVG -->
+ Google
+ </button>
+ <button type="button"
+ class="w-full inline-flex justify-center py-2 px-4 border border-border rounded-lg shadow-sm bg-tag-bg/40 hover:bg-tag-bg text-sm font-medium text-text-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-accent-primary">
+ <span class="sr-only">Sign in with Facebook</span>
+ <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"> <path fill-rule="evenodd" d="M10 20a10 10 0 110-20 10 10 0 010 20zm-1.02-7.177v-2.33h-1.54v2.33h-1.033v1.89h1.034v4.578h2.178v-4.578h1.45l.218-1.89h-1.668z" clip-rule="evenodd"/> </svg> <!-- Simple Placeholder SVG -->
+ Facebook
+ </button>
+ </div>
+ </div>
+
+ <div class="text-center mt-4">
+ <p class="text-sm text-text-muted">
+ Don't have an account?
+ <a href="{% url 'pages:signup' %}" class="text-accent-heading hover:text-accent-primary font-medium">
+ Sign up
+ </a>
+ </p>
+ </div>
+ </div>
 </div>
 
 <!-- Non-functional notice -->
-<div class="fixed bottom-0 left-0 right-0 bg-accent-primary/70 backdrop-blur-sm text-white text-center py-2 px-4">
-    <p><strong>Note:</strong> This is a placeholder page. Login functionality will be implemented in a future iteration.</p>
+<div class="fixed bottom-0 left-0 right-0 bg-accent-primary/70 backdrop-blur-sm text-white text-center py-2 px-4 text-sm z-50">
+ <p><strong>Note:</strong> This is a placeholder page. Login functionality is not yet implemented.</p>
 </div>
 {% endblock %}

@@ -159,3 +159,11 @@ GitHub.sublime-settings
 # Local Settings for Development
 core/local_settings.py
 local_settings.py
+
+
+# screenshots
+screenshots/
+playwright_screenshots/
+**/screenshots/
+**/playwright_screenshots/
+

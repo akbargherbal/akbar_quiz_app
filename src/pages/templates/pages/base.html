@@ -3,118 +3,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>">
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>">
 
-      {# --- PWA Meta Tags --- #}
-      {% progressive_web_app_meta %} {# <-- Add this tag #}
-      {# --- End PWA Meta Tags --- #}
-      
-    <title>{% block title %}Quiz App{% endblock %}</title>
-    
-    <!-- Tailwind CSS via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        // Custom purple palette colors
-                        'bg-primary': '#0F172A',      /* slate-900 */
-                        'bg-secondary': '#1E293B',    /* slate-800 */
-                        'surface': '#1E293B',         /* slate-800 */
-                        'text-primary': '#D1D5DB',    /* gray-300 */
-                        'text-secondary': '#E5E7EB',  /* gray-200 */
-                        'text-muted': '#9CA3AF',      /* gray-400 */
-                        'accent-heading': '#A78BFA',  /* purple-400 */
-                        'accent-primary': '#7C3AED',  /* purple-600 */
-                        'accent-hover': '#6D28D9',    /* purple-700 */
-                        'border': '#475569',          /* slate-600 */
-                        'tag-bg': '#334155',          /* slate-700 */
-                        'tag-teal': '#5EEAD4',        /* teal-300 */
-                        'tag-blue': '#93C5FD',        /* blue-300 */
-                        'tag-yellow': '#FDE047',      /* yellow-300 */
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <!-- Alpine.js -->
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    
-    {% block extra_css %}{% endblock %}
-    {% block extra_js_head %}{% endblock %}
+ {# --- PWA Meta Tags --- #}
+ {% progressive_web_app_meta %} {# <-- Add this tag #}
+ {# --- End PWA Meta Tags --- #}
+
+ <title>{% block title %}Quiz App{% endblock %}</title>
+
+ <!-- Tailwind CSS via CDN -->
+ <script src="https://cdn.tailwindcss.com"></script>
+ <script>
+ tailwind.config = {
+ theme: {
+ extend: {
+ colors: {
+ // Custom purple palette colors
+ 'bg-primary': '#0F172A', 'bg-secondary': '#1E293B', 'surface': '#1E293B', 'text-primary': '#D1D5DB', 'text-secondary': '#E5E7EB', 'text-muted': '#9CA3AF', 'accent-heading': '#A78BFA', 'accent-primary': '#7C3AED', 'accent-hover': '#6D28D9', 'border': '#475569', 'tag-bg': '#334155', 'tag-teal': '#5EEAD4', 'tag-blue': '#93C5FD', 'tag-yellow': '#FDE047', }
+ }
+ }
+ }
+ </script>
+
+ <!-- Alpine.js -->
+ <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+ {% block extra_css %}{% endblock %}
+ {% block extra_js_head %}{% endblock %}
 </head>
-<body class="bg-bg-primary text-text-primary min-h-screen flex flex-col">
-    <div class="flex flex-col min-h-screen">
-        <!-- Header with navigation -->
-        <header class="bg-bg-secondary/80 backdrop-blur-md sticky top-0 z-50 shadow-md">
-            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-                <div class="flex items-center">
-                    <a href="{% url 'pages:home' %}" class="flex items-center">
-                        <span class="text-2xl mr-2">🎯</span>
-                        <span class="text-accent-heading font-bold text-xl">QuizMaster</span>
-                    </a>
-                </div>
-                
-                <!-- Mobile menu toggle (only visible on small screens) -->
-                <div class="md:hidden" x-data="{ open: false }">
-                    <button @click="open = !open" class="text-text-secondary hover:text-accent-heading">
-                        <span class="text-2xl">☰</span>
-                    </button>
-                    
-                    <!-- Mobile navigation menu -->
-                    <nav x-show="open" 
-                         x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0 transform scale-95"
-                         x-transition:enter-end="opacity-100 transform scale-100"
-                         x-transition:leave="transition ease-in duration-150"
-                         x-transition:leave-start="opacity-100 transform scale-100"
-                         x-transition:leave-end="opacity-0 transform scale-95"
-                         class="absolute top-full left-0 right-0 bg-bg-secondary shadow-lg flex flex-col w-full py-2" 
-                         x-cloak>
-                        <a href="{% url 'pages:home' %}" class="px-4 py-2 hover:bg-tag-bg text-text-secondary hover:text-accent-heading">Home</a>
-                        <a href="{% url 'pages:quizzes' %}" class="px-4 py-2 hover:bg-tag-bg text-text-secondary hover:text-accent-heading">Quizzes</a>
-                        <a href="{% url 'pages:about' %}" class="px-4 py-2 hover:bg-tag-bg text-text-secondary hover:text-accent-heading">About</a>
-                        <a href="{% url 'pages:login' %}" class="px-4 py-2 hover:bg-tag-bg text-text-secondary hover:text-accent-heading">Login</a>
-                        <a href="{% url 'pages:signup' %}" class="px-4 py-2 hover:bg-tag-bg text-text-secondary hover:text-accent-heading">Sign Up</a>
-                    </nav>
-                </div>
-                
-                <!-- Desktop navigation (hidden on small screens) -->
-                <nav class="hidden md:flex items-center space-x-6">
-                    <a href="{% url 'pages:home' %}" class="text-text-secondary hover:text-accent-heading transition-colors">Home</a>
-                    <a href="{% url 'pages:quizzes' %}" class="text-text-secondary hover:text-accent-heading transition-colors">Quizzes</a>
-                    <a href="{% url 'pages:about' %}" class="text-text-secondary hover:text-accent-heading transition-colors">About</a>
-                    
-                    <div class="flex space-x-4 ml-6">
-                        <a href="{% url 'pages:login' %}" class="border border-border rounded-lg px-4 py-2 text-text-secondary hover:bg-tag-bg transition-colors">Login</a>
-                        <a href="{% url 'pages:signup' %}" class="bg-accent-primary hover:bg-accent-hover text-white rounded-lg px-4 py-2 transition-colors">Sign Up</a>
-                    </div>
-                </nav>
-            </div>
-        </header>
-        
-        <!-- Main content area -->
-        <main class="flex-grow">
-            {% block content %}{% endblock %}
-        </main>
-        
-        <!-- Footer -->
-        <footer class="bg-bg-secondary/80 mt-auto py-8">
-            <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
-                <div class="text-text-muted mb-4 md:mb-0">
-                    <p>&copy; {% now "Y" %} QuizMaster. All rights reserved.</p>
-                </div>
-                <div class="flex space-x-6">
-                    <!-- Empty for now as requested -->
-                </div>
-            </div>
-        </footer>
-    </div>
-    
-    {% block extra_js_body %}{% endblock %}
+<body class="bg-bg-primary text-text-primary min-h-screen flex flex-col font-sans"><div class="flex flex-col min-h-screen">
+ <!-- Header with navigation -->
+ <header class="bg-bg-secondary/80 backdrop-blur-md sticky top-0 z-50 shadow-md">
+ <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center"><div class="flex items-center">
+ <a href="{% url 'pages:home' %}" class="flex items-center">
+ <span class="text-2xl mr-2">🎯</span>
+ <span class="text-accent-heading font-bold text-xl">QuizMaster</span>
+ </a>
+ </div>
+
+ <!-- Mobile menu toggle (only visible on small screens) -->
+ <div class="md:hidden" x-data="{ open: false }">
+ <button @click="open = !open" class="text-text-secondary hover:text-accent-heading focus:outline-none focus:ring-2 focus:ring-accent-heading rounded"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+ <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+ <path x-show="open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+ </svg>
+ </button>
+
+ <!-- Mobile navigation menu -->
+ <nav x-show="open"
+ x-transition:enter="transition ease-out duration-200"
+ x-transition:enter-start="opacity-0 transform -translate-y-2"
+ x-transition:enter-end="opacity-100 transform translate-y-0"
+ x-transition:leave="transition ease-in duration-150"
+ x-transition:leave-start="opacity-100 transform translate-y-0"
+ x-transition:leave-end="opacity-0 transform -translate-y-2"
+ @click.outside="open = false" class="absolute top-full left-0 right-0 bg-bg-secondary shadow-lg flex flex-col w-full py-2 mt-0.5 border-t border-border" x-cloak>
+ <a href="{% url 'pages:home' %}" class="block px-4 py-3 hover:bg-tag-bg text-text-secondary hover:text-accent-heading transition-colors">Home</a>
+ <a href="{% url 'pages:quizzes' %}" class="block px-4 py-3 hover:bg-tag-bg text-text-secondary hover:text-accent-heading transition-colors">Quizzes</a>
+ <a href="{% url 'pages:about' %}" class="block px-4 py-3 hover:bg-tag-bg text-text-secondary hover:text-accent-heading transition-colors">About</a>
+ <div class="border-t border-border my-2 mx-4"></div><a href="{% url 'pages:login' %}" class="block px-4 py-3 hover:bg-tag-bg text-text-secondary hover:text-accent-heading transition-colors">Login</a>
+ <a href="{% url 'pages:signup' %}" class="block px-4 py-3 hover:bg-tag-bg text-text-secondary hover:text-accent-heading transition-colors">Sign Up</a>
+ </nav>
+ </div>
+
+ <!-- Desktop navigation (hidden on small screens) -->
+ <nav class="hidden md:flex items-center space-x-6">
+ <a href="{% url 'pages:home' %}" class="text-text-secondary hover:text-accent-heading transition-colors px-3 py-2 rounded-md text-sm font-medium">Home</a><a href="{% url 'pages:quizzes' %}" class="text-text-secondary hover:text-accent-heading transition-colors px-3 py-2 rounded-md text-sm font-medium">Quizzes</a>
+ <a href="{% url 'pages:about' %}" class="text-text-secondary hover:text-accent-heading transition-colors px-3 py-2 rounded-md text-sm font-medium">About</a>
+
+ <div class="flex items-center space-x-4 ml-6"><a href="{% url 'pages:login' %}" class="border border-border rounded-lg px-4 py-2 text-sm font-medium text-text-secondary hover:bg-tag-bg transition-colors">Login</a>
+ <a href="{% url 'pages:signup' %}" class="bg-accent-primary hover:bg-accent-hover text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">Sign Up</a>
+ </div>
+ </nav>
+ </div>
+ </header>
+
+ <!-- Main content area -->
+ <main class="flex-grow">
+ {% block content %}{% endblock %}
+ </main>
+
+ <!-- Footer -->
+ <footer class="bg-bg-secondary/80 mt-auto py-8">
+ <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-center md:text-left"><div class="text-text-muted mb-4 md:mb-0">
+ <p>© {% now "Y" %} QuizMaster. All rights reserved.</p>
+ </div>
+ <div class="flex space-x-6">
+ {# Future links can go here #}
+ </div>
+ </div>
+ </footer>
+ </div>
+
+ {% block extra_js_body %}{% endblock %}
 </body>
 </html>
