@@ -53,8 +53,8 @@ window.quizApp = function () {
     score: 0, // User's score
     wrongAnswers: 0, // Track wrong answers for star rating
     feedbackTimer: null, // Timer for feedback duration
-    correctFeedbackDuration: 3000, // Feedback duration for correct answers (milliseconds)
-    incorrectFeedbackDuration: 5000, // Feedback duration for incorrect answers (milliseconds)
+    correctFeedbackDuration: 30, // Feedback duration for correct answers (milliseconds)
+    incorrectFeedbackDuration: 50, // Feedback duration for incorrect answers (milliseconds)
     startTime: null, // Time when quiz started
     endTime: null, // Time when quiz ended
     quizTime: 0, // Total time spent on quiz in seconds

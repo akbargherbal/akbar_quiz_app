@@ -24,7 +24,7 @@ BREAKPOINTS = {
 }
 BASE_URL = "http://127.0.0.1:8000"
 # !!! IMPORTANT: Ensure Quiz ID 1 exists with > 0 questions, e.g., via add_sample_quizzes !!!
-QUIZ_URL = "/quiz/1/"
+QUIZ_URL = "/quiz/41/"
 SCREENSHOT_DIR = "playwright_screenshots"
 os.makedirs(SCREENSHOT_DIR, exist_ok=True)
 
