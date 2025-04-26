@@ -167,3 +167,5 @@ playwright_screenshots/
 **/screenshots/
 **/playwright_screenshots/
 
+node_modules
+**/node_modules

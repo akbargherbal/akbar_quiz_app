@@ -18,7 +18,7 @@
 {% block content %}
 <div
     id="quiz-app-container"
-    class="max-w-2xl mx-auto w-11/12 px-4 py-5 sm:px-6 md:py-8 flex-grow flex flex-col justify-center"
+    class="max-w-2xl mx-auto w-11/12 px-4 py-5 sm:px-6 md:py-8 flex-grow flex flex-col justify-start"
     x-data="quizApp()"
     x-init="init()"
     x-cloak
@@ -28,7 +28,7 @@
   <template x-if="!quizCompleted">
     <div>
       <!-- Progress Bar, Stars, Counter, Home Button -->
-      <div class="flex items-center mb-5 relative min-h-[40px] gap-3 md:mb-8">
+      <div class="sticky top-0 z-10 bg-slate-900 py-4 flex items-center relative min-h-[40px] gap-3">
         <!-- Progress Bar -->
         <div class="flex justify-center items-center flex-grow flex-basis-0 min-w-[50px]">
             <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden shadow-inner">
@@ -59,7 +59,7 @@
 
       <!-- Question Text Container -->
       <div
-        class="bg-slate-800/80 rounded-2xl p-5 sm:p-6 md:p-8 relative mb-4 sm:mb-6 backdrop-blur-sm border border-slate-700 shadow-lg"
+        class="bg-slate-800/80 rounded-2xl p-5 sm:p-6 md:p-8 relative mt-4 mb-4 sm:mb-6 backdrop-blur-sm border border-slate-700 shadow-lg min-h-48 flex items-center justify-center"
         x-show="!quizCompleted && currentQuestion"
         x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 transform scale-95"
@@ -68,10 +68,8 @@
         x-transition:leave-start="opacity-100 transform scale-100"
         x-transition:leave-end="opacity-0 transform scale-95"
       >
-          <div class="p-2 sm:p-4 mb-4 sm:mb-5 rounded-lg text-center relative">
-              <div class="text-xl sm:text-2xl lg:text-3xl text-center my-4 leading-normal text-gray-200">
+              <div class="text-xl sm:text-2xl lg:text-3xl text-center leading-normal text-gray-200">
                    <div x-html="currentQuestion.text"></div>
-              </div>
           </div>
       </div>
 
