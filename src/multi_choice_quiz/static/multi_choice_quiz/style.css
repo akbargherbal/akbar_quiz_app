@@ -1,3 +1,5 @@
+/* src/multi_choice_quiz/static/multi_choice_quiz/style.css */
+
 [x-cloak] {
   display: none !important;
 }
@@ -22,6 +24,68 @@
   border-radius: 4px;
 }
 
+/* --- Styles for pre blocks within the Mistakes Review list (Horizontal Scroll) --- */
+/* --- START FIX --- */
+/*
+ * Target PRE elements specifically within the mistakes list items.
+ * This ensures code blocks don't break the layout.
+*/
+.mistakes-review-list li .mistake-content-wrapper pre { /* Added .mistake-content-wrapper for clarity if needed, but targeting div works too */
+/* Or use: .mistakes-review-list li > div pre { */
+    white-space: pre;       /* Preserve code formatting, prevent wrapping */
+    overflow-x: auto;       /* Add horizontal scrollbar ONLY if needed */
+    display: block;         /* Ensure block behavior for overflow */
+    max-width: 100%;        /* IMPORTANT: Constrain width to its container (the div.flex-1.min-w-0) */
+    box-sizing: border-box; /* Ensure padding/border are included in max-width calculation */
+
+    /* Optional: Add some padding for scrollbar visibility if content touches edges */
+    padding-bottom: 8px;
+
+    /* Optional: Style the scrollbar (works in WebKit/Blink browsers & Firefox) */
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: #6b7280 #4b5563; /* Firefox: thumb track (using Tailwind gray colors) */
+
+    /* Reset some potentially inherited or default styles that might interfere */
+    background-color: transparent; /* Reset background if inheriting inappropriately */
+    color: inherit;            /* Inherit text color from parent */
+    font-size: inherit;        /* Inherit font size from parent */
+    padding-left: 0;           /* Reset padding if needed */
+    padding-right: 0;          /* Reset padding if needed */
+    padding-top: 0;            /* Reset padding if needed */
+    border-radius: 0;          /* Reset border-radius */
+    margin: 0.5em 0;           /* Add some default vertical margin */
+}
+
+/* WebKit scrollbar styling for the PRE in mistakes list */
+.mistakes-review-list li .mistake-content-wrapper pre::-webkit-scrollbar { /* Target pre within the wrapper */
+    height: 6px; /* Height of horizontal scrollbar */
+}
+
+.mistakes-review-list li .mistake-content-wrapper pre::-webkit-scrollbar-track { /* Target pre within the wrapper */
+    background: #4b5563; /* Track color (Tailwind gray-600) */
+    border-radius: 3px;
+}
+
+.mistakes-review-list li .mistake-content-wrapper pre::-webkit-scrollbar-thumb { /* Target pre within the wrapper */
+    background-color: #6b7280; /* Thumb color (Tailwind gray-500) */
+    border-radius: 3px;
+    border: 1px solid #4b5563; /* Optional border (track color) */
+}
+/* --- END FIX --- */
+
+
+/* --- Styles for standalone code tags (if any) within the list --- */
+/* --- Keep this separate and don't add block/overflow here --- */
+.mistakes-review-list code {
+    /* Styles for <code> tags NOT inside <pre> (if necessary) */
+    /* For example, if you needed specific padding/background for them */
+     /* padding: 1px 3px; */
+     /* background-color: rgba(0,0,0,0.1); */
+     /* border-radius: 3px; */
+     /* NOTE: Do NOT add display: block or overflow-x: auto here */
+}
+
+
 /* Tablet styles */
 @media screen and (min-width: 768px) and (max-width: 1023px) {
   .option-button {
@@ -30,7 +94,7 @@
     margin-bottom: 4px !important;
     border-radius: 6px !important;
   }
-  
+
   .option-button code {
     font-size: 17px !important;
     padding: 2px 4px !important;
@@ -46,37 +110,31 @@
     border-radius: 8px !important;
     cursor: pointer;
   }
-  
+
   .option-button code {
     font-size: 0.85em !important;
     padding: 3px 6px !important;
   }
-  
+
   /* Add hover effects for desktop */
   .option-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
-  
+
   .option-button code:hover {
     background-color: #001a66 !important; /* Slightly darker navy on hover */
   }
 }
 
-/* Add this to your global CSS file or within a <style> tag */
+/* Keyframes for pulse animation (remains unchanged) */
 @keyframes pulse-glow-scale {
   0%, 100% {
     /* Keep the base scale and shadow defined in the JS */
     transform: scale(1); /* Relative to the scaled-up size */
-    /* You could subtly change shadow here too if desired */
-    /* box-shadow: 0 0 12px 3px rgba(255, 255, 255, 0.8); */
   }
   50% {
     /* Slightly increase scale for the 'pulse' */
     transform: scale(1.03); /* Adjust this value for desired pulse intensity */
-
-    /* Optional: Slightly intensify the glow */
-    /* box-shadow: 0 0 16px 4px rgba(255, 255, 255, 0.9); */
-    /* Note: Animating box-shadow can be less performant than transform */
   }
 }

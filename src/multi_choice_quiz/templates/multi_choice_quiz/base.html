@@ -7,18 +7,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>">
 
-    
+
     {% progressive_web_app_meta %}
-    
+
 
 
     <title>{% block title %}Django Quiz App{% endblock title %}</title>
 
-    
+
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
     <style type="text/tailwindcss">
-        
+
         @keyframes shake {
           10%, 90% { transform: translateX(-1px); }
           20%, 80% { transform: translateX(2px); }
@@ -28,54 +28,66 @@
         .animate-shake {
           animation: shake 0.5s ease-in-out;
         }
-        
+
+        /* Scrollbar base styles */
         .scrollbar-thin { scrollbar-width: thin; scrollbar-color: #475569 #334155; }
         .scrollbar-thin::-webkit-scrollbar { width: 8px; }
         .scrollbar-thin::-webkit-scrollbar-track { background: #334155; border-radius: 4px; }
         .scrollbar-thin::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
         .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        
-        
+
+        /* General Code Styling */
         #quiz-app-container code {
             @apply inline bg-black/40 text-gray-100 rounded px-1.5 py-0.5 font-mono text-[0.9em] align-baseline break-words mx-0.5;
-            
+            /* break-words helps with long inline code elements */
         }
 
+        /* --- START FIX --- */
+        /* General PRE Styling - Focus on appearance, not overflow here */
         #quiz-app-container pre {
-            @apply block bg-black/50 border border-white/10 rounded-lg p-3 md:p-4 my-4 mx-auto w-full max-w-full overflow-x-auto text-xs md:text-sm leading-relaxed shadow-inner text-left font-mono;
-             
+             /* display: block is essential for width/max-width */
+             /* overflow-x: auto is REMOVED from global style - handled contextually (e.g., in style.css for mistakes list) */
+            @apply block bg-black/50 border border-white/10 rounded-lg p-3 md:p-4 my-4 mx-auto w-full max-w-full text-xs md:text-sm leading-relaxed shadow-inner text-left font-mono;
+             /* Ensure w-full and max-w-full don't conflict with contextual max-width: 100% */
         }
+        /* --- END FIX --- */
 
-        
+
+        /* Code styling within Option Buttons */
         #quiz-app-container .option-button code {
             @apply text-inherit bg-black/20 text-[0.85em] px-1 py-0;
-             
+            /* Ensure this doesn't override general code styles inappropriately */
         }
 
+        /* PRE styling within Option Buttons */
         #quiz-app-container .option-button pre {
             @apply my-1 md:my-2 p-1.5 md:p-2 text-[0.8em];
-             
+            /* Add overflow-x: auto here if needed *specifically* for buttons */
+            /* overflow-x: auto; */
         }
 
-        
-         #quiz-app-container pre code {
-             @apply block w-full p-0 m-0 bg-transparent border-none rounded-none text-inherit text-[1em] whitespace-pre overflow-x-visible align-middle break-normal;
-         }
-        
-        
+
+        /* Code styling *inside* PRE tags */
+        #quiz-app-container pre code {
+            /* white-space: pre ensures formatting inside code block is kept */
+            /* Remove background/padding/border overrides if pre handles it */
+            @apply block w-full p-0 m-0 bg-transparent border-none rounded-none text-inherit text-[1em] whitespace-pre align-middle;
+             /* Ensure no conflicting width/display properties */
+        }
+
 
     </style>
 
     {% block extra_css %}{% endblock extra_css %}
     {% block extra_js_head %}{% endblock extra_js_head %}
 
-    
+
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body class="bg-slate-900 text-gray-300 font-sans min-h-screen flex flex-col">
     {% block content %}
-    
+
     {% endblock content %}
 
     {% block extra_js_body %}
