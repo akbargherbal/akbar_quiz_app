@@ -51,8 +51,8 @@ window.quizApp = function () {
     score: 0, // User's score
     wrongAnswers: 0, // Track wrong answers for star rating
     feedbackTimer: null, // Timer for feedback duration
-    correctFeedbackDuration: 30, // Feedback duration for correct answers (milliseconds)
-    incorrectFeedbackDuration: 50, // Feedback duration for incorrect answers (milliseconds)
+    correctFeedbackDuration: 3000, // Feedback duration for correct answers (milliseconds)
+    incorrectFeedbackDuration: 5000, // Feedback duration for incorrect answers (milliseconds)
     startTime: null, // Time when quiz started
     endTime: null, // Time when quiz ended
     quizTime: 0, // Total time spent on quiz in seconds
@@ -343,15 +343,18 @@ window.quizApp = function () {
     // Kept as-is to maintain current production behavior.
     getOptionClass(index) {
       if (!this.currentQuestion) {
-        return "option-button p-4 rounded-xl font-semibold text-lg md:text-lg sm:text-base text-center transition-all duration-200 ease-in-out border-none cursor-pointer relative overflow-hidden shadow-md flex flex-col items-center justify-center bg-slate-700 text-gray-200";
+        return "option-button p-4 rounded-xl font-semibold text-lg md:text-lg sm:text-base text-center transition-all duration-100 ease-out border-none cursor-pointer relative overflow-hidden shadow-md flex flex-col items-center justify-center bg-slate-700 text-gray-200";
       }
 
       let baseClasses = [
         "option-button", "p-4", "rounded-xl", "font-semibold", "text-base", "text-center",
-        "transition-all", "duration-200", "ease-in-out", "border-none", "cursor-pointer",
-        "relative", "overflow-hidden", //"shadow-md",
+        "transition-all", "duration-100", "ease-out", "border-none", "cursor-pointer",
+        "relative",
          "flex", "flex-col", "items-center", "justify-center",
         "disabled:opacity-100", "disabled:cursor-not-allowed",
+        // --- ADD THIS ---
+        "overflow-hidden"
+        // --- ADD THIS ---
       ];
 
       // State 1: Question NOT Answered Yet
