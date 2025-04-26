@@ -51,8 +51,10 @@ window.quizApp = function () {
     score: 0, // User's score
     wrongAnswers: 0, // Track wrong answers for star rating
     feedbackTimer: null, // Timer for feedback duration
-    correctFeedbackDuration: 3000, // Feedback duration for correct answers (milliseconds)
-    incorrectFeedbackDuration: 5000, // Feedback duration for incorrect answers (milliseconds)
+    // --- Using ORIGINAL feedback durations ---
+    correctFeedbackDuration: 4000, // Feedback duration for correct answers (milliseconds)
+    incorrectFeedbackDuration: 6000, // Feedback duration for incorrect answers (milliseconds)
+    // --- Using ORIGINAL feedback durations ---
     startTime: null, // Time when quiz started
     endTime: null, // Time when quiz ended
     quizTime: 0, // Total time spent on quiz in seconds
@@ -72,25 +74,19 @@ window.quizApp = function () {
       const totalQuestions = this.questions.length;
       if (totalQuestions === 0) return "☆☆☆☆☆"; // Default empty stars if no questions
 
-      // ** REFACTOR START: Simplified star rating calculation **
       const maxPossibleScore = totalQuestions;
       const currentScore = maxPossibleScore - this.wrongAnswers;
       const percentage = maxPossibleScore > 0 ? (currentScore / maxPossibleScore) * 100 : 0;
 
       let scaledRating = 0;
-      // Find the highest threshold the percentage meets
       for (const item of starRatingThresholds) {
         if (percentage >= item.threshold) {
           scaledRating = item.rating;
-          break; // Found the highest applicable rating
+          break;
         }
       }
-      // ** REFACTOR END **
-
-      // Round to nearest 0.5 for half-star display
       const roundedRating = Math.round(scaledRating * 2) / 2;
 
-      // Generate star string (unchanged)
       let starsHtml = "";
       const fullStar = "★";
       const halfStar = "◐";
@@ -98,46 +94,38 @@ window.quizApp = function () {
 
       for (let i = 0; i < 5; i++) {
         if (roundedRating >= i + 1) {
-          starsHtml += fullStar; // Full star
+          starsHtml += fullStar;
         } else if (roundedRating >= i + 0.5) {
-          starsHtml += halfStar; // Half star
+          starsHtml += halfStar;
         } else {
-          starsHtml += emptyStar; // Empty star
+          starsHtml += emptyStar;
         }
       }
       return starsHtml;
     },
 
     // --- Methods ---
-    // Custom event emitter method (Refactored: Logic moved here, global function removed)
     emitQuizEvent(eventName, data = {}) {
-      // DEBUG: Log event emission attempt
       console.log("DEBUG: emitQuizEvent called for:", eventName, "TESTING_MODE:", window.TESTING_MODE);
-
-      // ** REFACTOR START: Removed redundant TESTING_MODE check, assuming it's always true based on init() **
-      // The global function and its check are removed.
       const event = new CustomEvent(`quiz:${eventName}`, {
         detail: { ...data, timestamp: Date.now() },
       });
       document.dispatchEvent(event);
       console.log(`DEBUG: Emitted event quiz:${eventName}`, data);
-      // ** REFACTOR END **
     },
 
     init() {
       console.log("DEBUG: quizApp component init() entered.");
       if (initialized) {
           console.log("DEBUG: init() skipped - already initialized.");
-          return; // Don't re-initialize
+          return;
       }
       initialized = true;
       console.log("DEBUG: quizApp component init() running for the first time.");
 
-      // Set testing mode flag (essential for event emission)
       window.TESTING_MODE = true;
       console.log("DEBUG: window.TESTING_MODE set to true at start of init.");
 
-      // Load quiz data (unchanged)
       const dataElement = document.getElementById("quiz-data");
       if (dataElement) {
         try {
@@ -155,7 +143,6 @@ window.quizApp = function () {
         this.userAnswers = [];
       }
 
-      // Reset state variables (unchanged)
       this.currentQuestionIndex = 0;
       this.selectedOptionIndex = null;
       this.isAnswered = false;
@@ -166,18 +153,15 @@ window.quizApp = function () {
       this.endTime = null;
       this.quizTime = 0;
 
-      // Clear lingering timers (unchanged)
       if (this.feedbackTimer) {
         clearTimeout(this.feedbackTimer);
         this.feedbackTimer = null;
         console.log("DEBUG: Cleared existing feedback timer in init.");
       }
 
-      // Expose instance for testing (unchanged)
       window.quizAppInstance = this;
       console.log("DEBUG: Alpine instance assigned to window.quizAppInstance for testing.");
 
-      // Check if questions loaded (unchanged)
       if (this.questions.length === 0) {
         console.warn("No questions loaded, quiz cannot start.");
       } else {
@@ -188,7 +172,6 @@ window.quizApp = function () {
         );
       }
 
-      // Emit quiz initialization event (using the refactored method)
       this.emitQuizEvent("quiz-initialized", {
         questionsCount: this.questions.length,
       });
@@ -206,9 +189,8 @@ window.quizApp = function () {
       }
 
       this.selectedOptionIndex = index;
-      this.isAnswered = true; // Set answered flag immediately
+      this.isAnswered = true;
 
-      // Store user answer (unchanged)
       if (
         this.userAnswers &&
         this.userAnswers.length > this.currentQuestionIndex
@@ -221,7 +203,6 @@ window.quizApp = function () {
         );
       }
 
-      // Update score/wrong answers (unchanged)
       const wasCorrect = this.isCorrect;
       if (wasCorrect) {
         this.score++;
@@ -231,20 +212,17 @@ window.quizApp = function () {
         console.log("DEBUG: Incorrect Answer! Wrong answers:", this.wrongAnswers);
       }
 
-      // Emit answer selected event (using refactored method)
       this.emitQuizEvent("answer-selected", {
         questionIndex: this.currentQuestionIndex,
         selectedIndex: index,
         isCorrect: wasCorrect,
       });
 
-      // Clear existing timer (unchanged)
       if (this.feedbackTimer) {
         clearTimeout(this.feedbackTimer);
          console.log("DEBUG: Cleared existing feedback timer before setting new one.");
       }
 
-      // Determine feedback duration (unchanged)
       const feedbackDuration = wasCorrect
         ? this.correctFeedbackDuration
         : this.incorrectFeedbackDuration;
@@ -256,7 +234,6 @@ window.quizApp = function () {
       );
       console.log(`DEBUG: Next question will appear in ${feedbackDuration / 1000} seconds.`);
 
-      // Set timer for next question (unchanged)
       console.log("DEBUG: Setting timer for nextQuestion...");
       this.feedbackTimer = setTimeout(() => {
         console.log("DEBUG: setTimeout callback executing, calling nextQuestion...");
@@ -266,21 +243,18 @@ window.quizApp = function () {
 
     nextQuestion() {
       console.log("DEBUG: nextQuestion entered. Current index:", this.currentQuestionIndex);
-      // Clear timer (unchanged)
       if (this.feedbackTimer) {
         clearTimeout(this.feedbackTimer);
         this.feedbackTimer = null;
         console.log("DEBUG: Cleared feedback timer at start of nextQuestion.");
       }
 
-      // Advance question or complete quiz (unchanged)
       if (this.currentQuestionIndex < this.questions.length - 1) {
         this.currentQuestionIndex++;
         console.log(`DEBUG: Advanced to question ${this.currentQuestionIndex + 1}`);
         this.isAnswered = false;
         this.selectedOptionIndex = null;
 
-        // Emit question changed event (using refactored method)
         console.log("DEBUG: About to emit quiz:question-changed...");
         this.emitQuizEvent("question-changed", {
           questionIndex: this.currentQuestionIndex,
@@ -291,7 +265,6 @@ window.quizApp = function () {
         this.calculateQuizTime();
         console.log("DEBUG: Quiz completed. Final score:", this.score);
 
-        // Emit quiz completed event (using refactored method)
          console.log("DEBUG: About to emit quiz:quiz-completed...");
         this.emitQuizEvent("quiz-completed", {
           score: this.score,
@@ -304,12 +277,8 @@ window.quizApp = function () {
 
     restartQuiz() {
       console.log("DEBUG: Restarting quiz...");
-      // Reset initialized flag (unchanged)
       initialized = false;
-      // Re-initialize (unchanged)
       this.init();
-
-      // Emit quiz restart event (using refactored method)
        console.log("DEBUG: About to emit quiz:quiz-restarted...");
       this.emitQuizEvent("quiz-restarted", {});
     },
@@ -337,27 +306,24 @@ window.quizApp = function () {
         .padStart(2, "0")}`;
     },
 
-    // --- Dynamic Class Logic (Unchanged - High Risk Area) ---
-    // NOTE: This function remains complex as identified by LLMs.
-    // Refactoring this thoroughly requires careful visual testing.
-    // Kept as-is to maintain current production behavior.
+    // --- Dynamic Class Logic (MODIFIED FOR INSTANT HIDE) ---
     getOptionClass(index) {
       if (!this.currentQuestion) {
-        return "option-button p-4 rounded-xl font-semibold text-lg md:text-lg sm:text-base text-center transition-all duration-100 ease-out border-none cursor-pointer relative overflow-hidden shadow-md flex flex-col items-center justify-center bg-slate-700 text-gray-200";
+        // Default classes if no question - Use original default return
+        return "option-button p-4 rounded-xl font-semibold text-lg md:text-lg sm:text-base text-center transition-all duration-200 ease-in-out border-none cursor-pointer relative overflow-hidden shadow-md flex flex-col items-center justify-center bg-slate-700 text-gray-200";
       }
 
+      // Original base classes including original transition
       let baseClasses = [
         "option-button", "p-4", "rounded-xl", "font-semibold", "text-base", "text-center",
-        "transition-all", "duration-100", "ease-out", "border-none", "cursor-pointer",
-        "relative",
+        "transition-all", "duration-200", "ease-in-out", // ORIGINAL transition
+        "border-none", "cursor-pointer",
+        "relative", "overflow-hidden", //"shadow-md",
          "flex", "flex-col", "items-center", "justify-center",
         "disabled:opacity-100", "disabled:cursor-not-allowed",
-        // --- ADD THIS ---
-        "overflow-hidden"
-        // --- ADD THIS ---
       ];
 
-      // State 1: Question NOT Answered Yet
+      // State 1: Question NOT Answered Yet (Original Logic)
       if (!this.isAnswered) {
         const colorClasses = [
           "bg-teal-300 text-slate-800 hover:translate-y-[-2px] hover:shadow-lg active:translate-y-0 active:shadow-md",
@@ -374,31 +340,35 @@ window.quizApp = function () {
       else {
         const actualAnswerIndex = this.currentQuestion.answerIndex;
         const userChoiceIndex = this.selectedOptionIndex;
-        let feedbackClasses = "";
+        let feedbackClasses = ""; // Used for correct/incorrect cases
 
         if (index === actualAnswerIndex) {
-          // Correct answer
-          feedbackClasses = correctFeedbackEffect;
+          // Correct answer - Original logic: combine filtered base + effect
+          feedbackClasses = correctFeedbackEffect; // Defined globally
+          const filteredBase = baseClasses.filter(
+            (cls) => !cls.startsWith("hover:") && !cls.startsWith("active:") && cls !== "visible"
+          );
+          return filteredBase.join(" ") + " " + feedbackClasses; // Apply transition
+
         } else if (index === userChoiceIndex) {
-          // User's incorrect choice
-          feedbackClasses = "visible !bg-red-500 !text-white shadow-lg";
+          // User's incorrect choice - Original logic: combine filtered base + specific red style
+          feedbackClasses = "visible !bg-red-500 !text-white shadow-lg"; // Explicitly visible, red background
+          const filteredBase = baseClasses.filter(
+            (cls) => !cls.startsWith("hover:") && !cls.startsWith("active:") && cls !== "visible"
+          );
+          return filteredBase.join(" ") + " " + feedbackClasses; // Apply transition
+
+        // --- INSTANT HIDE using CSS class ---
         } else {
-          // Other options fade out
-          feedbackClasses = "invisible opacity-0 scale-90 pointer-events-none";
+          // Other options disappear instantly using CSS class.
+          // Return *ONLY* the CSS class name. This replaces all other classes.
+          return "option-hidden-immediately"; // NO transition will apply here
+        // --- INSTANT HIDE using CSS class ---
         }
-
-        const filteredBase = baseClasses.filter(
-          (cls) => !cls.startsWith("hover:") && !cls.startsWith("active:") && cls !== "visible"
-        );
-        return filteredBase.join(" ") + " " + feedbackClasses;
       }
-    },
-  };
-};
+    }, // End of getOptionClass
+  }; // End of returned object
+}; // End of quizApp function
 
-// ** REFACTOR START: Removed redundant check **
-// Ensure the component registration happens after the function definition
-// The component is usually registered automatically by Alpine if defined before Alpine loads,
-// but explicitly attaching to window ensures it's available.
+// Original registration logic
 console.log("quizApp component function defined. Registered globally via window.quizApp.");
-// ** REFACTOR END **

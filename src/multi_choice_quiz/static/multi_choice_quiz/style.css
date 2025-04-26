@@ -4,6 +4,12 @@
   display: none !important;
 }
 
+
+/* Add this class */
+.option-hidden-immediately {
+  display: none !important; /* Hide completely and instantly. !important helps override other display utilities if needed. */
+}
+
 /* Base styles (applied to all devices including mobile) */
 .option-button {
   display: inline-block;

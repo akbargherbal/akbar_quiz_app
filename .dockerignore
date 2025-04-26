@@ -54,3 +54,16 @@ TUTORIALS
 test_requirements.txt
 *.png
 *.log
+
+
+# Local Settings for Development
+core/local_settings.py
+local_settings.py
+
+
+# screenshots
+screenshots/
+playwright_screenshots/
+**/screenshots/
+**/playwright_screenshots/
+

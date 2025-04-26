@@ -57,6 +57,27 @@ def quiz_detail(request, quiz_id):
         # Transform questions to frontend format
         quiz_data = models_to_frontend(questions)
 
+        logger.info(
+            f"""
+jjj quiz_data; TYPE: {type(quiz_data)}
+
+"""
+        )
+
+        logger.info(
+            f"""
+jjj quiz_data len: {len(quiz_data)}
+
+"""
+        )
+
+        logger.info(
+            f"""
+jjj quiz_data[0]: {quiz_data[0]}
+
+"""
+        )
+
         # Mark the JSON as safe to prevent double-escaping of HTML entities
         context = {"quiz": quiz, "quiz_data": mark_safe(json.dumps(quiz_data))}
 
