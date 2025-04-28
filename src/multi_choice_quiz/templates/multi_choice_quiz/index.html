@@ -59,7 +59,7 @@
 
       <!-- Question Text Container -->
       <div
-        class="bg-slate-800/80 rounded-2xl p-5 sm:p-6 md:p-8 relative mt-4 mb-4 sm:mb-6 backdrop-blur-sm border border-slate-700 shadow-lg min-h-48 flex items-center justify-center"
+        class="sticky top-0 z-8 bg-slate-800/80 rounded-2xl p-2 sm:p-6 md:p-8 relative mt-px mb-4 sm:mb-6 backdrop-blur-sm border border-slate-700 shadow-lg flex items-center justify-center"
         x-show="!quizCompleted && currentQuestion"
         x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 transform scale-95"
@@ -95,9 +95,11 @@
              <!-- Option content is set by x-html -->
           </button>
         </template>
+
       </div>
     </div>
   </template>
+
 
   <!-- Results Panel -->
   <template x-if="quizCompleted">

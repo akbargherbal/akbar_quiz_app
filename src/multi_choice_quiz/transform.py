@@ -89,7 +89,9 @@ def models_to_frontend(
     Returns:
         List of dictionaries in the format expected by the Alpine.js component
     """
-    return [question.to_dict() for question in questions]
+    result = [question.to_dict() for question in questions]
+    print(f"result: {result[0]}")
+    return result
 
 
 def frontend_to_models(

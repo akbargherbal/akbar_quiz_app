@@ -97,6 +97,94 @@
  </footer>
  </div>
 
+
+ <script>
+    // Define a key to use for storing the value in sessionStorage
+    const deviceTypeStorageKey = 'userGuessedDeviceType'; // Choose a unique key
+  
+    // Function to perform the device type detection based on width
+    function detectDeviceType() {
+      const viewportWidth = window.innerWidth;
+      let detectedType = 'Unknown';
+  
+      // Define breakpoints (adjust as needed)
+      const breakpoints = {
+          smartphone: 768,
+          tablet: 992,
+          laptop: 1400
+      };
+  
+      // Determine device type
+      if (viewportWidth < breakpoints.smartphone) {
+        detectedType = 'Smartphone';
+      } else if (viewportWidth < breakpoints.tablet) {
+        detectedType = 'Tablet';
+      } else if (viewportWidth < breakpoints.laptop) {
+        detectedType = 'Laptop / Small Desktop';
+      } else {
+        detectedType = 'Large Desktop';
+      }
+      console.log('Detected device type based on width (' + viewportWidth + 'px):', detectedType);
+      return detectedType;
+    }
+  
+    // Function to initialize and retrieve the device type for the session
+    function initializeDeviceType() {
+      // 1. Check if the device type is already stored in sessionStorage
+      let currentDeviceType = sessionStorage.getItem(deviceTypeStorageKey);
+  
+      // 2. If not found in storage, detect it now and store it
+      if (!currentDeviceType) {
+        console.log('Device type not found in sessionStorage. Performing initial detection.');
+        currentDeviceType = detectDeviceType();
+        try {
+          // Store the detected value in sessionStorage for this session only
+          sessionStorage.setItem(deviceTypeStorageKey, currentDeviceType);
+          console.log('Device type saved to sessionStorage for this session.');
+        } catch (e) {
+          // Handle potential errors (e.g., storage disabled/full in private mode)
+          console.error('Could not save device type to sessionStorage:', e);
+          // The variable currentDeviceType still holds the detected value for the current page load
+        }
+      } else {
+        // If found in storage, just log that we are using the stored value
+        console.log('Using device type from sessionStorage:', currentDeviceType);
+      }
+  
+      // 3. Make the device type available globally for other scripts on the current page
+      window.sessionDeviceType = currentDeviceType;
+    }
+  
+    // Run the initialization logic when the script loads on any page
+    initializeDeviceType();
+  
+    // Now, on any page within this session, you can access the guessed device type:
+    // console.log('Accessing globally available device type:', window.sessionDeviceType);
+    // alert('This session is likely using a: ' + window.sessionDeviceType);
+  
+    /*
+     * HOW IT WORKS:
+     * - On the first page view within a session (e.g., homepage), sessionStorage
+     * will likely be empty for `deviceTypeStorageKey`.
+     * - The script detects the device type based on the current viewport width.
+     * - It saves this detected type ('Smartphone', 'Tablet', etc.) into sessionStorage.
+     * - On subsequent page views within the SAME browser tab/session:
+     * - The script checks sessionStorage first.
+     * - It finds the previously saved value.
+     * - It uses the stored value directly, skipping the detection step.
+     * - The value persists until the browser tab or window is closed.
+     * - The detected value (from storage or initial detection) is assigned to
+     * `window.sessionDeviceType` for easy access by other JS code on the page.
+     *
+     * LIMITATIONS:
+     * - Still a guess based on initial viewport width.
+     * - If the user drastically resizes their window *after* the initial detection
+     * and navigates to another page, the *original* detected value will still be used
+     * for the rest of the session. This matches the requirement "save it for the
+     * entire session" based on the initial state.
+     */
+  </script>
+
  {% block extra_js_body %}{% endblock %}
 </body>
 </html>

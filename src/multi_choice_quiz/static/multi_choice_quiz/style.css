@@ -5,6 +5,9 @@
 }
 
 
+
+
+
 /* Add this class */
 .option-hidden-immediately {
   display: none !important; /* Hide completely and instantly. !important helps override other display utilities if needed. */
@@ -89,6 +92,18 @@
      /* background-color: rgba(0,0,0,0.1); */
      /* border-radius: 3px; */
      /* NOTE: Do NOT add display: block or overflow-x: auto here */
+}
+
+
+.option-button pre {
+  word-break: keep-all !important;
+  font-size: 0.85em !important;
+}
+
+.option-button code,
+.option-button pre code {
+  word-break: break-all !important;
+  font-size: 0.85em !important;
 }
 
 

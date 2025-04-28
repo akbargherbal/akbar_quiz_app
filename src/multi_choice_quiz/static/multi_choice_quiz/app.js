@@ -19,8 +19,9 @@ const correctFeedbackEffect = `
   scale-[${scaleFactor}%] /* Sets the base larger size */
   shadow-[0_0_${glowBlur}px_${glowSize}px_rgba(255,255,255,${glowOpacity})] /* Sets the base glow */
   animate-[pulse-glow-scale_${pulseDuration}s_ease-in-out_infinite] /* Use the NEW animation name */
-`.trim().replace(/\s+/g, ' '); // Make sure to replace the animation name
-
+`
+  .trim()
+  .replace(/\s+/g, " "); // Make sure to replace the animation name
 
 // Register the component globally
 window.quizApp = function () {
@@ -76,7 +77,8 @@ window.quizApp = function () {
 
       const maxPossibleScore = totalQuestions;
       const currentScore = maxPossibleScore - this.wrongAnswers;
-      const percentage = maxPossibleScore > 0 ? (currentScore / maxPossibleScore) * 100 : 0;
+      const percentage =
+        maxPossibleScore > 0 ? (currentScore / maxPossibleScore) * 100 : 0;
 
       let scaledRating = 0;
       for (const item of starRatingThresholds) {
@@ -106,7 +108,12 @@ window.quizApp = function () {
 
     // --- Methods ---
     emitQuizEvent(eventName, data = {}) {
-      console.log("DEBUG: emitQuizEvent called for:", eventName, "TESTING_MODE:", window.TESTING_MODE);
+      console.log(
+        "DEBUG: emitQuizEvent called for:",
+        eventName,
+        "TESTING_MODE:",
+        window.TESTING_MODE
+      );
       const event = new CustomEvent(`quiz:${eventName}`, {
         detail: { ...data, timestamp: Date.now() },
       });
@@ -117,11 +124,13 @@ window.quizApp = function () {
     init() {
       console.log("DEBUG: quizApp component init() entered.");
       if (initialized) {
-          console.log("DEBUG: init() skipped - already initialized.");
-          return;
+        console.log("DEBUG: init() skipped - already initialized.");
+        return;
       }
       initialized = true;
-      console.log("DEBUG: quizApp component init() running for the first time.");
+      console.log(
+        "DEBUG: quizApp component init() running for the first time."
+      );
 
       window.TESTING_MODE = true;
       console.log("DEBUG: window.TESTING_MODE set to true at start of init.");
@@ -160,7 +169,9 @@ window.quizApp = function () {
       }
 
       window.quizAppInstance = this;
-      console.log("DEBUG: Alpine instance assigned to window.quizAppInstance for testing.");
+      console.log(
+        "DEBUG: Alpine instance assigned to window.quizAppInstance for testing."
+      );
 
       if (this.questions.length === 0) {
         console.warn("No questions loaded, quiz cannot start.");
@@ -209,7 +220,10 @@ window.quizApp = function () {
         console.log("DEBUG: Correct Answer! Score:", this.score);
       } else {
         this.wrongAnswers++;
-        console.log("DEBUG: Incorrect Answer! Wrong answers:", this.wrongAnswers);
+        console.log(
+          "DEBUG: Incorrect Answer! Wrong answers:",
+          this.wrongAnswers
+        );
       }
 
       this.emitQuizEvent("answer-selected", {
@@ -220,7 +234,9 @@ window.quizApp = function () {
 
       if (this.feedbackTimer) {
         clearTimeout(this.feedbackTimer);
-         console.log("DEBUG: Cleared existing feedback timer before setting new one.");
+        console.log(
+          "DEBUG: Cleared existing feedback timer before setting new one."
+        );
       }
 
       const feedbackDuration = wasCorrect
@@ -232,17 +248,24 @@ window.quizApp = function () {
           wasCorrect ? "correct" : "incorrect"
         } answer)`
       );
-      console.log(`DEBUG: Next question will appear in ${feedbackDuration / 1000} seconds.`);
+      console.log(
+        `DEBUG: Next question will appear in ${feedbackDuration / 1000} seconds.`
+      );
 
       console.log("DEBUG: Setting timer for nextQuestion...");
       this.feedbackTimer = setTimeout(() => {
-        console.log("DEBUG: setTimeout callback executing, calling nextQuestion...");
+        console.log(
+          "DEBUG: setTimeout callback executing, calling nextQuestion..."
+        );
         this.nextQuestion();
       }, feedbackDuration);
     },
 
     nextQuestion() {
-      console.log("DEBUG: nextQuestion entered. Current index:", this.currentQuestionIndex);
+      console.log(
+        "DEBUG: nextQuestion entered. Current index:",
+        this.currentQuestionIndex
+      );
       if (this.feedbackTimer) {
         clearTimeout(this.feedbackTimer);
         this.feedbackTimer = null;
@@ -251,7 +274,9 @@ window.quizApp = function () {
 
       if (this.currentQuestionIndex < this.questions.length - 1) {
         this.currentQuestionIndex++;
-        console.log(`DEBUG: Advanced to question ${this.currentQuestionIndex + 1}`);
+        console.log(
+          `DEBUG: Advanced to question ${this.currentQuestionIndex + 1}`
+        );
         this.isAnswered = false;
         this.selectedOptionIndex = null;
 
@@ -265,21 +290,21 @@ window.quizApp = function () {
         this.calculateQuizTime();
         console.log("DEBUG: Quiz completed. Final score:", this.score);
 
-         console.log("DEBUG: About to emit quiz:quiz-completed...");
+        console.log("DEBUG: About to emit quiz:quiz-completed...");
         this.emitQuizEvent("quiz-completed", {
           score: this.score,
           wrongAnswers: this.wrongAnswers,
           timeSeconds: this.quizTime,
         });
       }
-       console.log("DEBUG: nextQuestion finished.");
+      console.log("DEBUG: nextQuestion finished.");
     },
 
     restartQuiz() {
       console.log("DEBUG: Restarting quiz...");
       initialized = false;
       this.init();
-       console.log("DEBUG: About to emit quiz:quiz-restarted...");
+      console.log("DEBUG: About to emit quiz:quiz-restarted...");
       this.emitQuizEvent("quiz-restarted", {});
     },
 
@@ -315,12 +340,25 @@ window.quizApp = function () {
 
       // Original base classes including original transition
       let baseClasses = [
-        "option-button", "p-4", "rounded-xl", "font-semibold", "text-base", "text-center",
-        "transition-all", "duration-200", "ease-in-out", // ORIGINAL transition
-        "border-none", "cursor-pointer",
-        "relative", "overflow-hidden", //"shadow-md",
-         "flex", "flex-col", "items-center", "justify-center",
-        "disabled:opacity-100", "disabled:cursor-not-allowed",
+        "option-button",
+        "p-4",
+        "rounded-xl",
+        "font-semibold",
+        "text-base",
+        "text-center",
+        "transition-all",
+        "duration-200",
+        "ease-in-out", // ORIGINAL transition
+        "border-none",
+        "cursor-pointer",
+        "relative",
+        "overflow-hidden", //"shadow-md",
+        "flex",
+        "flex-col",
+        "items-center",
+        "justify-center",
+        "disabled:opacity-100",
+        "disabled:cursor-not-allowed",
       ];
 
       // State 1: Question NOT Answered Yet (Original Logic)
@@ -346,24 +384,29 @@ window.quizApp = function () {
           // Correct answer - Original logic: combine filtered base + effect
           feedbackClasses = correctFeedbackEffect; // Defined globally
           const filteredBase = baseClasses.filter(
-            (cls) => !cls.startsWith("hover:") && !cls.startsWith("active:") && cls !== "visible"
+            (cls) =>
+              !cls.startsWith("hover:") &&
+              !cls.startsWith("active:") &&
+              cls !== "visible"
           );
           return filteredBase.join(" ") + " " + feedbackClasses; // Apply transition
-
         } else if (index === userChoiceIndex) {
           // User's incorrect choice - Original logic: combine filtered base + specific red style
           feedbackClasses = "visible !bg-red-500 !text-white shadow-lg"; // Explicitly visible, red background
           const filteredBase = baseClasses.filter(
-            (cls) => !cls.startsWith("hover:") && !cls.startsWith("active:") && cls !== "visible"
+            (cls) =>
+              !cls.startsWith("hover:") &&
+              !cls.startsWith("active:") &&
+              cls !== "visible"
           );
           return filteredBase.join(" ") + " " + feedbackClasses; // Apply transition
 
-        // --- INSTANT HIDE using CSS class ---
+          // --- INSTANT HIDE using CSS class ---
         } else {
           // Other options disappear instantly using CSS class.
           // Return *ONLY* the CSS class name. This replaces all other classes.
           return "option-hidden-immediately"; // NO transition will apply here
-        // --- INSTANT HIDE using CSS class ---
+          // --- INSTANT HIDE using CSS class ---
         }
       }
     }, // End of getOptionClass
@@ -371,4 +414,6 @@ window.quizApp = function () {
 }; // End of quizApp function
 
 // Original registration logic
-console.log("quizApp component function defined. Registered globally via window.quizApp.");
+console.log(
+  "quizApp component function defined. Registered globally via window.quizApp."
+);

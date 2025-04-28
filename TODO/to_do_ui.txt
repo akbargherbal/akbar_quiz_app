@@ -1,0 +1,4 @@
+remove mt;
+remove min-h-48
+450 is optimal for smartphone.
+254
