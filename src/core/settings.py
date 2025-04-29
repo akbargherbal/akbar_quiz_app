@@ -173,6 +173,10 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # If you want whitenoise to work with runserver in DEV, ensure middleware is configured correctly
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+# Added for PWA icons on mobile devices. release 0.0.2
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 # --- DEFAULTS ---
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
