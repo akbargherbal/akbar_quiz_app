@@ -49,17 +49,24 @@ def test_quiz_loads_and_functions(
         logger.info(f"Initial page screenshot saved to: {screenshot_path}")
 
         # Check if the quiz loads - with increased timeout
-        logger.info("Checking if quiz loads")
-        page.wait_for_selector(".quiz-container", state="visible", timeout=10000)
-        expect(page.locator(".quiz-container")).to_be_visible()
+        logger.info("Checking if quiz loads using #quiz-app-container")
+        page.wait_for_selector("#quiz-app-container", state="visible", timeout=10000)
+        expect(page.locator("#quiz-app-container")).to_be_visible()
+        logger.info("Quiz container (#quiz-app-container) is visible.")
 
         # Check if question is displayed
-        expect(page.locator(".question-text")).to_be_visible()
+        expect(page.locator("#question-text")).to_be_visible()
+        logger.info("Question text element is visible.")
 
         # Check if options are displayed
         option_count = page.locator(".option-button").count()
         logger.info(f"Found {option_count} options")
-        expect(option_count).to_be_greater_than(0)
+        # --- CORRECTION 3: Use standard Python assert for integer check ---
+        assert (
+            option_count > 0
+        ), f"Expected more than 0 options, but found {option_count}"
+        # --- END CORRECTION 3 ---
+        logger.info("Assertion passed: Option count is greater than 0.")
 
         # Click the first option
         logger.info("Selecting the first option")
@@ -67,26 +74,25 @@ def test_quiz_loads_and_functions(
 
         # Wait for feedback (correct option highlighting or incorrect selection) to appear
         logger.info("Waiting for visual feedback")
-        # Either the correct answer should be visible or incorrect selection
-        feedback_selector = (
-            ".option-button.correct-answer, .option-button.incorrect-answer"
-        )
+        feedback_selector = ".option-button[class*='!bg-green-500'], .option-button[class*='!bg-red-500']"
         page.wait_for_selector(
             feedback_selector,
             state="visible",
-            timeout=5000,  # Increased timeout
+            timeout=5000,
         )
+        logger.info("Feedback visual state detected.")
 
         # Verify feedback is visible
-        expect(page.locator(feedback_selector)).to_be_visible()
+        expect(page.locator(feedback_selector).first).to_be_visible()
 
         # Wait for auto-progression
-        logger.info("Waiting for automatic progression...")
-        page.wait_for_timeout(4500)  # Adjusted feedback duration wait
+        logger.info("Waiting for automatic progression (approx 4-6 seconds)...")
+        page.wait_for_timeout(6500)  # Wait slightly longer than the longest feedback
 
-        # Verify auto-progression (check for new options being enabled)
-        # This assumes we've progressed to a new question where options should be clickable
+        # Verify auto-progression
+        logger.info("Verifying progression by checking if first option is enabled.")
         expect(page.locator(".option-button").first).to_be_enabled(timeout=5000)
+        logger.info("First option is enabled, assuming progression occurred.")
 
         # Log success
         logger.info("E2E test completed successfully")
