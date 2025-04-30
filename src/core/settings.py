@@ -34,6 +34,7 @@ ALLOWED_HOSTS = [
     ".run.app",  # Allows any *.run.app domain (Note the leading dot)
     "localhost",
     "127.0.0.1",
+    "testserver",  # <<< ADD THIS LINE for Django test client
 ]
 
 # Add internal IP for potential health checks when on Cloud Run

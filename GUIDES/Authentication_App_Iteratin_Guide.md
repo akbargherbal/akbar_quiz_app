@@ -23,6 +23,10 @@ _(Based on the structure of Iteration 6 from the original plan)_
 
 - **Overall Objective:** Activate Django's built-in authentication system (`django.contrib.auth`) and its dependencies, ensuring no impact on existing anonymous functionality.
 - **Verification Focus:** System stability, application of auth migrations, non-regression of existing tests.
+- **UX/UI Feel After This Phase:**
+  - **Local (`runserver`) & Cloud Run:** For a typical user navigating the site (homepage, quiz browser, taking a quiz), the experience will be **identical** to before this phase. Authentication is purely backend at this stage.
+  - **What's New (Hidden):** The default Django auth URLs (e.g., `/accounts/login/`, `/accounts/logout/`) now exist. If a user manually navigates to `/accounts/login/`, they will see a very basic, unstyled Django login form. There is no way to create users via the UI yet, and logging in wouldn't grant access to any new features.
+  - **What's Unchanged:** Anonymous quiz taking, quiz browsing, page navigation (About, Home) remain fully functional and visually unchanged. Result submission still happens anonymously.
 
 **Step 1.1: Configure Auth Apps & Middleware**
 
@@ -70,6 +74,10 @@ _(Based on the structure of Iteration 6 from the original plan)_
 
 - **Overall Objective:** Modify the quiz result submission process to associate attempts with logged-in users _if available_, while maintaining full functionality for anonymous users.
 - **Verification Focus:** Correct database schema changes, conditional logic in views, distinct handling of anonymous vs. authenticated submissions confirmed via tests.
+- **UX/UI Feel After This Phase:**
+  - **Local (`runserver`) & Cloud Run:** There are **no visible changes** to the user interface or user experience compared to Phase 1.
+  - **What's New (Invisible):** The backend logic for `submit_results` has changed. If a user _were_ logged in (still no UI mechanism for this), their `QuizAttempt` record in the database would now be linked to their `User` ID. This linkage is not surfaced anywhere in the UI yet.
+  - **What's Unchanged:** Anonymous users experience the site exactly as before. Quiz taking, browsing, navigation, and result submission appear identical. The default `/accounts/login/` page still exists but isn't integrated into the site flow.
 
 **Step 2.1: Modify Models & Generate Migrations**
 
@@ -120,6 +128,16 @@ _(Based on the structure of Iteration 6 from the original plan)_
 
 - **Overall Objective:** Introduce a simple profile page accessible only to logged-in users and update the site navigation to reflect the user's authentication status.
 - **Verification Focus:** Access control (`@login_required`), conditional template rendering, correct data display on profile page.
+- **UX/UI Feel After This Phase:**
+  - **Local (`runserver`) & Cloud Run:** This phase introduces the **first visible differences** based on login status.
+  - **What's New (Anonymous User):**
+    - The main navigation bar now clearly shows "Login" and "Sign Up" links.
+    - Attempting to access `/profile/` manually will redirect the user to the `/accounts/login/` page.
+  - **What's New (Authenticated User - e.g., logged in via Admin or default pages):**
+    - The main navigation bar shows "Profile" (perhaps with username) and "Logout" links instead of Login/Signup.
+    - Users can access the `/profile/` page.
+    - The `/profile/` page displays a basic list of their _own_ past quiz attempts (e.g., quiz title, score, date).
+  - **What's Unchanged:** The core quiz taking experience, quiz browsing page (`/quizzes/`), and About page remain visually and functionally the same for both user types (aside from the navigation bar change). Anonymous result submission still works.
 
 **Step 3.1: Create Profile View & URL (Login Required)**
 
@@ -160,6 +178,9 @@ _(Based on the structure of Iteration 6 from the original plan)_
 
 - **Overall Objective:** Ensure all components work together correctly and that core anonymous functionality remains uncompromised.
 - **Verification Focus:** Non-regression across the entire application.
+- **UX/UI Feel After This Phase:**
+  - **Local (`runserver`) & Cloud Run:** The user experience is **identical to the end of Phase 3**. This phase involves no new features or UI changes.
+  - **What's Verified:** All previous functionality (anonymous quiz taking, authenticated profile view with history, conditional navigation) works correctly and reliably. The modular goal (anonymous core function preserved) is confirmed through testing.
 
 **Step 4.1: Full Test Suite Execution**
 
@@ -169,4 +190,3 @@ _(Based on the structure of Iteration 6 from the original plan)_
 - **Deliverables:** Final test suite results.
 - **Verification Checklist:**
   - `[ ]` **All Tests Pass:** The _entire_ test suite (all unit, integration, and E2E tests for all apps) passes. **Particular attention should be paid to tests simulating anonymous user flows.**
-

@@ -7,4 +7,5 @@ urlpatterns = [
     path("quiz/", include("multi_choice_quiz.urls")),
     path("", include("pages.urls")),  # Notice: no 'name' parameter here
     path("", include("pwa.urls")),
+    path("accounts/", include("django.contrib.auth.urls")),
 ]
