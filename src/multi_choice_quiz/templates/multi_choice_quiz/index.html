@@ -1,12 +1,12 @@
 {% extends 'multi_choice_quiz/base.html' %}
 {% load static %}
 
-{% block title %}Quiz App{% endblock %}
+{# <<< MODIFIED: Update the block title dynamically >>> #}
+{% block title %}{% if quiz %}{{ quiz.title }} | {% endif %}Quiz App{% endblock %}
 
 {% block extra_js_head %}
 <script src="{% static 'multi_choice_quiz/app.js' %}"></script>
 <link rel="stylesheet" href="{% static 'multi_choice_quiz/style.css' %}">
-
 
 <script id="quiz-data" type="application/json">
   {% autoescape off %}
@@ -22,14 +22,20 @@
     x-data="quizApp()"
     x-init="init()"
     x-cloak
+    {% if quiz_id %}data-quiz-id="{{ quiz_id }}"{% endif %}
 >
 
   <!-- Quiz Question Section -->
   <template x-if="!quizCompleted">
     <div>
+      {# <<< START NEW: Add Quiz Title Heading >>> #}
+      {% if quiz %}
+      <h2 class="text-2xl md:text-3xl font-bold text-center text-purple-400 mb-4 md:mb-6">{{ quiz.title }}</h2>
+      {% endif %}
+      {# <<< END NEW: Add Quiz Title Heading >>> #}
+
       <!-- Progress Bar, Stars, Counter, Home Button -->
-      <div class="sticky top-0 z-10 bg-slate-900 py-4 flex items-center relative min-h-[40px] gap-3"
-      id="status-bar">
+      <div class="sticky top-0 z-10 bg-slate-900 py-4 flex items-center relative min-h-[40px] gap-3" id="status-bar">
         <!-- Progress Bar -->
         <div class="flex justify-center items-center flex-grow flex-basis-0 min-w-[50px]">
             <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden shadow-inner">

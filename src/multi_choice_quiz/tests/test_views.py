@@ -1,302 +1,232 @@
-"""
-Tests for the Django Quiz App views using Playwright.
-Covers loading quizzes (default and specific ID) and basic UI interaction.
-"""
+# src/multi_choice_quiz/tests/test_views.py
 
-import pytest
-from playwright.sync_api import Page, expect, Error
-import os
-import sys
-from django.conf import settings  # Import settings
-from datetime import datetime  # Import datetime
+import json
+from datetime import datetime, timezone
+from django.test import TestCase, Client
+from django.urls import reverse
+from django.contrib.auth import get_user_model
+from django.utils.safestring import mark_safe
+from unittest.mock import patch  # Import patch
 
-# Import our standardized test logging
-from multi_choice_quiz.tests.test_logging import setup_test_logging
+from multi_choice_quiz.models import (
+    Quiz,
+    Question,
+    Option,
+    Topic,
+    QuizAttempt,
+)  # Add QuizAttempt
 
-# Set environment variable to allow Django database operations in async context
-# This is often needed for tests involving database access triggered by views.
-os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
-
-# --- Setup Logging ---
-# Pass app_name to the logging setup
-logger = setup_test_logging("test_views", "multi_choice_quiz")
+User = get_user_model()
 
 
-# --- Test Function ---
-@pytest.mark.usefixtures(
-    "capture_console_errors", "django_server"
-)  # Use fixtures from conftest
-def test_django_quiz_flow(page: Page):
-    """
-    Tests the full flow of the quiz application served by Django views.
-    Loads the default quiz, answers questions, checks results, and restarts.
-    """
-    # Define the app name for logging/screenshots
-    app_name = "multi_choice_quiz"
-    app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
-    os.makedirs(app_log_dir, exist_ok=True)
+class QuizViewTests(TestCase):
+    """Tests for the quiz views."""
 
-    # Construct the default quiz URL (should map to the home view which loads a quiz)
-    quiz_url = (
-        os.environ.get("SERVER_URL", "http://localhost:8000") + "/quiz/"
-    )  # Use /quiz/ path
+    @classmethod
+    def setUpTestData(cls):
+        """Set up data for the whole TestCase."""
+        cls.topic1 = Topic.objects.create(name="General")
+        cls.quiz1 = Quiz.objects.create(title="Quiz 1", description="First Quiz")
+        cls.quiz1.topics.add(cls.topic1)
 
-    logger.info(f"Starting Django quiz flow test. Loading: {quiz_url}")
-    try:
-        # Go to the page, wait for the load event
-        page.goto(quiz_url, wait_until="domcontentloaded")
-        logger.info(f"Page navigation to {quiz_url} attempted.")
-
-        # Wait for Alpine.js to initialize and render quiz components
-        logger.info(
-            "Waiting for the first option button to become visible (max 10s)..."
+        cls.q1 = Question.objects.create(quiz=cls.quiz1, text="Question 1?", position=1)
+        cls.o1_1 = Option.objects.create(
+            question=cls.q1, text="Q1 Opt1", position=1, is_correct=True
         )
-        first_option_button_selector = ".option-button >> nth=0"
-        page.wait_for_selector(
-            first_option_button_selector, state="visible", timeout=10000
-        )
-        logger.info("First option button is visible. Quiz has loaded successfully.")
+        cls.o1_2 = Option.objects.create(question=cls.q1, text="Q1 Opt2", position=2)
 
-    except Error as e:
-        # Screenshot on failure
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_view_load_{timestamp}.png"
-        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
+        cls.q2 = Question.objects.create(quiz=cls.quiz1, text="Question 2?", position=2)
+        cls.o2_1 = Option.objects.create(question=cls.q2, text="Q2 Opt1", position=1)
+        cls.o2_2 = Option.objects.create(
+            question=cls.q2, text="Q2 Opt2", position=2, is_correct=True
+        )
+
+        cls.test_user = User.objects.create_user(
+            username="testuser", password="password123"
+        )
+
+    # Test for quiz_detail view (can be expanded)
+    def test_quiz_detail_view_loads(self):
+        """Test that the quiz detail page loads correctly."""
+        url = reverse("multi_choice_quiz:quiz_detail", args=[self.quiz1.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "multi_choice_quiz/index.html")
+        self.assertContains(response, self.quiz1.title)
+        self.assertContains(response, "Question 1?")
+        self.assertIn("quiz_id", response.context)
+        self.assertEqual(response.context["quiz_id"], self.quiz1.id)
+        self.assertIn("quiz_data", response.context)
+        # Check if quiz_data is correctly formatted JSON in the context
         try:
-            page.screenshot(path=screenshot_path)
-            logger.error(f"Screenshot saved to: {screenshot_path}")
-        except Exception as ss_error:
-            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-
-        logger.error(
-            f"FATAL: Failed to load page or find initial element.", exc_info=True
-        )
-        pytest.fail(
-            f"Setup failed: Could not load page or find initial element. Error: {e}"
-        )
-        return
-
-    # Define locators once for reuse
-    question_text_locator = page.locator(".question-text")
-    progress_indicator_locator = page.locator(".progress-indicator")
-    options_locator = page.locator(".option-button")
-    results_card_locator = page.locator(".results-card")
-    restart_button_locator = page.locator(".restart-button")
-    feedback_selector = ".option-button.correct-answer, .option-button.incorrect-answer"
-
-    # --- Check initial quiz structure ---
-    logger.info("--- Checking initial quiz structure ---")
-    try:
-        expect(question_text_locator).to_be_visible()
-        expect(progress_indicator_locator).to_be_visible()
-        expect(question_text_locator).not_to_have_text("")
-
-        progress_text = progress_indicator_locator.text_content()
-        logger.info(f"Progress indicator text: {progress_text}")
-        assert "/" in progress_text, "Progress indicator missing expected format 'N/M'"
-        expect(progress_text).to_match(r"^\d+/\d+$")  # Regex check for N/M format
-
-        total_questions = int(progress_text.split("/")[1])
-        logger.info(f"Total questions in quiz: {total_questions}")
-        assert total_questions > 0, "Quiz must have at least one question"
-
-        option_count = options_locator.count()
-        logger.info(f"Found {option_count} options for the first question")
-        expect(option_count).to_be_greater_than_or_equal(2)
-
-    except (Error, AssertionError) as e:
-        # Screenshot on failure
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_view_structure_{timestamp}.png"
-        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-        try:
-            page.screenshot(path=screenshot_path)
-            logger.error(f"Screenshot saved to: {screenshot_path}")
-        except Exception as ss_error:
-            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-
-        logger.error("Failed to verify initial quiz structure", exc_info=True)
-        pytest.fail(f"Quiz structure verification failed: {e}")
-        return
-
-    # --- Answer all questions ---
-    logger.info("--- Testing full quiz flow (answering questions) ---")
-    try:
-        for q_num in range(1, total_questions + 1):
-            current_question = question_text_locator.text_content()
-            logger.info(
-                f"Answering Question {q_num}/{total_questions}: {current_question[:50]}..."
-            )
-
-            # Verify progress indicator
-            expect(progress_indicator_locator).to_have_text(
-                f"{q_num}/{total_questions}", timeout=5000
-            )
-            expect(options_locator.first).to_be_enabled(
-                timeout=5000
-            )  # Wait for options to be ready
-
-            # Click the first option
-            first_option = options_locator.first
-            option_text = first_option.text_content()
-            logger.info(f"Selecting option: {option_text[:50]}...")
-            first_option.click()
-
-            # Wait for visual feedback
-            page.wait_for_selector(
-                feedback_selector, state="visible", timeout=5000
-            )  # Increased timeout
-            logger.info(f"Feedback shown for Question {q_num}")
-
-            # Wait for auto-progression (or results screen if last question)
-            logger.info(f"Waiting for progression after Question {q_num}...")
-            page.wait_for_timeout(4500)  # Wait slightly longer than feedback
-
-            # Check state after progression
-            if q_num < total_questions:
-                logger.info(f"Checking progression to Question {q_num + 1}")
-                expect(progress_indicator_locator).to_have_text(
-                    f"{q_num + 1}/{total_questions}", timeout=5000
-                )
+            quiz_data_json = json.loads(response.context["quiz_data"])
+            self.assertIsInstance(quiz_data_json, list)
+            self.assertEqual(len(quiz_data_json), 2)  # Should have 2 questions
+            self.assertEqual(quiz_data_json[0]["text"], "Question 1?")
+            self.assertEqual(
+                quiz_data_json[0]["answerIndex"], 0
+            )  # Correct option is position 1 -> index 0
+            self.assertEqual(quiz_data_json[1]["text"], "Question 2?")
+            self.assertEqual(
+                quiz_data_json[1]["answerIndex"], 1
+            )  # Correct option is position 2 -> index 1
+        except json.JSONDecodeError:
+            self.fail("quiz_data in context is not valid JSON")
+        except TypeError:
+            # Handle if context['quiz_data'] is not a string (e.g., already decoded)
+            # This might happen if mark_safe is not used or if tests bypass template rendering aspects
+            if isinstance(response.context["quiz_data"], list):
+                quiz_data_json = response.context["quiz_data"]
+                self.assertIsInstance(quiz_data_json, list)
+                self.assertEqual(len(quiz_data_json), 2)
             else:
-                logger.info("Last question answered, checking for results screen")
-                expect(results_card_locator).to_be_visible(
-                    timeout=10000
-                )  # Longer timeout for results
+                self.fail("quiz_data context variable is not a list or JSON string")
 
-    except (Error, AssertionError) as e:
-        # Screenshot on failure
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_view_answering_{timestamp}.png"
-        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-        try:
-            page.screenshot(path=screenshot_path)
-            logger.error(f"Screenshot saved to: {screenshot_path}")
-        except Exception as ss_error:
-            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
 
-        logger.error(
-            f"Failed during quiz answering flow (Question {q_num})", exc_info=True
+# === Tests for submit_quiz_attempt view ===
+
+
+class SubmitQuizAttemptViewTests(TestCase):
+    """Tests specifically for the submit_quiz_attempt API endpoint."""
+
+    @classmethod
+    def setUpTestData(cls):
+        """Set up data for these specific tests."""
+        cls.quiz = Quiz.objects.create(title="Submission Test Quiz")
+        # Add at least one question so total_questions makes sense
+        q = Question.objects.create(quiz=cls.quiz, text="Submit Q1", position=1)
+        Option.objects.create(question=q, text="Opt A", position=1, is_correct=True)
+        Option.objects.create(question=q, text="Opt B", position=2)
+
+        cls.user = User.objects.create_user(
+            username="submitter", password="password123"
         )
-        pytest.fail(f"Test failed during answering flow. Error: {e}")
-        return
+        cls.submit_url = reverse("multi_choice_quiz:submit_quiz_attempt")
 
-    # --- Results Screen ---
-    logger.info("--- Testing Results Screen ---")
-    try:
-        expect(results_card_locator).to_be_visible()
-        logger.info("Results card is visible.")
+        # Use a fixed datetime for predictable testing
+        cls.fixed_end_time = datetime(2024, 5, 15, 10, 30, 0, tzinfo=timezone.utc)
+        cls.valid_payload = {
+            "quiz_id": cls.quiz.id,
+            "score": 1,
+            "total_questions": 1,
+            "percentage": 100.0,
+            "end_time": cls.fixed_end_time.isoformat(),  # Use fixed time
+        }
 
-        # Verify quiz elements are hidden
-        expect(page.locator(".question-card")).to_be_hidden()
-        expect(page.locator(".options-container")).to_be_hidden()
-
-        # Verify title and score format
-        expect(results_card_locator.locator(".results-title")).to_have_text(
-            "Quiz Completed!"
+    def test_submit_anonymous_success(self):
+        """Test successful submission by an anonymous user."""
+        self.assertEqual(QuizAttempt.objects.count(), 0)
+        response = self.client.post(
+            self.submit_url,
+            data=json.dumps(self.valid_payload),
+            content_type="application/json",
         )
-        expect(results_card_locator.locator(".results-score")).to_contain_text(
-            "Your Score:"
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(QuizAttempt.objects.count(), 1)
+        attempt = QuizAttempt.objects.first()
+        self.assertIsNone(attempt.user)
+        self.assertEqual(attempt.quiz, self.quiz)
+        self.assertEqual(attempt.score, self.valid_payload["score"])
+        self.assertEqual(attempt.total_questions, self.valid_payload["total_questions"])
+        self.assertEqual(attempt.percentage, self.valid_payload["percentage"])
+        # Compare datetimes carefully, considering potential microsecond differences if not controlled
+        self.assertEqual(attempt.end_time, self.fixed_end_time)
+        response_data = response.json()
+        self.assertEqual(response_data["status"], "success")
+        self.assertEqual(response_data["attempt_id"], attempt.id)
+
+    def test_submit_authenticated_success(self):
+        """Test successful submission by an authenticated user."""
+        self.client.force_login(self.user)
+        self.assertEqual(QuizAttempt.objects.count(), 0)
+        response = self.client.post(
+            self.submit_url,
+            data=json.dumps(self.valid_payload),
+            content_type="application/json",
         )
-        expect(results_card_locator.locator(".results-score")).to_contain_text(
-            f"out of {total_questions}"
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(QuizAttempt.objects.count(), 1)
+        attempt = QuizAttempt.objects.first()
+        self.assertEqual(attempt.user, self.user)  # Check user association
+        self.assertEqual(attempt.quiz, self.quiz)
+        self.assertEqual(attempt.score, self.valid_payload["score"])
+        self.assertEqual(attempt.end_time, self.fixed_end_time)
+        response_data = response.json()
+        self.assertEqual(response_data["status"], "success")
+        self.assertEqual(response_data["attempt_id"], attempt.id)
+        self.client.logout()  # Clean up login state
+
+    def test_submit_invalid_json(self):
+        """Test submission with invalid JSON payload."""
+        response = self.client.post(
+            self.submit_url, data='{"invalid json",,}', content_type="application/json"
         )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Invalid JSON data", response.content.decode())
+        self.assertEqual(QuizAttempt.objects.count(), 0)
 
-        # Verify restart button
-        expect(restart_button_locator).to_be_visible()
-        expect(restart_button_locator).to_have_text("Play Again?")
-
-    except (Error, AssertionError) as e:
-        # Screenshot on failure
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_view_results_{timestamp}.png"
-        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-        try:
-            page.screenshot(path=screenshot_path)
-            logger.error(f"Screenshot saved to: {screenshot_path}")
-        except Exception as ss_error:
-            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-
-        logger.error("Assertion failed during Results Screen check.", exc_info=True)
-        pytest.fail(f"Test failed during Results Screen check. Error: {e}")
-
-    # --- Test Restart ---
-    logger.info("--- Testing Restart ---")
-    try:
-        logger.info("Clicking 'Play Again?' button...")
-        restart_button_locator.click()
-
-        logger.info("Verifying quiz resets to first question...")
-        expect(results_card_locator).to_be_hidden(
-            timeout=5000
-        )  # Wait for results to hide
-        expect(page.locator(".question-card")).to_be_visible(timeout=5000)
-        expect(progress_indicator_locator).to_have_text(
-            f"1/{total_questions}", timeout=5000
+    def test_submit_missing_field(self):
+        """Test submission with a missing required field."""
+        payload = self.valid_payload.copy()
+        del payload["score"]  # Remove a required field
+        response = self.client.post(
+            self.submit_url, data=json.dumps(payload), content_type="application/json"
         )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Missing required fields: score", response.content.decode())
+        self.assertEqual(QuizAttempt.objects.count(), 0)
 
-        # Verify options are enabled after restart
-        expect(options_locator.first).to_be_enabled(timeout=5000)
-
-    except (Error, AssertionError) as e:
-        # Screenshot on failure
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_view_restart_{timestamp}.png"
-        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-        try:
-            page.screenshot(path=screenshot_path)
-            logger.error(f"Screenshot saved to: {screenshot_path}")
-        except Exception as ss_error:
-            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-
-        logger.error("Assertion failed during Restart check.", exc_info=True)
-        pytest.fail(f"Test failed during Restart check. Error: {e}")
-
-    logger.info("--- Django Quiz View Test Completed Successfully! ---")
-
-
-@pytest.mark.usefixtures("capture_console_errors", "django_server")
-def test_specific_quiz_view(page: Page):
-    """Tests loading a specific quiz using the quiz_detail view."""
-    # Define the app name for logging/screenshots
-    app_name = "multi_choice_quiz"
-    app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
-    os.makedirs(app_log_dir, exist_ok=True)
-
-    # Assuming quiz ID 1 exists from sample data
-    quiz_id = 1
-    specific_quiz_url = (
-        f"{os.environ.get('SERVER_URL', 'http://localhost:8000')}/quiz/{quiz_id}/"
-    )
-
-    logger.info(f"--- Testing specific quiz view (ID: {quiz_id}) ---")
-    logger.info(f"Navigating to: {specific_quiz_url}")
-
-    try:
-        page.goto(specific_quiz_url, wait_until="domcontentloaded")
-        page.wait_for_selector(".option-button", state="visible", timeout=10000)
-        logger.info(f"Specific quiz page (ID: {quiz_id}) loaded successfully.")
-
-        # Basic structure check
-        expect(page.locator(".question-text")).to_be_visible()
-        expect(page.locator(".progress-indicator")).to_be_visible()
-        expect(page.locator(".option-button").count()).to_be_greater_than(0)
-
-        logger.info(f"--- Specific Quiz View Test (ID: {quiz_id}) Passed! ---")
-
-    except (Error, AssertionError) as e:
-        # Screenshot on failure
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_view_specific_{quiz_id}_{timestamp}.png"
-        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-        try:
-            page.screenshot(path=screenshot_path)
-            logger.error(f"Screenshot saved to: {screenshot_path}")
-        except Exception as ss_error:
-            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-
-        logger.error(
-            f"Failed to load or verify specific quiz view (ID: {quiz_id})",
-            exc_info=True,
+    def test_submit_invalid_data_type(self):
+        """Test submission with an invalid data type for a field."""
+        payload = self.valid_payload.copy()
+        payload["score"] = "not-a-number"  # Invalid type
+        response = self.client.post(
+            self.submit_url, data=json.dumps(payload), content_type="application/json"
         )
-        pytest.fail(f"Specific quiz view test failed. Error: {e}")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(
+            "Invalid data type", response.content.decode()
+        )  # Check for generic error message
+        self.assertEqual(QuizAttempt.objects.count(), 0)
+
+    def test_submit_invalid_end_time_format(self):
+        """Test submission with an invalid end_time format."""
+        payload = self.valid_payload.copy()
+        payload["end_time"] = "15-05-2024 10:30:00"  # Wrong format
+        response = self.client.post(
+            self.submit_url, data=json.dumps(payload), content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Invalid end_time format", response.content.decode())
+        self.assertEqual(QuizAttempt.objects.count(), 0)
+
+    def test_submit_non_existent_quiz(self):
+        """Test submission with a quiz_id that does not exist."""
+        payload = self.valid_payload.copy()
+        payload["quiz_id"] = 99999  # Non-existent ID
+        response = self.client.post(
+            self.submit_url, data=json.dumps(payload), content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Quiz not found", response.content.decode())
+        self.assertEqual(QuizAttempt.objects.count(), 0)
+
+    def test_submit_get_request_not_allowed(self):
+        """Test that GET requests to the submit endpoint are not allowed."""
+        response = self.client.get(self.submit_url)
+        self.assertEqual(response.status_code, 405)  # Method Not Allowed
+        self.assertEqual(QuizAttempt.objects.count(), 0)
+
+    # Optional: Test CSRF protection if @csrf_exempt is removed
+    # def test_submit_csrf_protection(self):
+    #     """Test CSRF protection if @csrf_exempt is removed."""
+    #     # This test assumes @csrf_exempt is removed from the view
+    #     # You might need to adjust settings or client setup for CSRF tests
+    #     client_no_csrf = Client(enforce_csrf_checks=True)
+    #     response = client_no_csrf.post(
+    #         self.submit_url,
+    #         data=json.dumps(self.valid_payload),
+    #         content_type='application/json'
+    #     )
+    #     self.assertEqual(response.status_code, 403) # Forbidden due to CSRF
+    #     self.assertEqual(QuizAttempt.objects.count(), 0)

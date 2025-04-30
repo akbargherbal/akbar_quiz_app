@@ -1,78 +1,53 @@
 // src/multi_choice_quiz/static/multi_choice_quiz/app.js
 
-// Add a log to confirm this script is running
-console.log("app.js executing. Setting up quizApp component...");
+// ... (Keep existing code: constants, quizApp definition, state, getters, emitQuizEvent, init, selectOption) ...
 
-// Correct Answer Effects Constants (remain unchanged)
-const glowSize = 2;
-const glowBlur = glowSize * 4;
-const glowOpacity = 0.8;
-const scaleFactor = 105;
-const pulseDuration = 1.5; // seconds
-
-// Base effect class string (remain unchanged)
-// KEEP the scale and shadow here to set the base state
-const correctFeedbackEffect = `
-  visible
-  !bg-green-500  /* This is correct for setting the base color */
-  !text-black
-  scale-[${scaleFactor}%] /* Sets the base larger size */
-  shadow-[0_0_${glowBlur}px_${glowSize}px_rgba(255,255,255,${glowOpacity})] /* Sets the base glow */
-  animate-[pulse-glow-scale_${pulseDuration}s_ease-in-out_infinite] /* Use the NEW animation name */
-`
-  .trim()
-  .replace(/\s+/g, " "); // Make sure to replace the animation name
-
-// Register the component globally
 window.quizApp = function () {
   let initialized = false;
 
   // Thresholds for star rating calculation (highest first)
   const starRatingThresholds = [
-    { threshold: 95, rating: 5 },
-    { threshold: 85, rating: 4.5 },
-    { threshold: 75, rating: 4 },
-    { threshold: 65, rating: 3.5 },
-    { threshold: 55, rating: 3 },
-    { threshold: 45, rating: 2.5 },
-    { threshold: 35, rating: 2 },
-    { threshold: 25, rating: 1.5 },
-    { threshold: 15, rating: 1 },
-    { threshold: 5, rating: 0.5 },
+    { threshold: 95, rating: 5 }, { threshold: 85, rating: 4.5 },
+    { threshold: 75, rating: 4 }, { threshold: 65, rating: 3.5 },
+    { threshold: 55, rating: 3 }, { threshold: 45, rating: 2.5 },
+    { threshold: 35, rating: 2 }, { threshold: 25, rating: 1.5 },
+    { threshold: 15, rating: 1 }, { threshold: 5, rating: 0.5 },
   ];
 
   return {
     // --- State ---
     questions: [],
     currentQuestionIndex: 0,
-    userAnswers: [], // Stores index of user's answer for each question
-    selectedOptionIndex: null, // Index of the currently selected option (before confirming)
-    isAnswered: false, // Has the current question been answered?
-    quizCompleted: false, // Has the user finished all questions?
-    score: 0, // User's score
-    wrongAnswers: 0, // Track wrong answers for star rating
-    feedbackTimer: null, // Timer for feedback duration
-    // --- Using ORIGINAL feedback durations ---
-    correctFeedbackDuration: 4000, // Feedback duration for correct answers (milliseconds)
-    incorrectFeedbackDuration: 6000, // Feedback duration for incorrect answers (milliseconds)
-    // --- Using ORIGINAL feedback durations ---
-    startTime: null, // Time when quiz started
-    endTime: null, // Time when quiz ended
-    quizTime: 0, // Total time spent on quiz in seconds
+    userAnswers: [],
+    selectedOptionIndex: null,
+    isAnswered: false,
+    quizCompleted: false,
+    score: 0,
+    wrongAnswers: 0,
+    feedbackTimer: null,
+    correctFeedbackDuration: 4000,
+    incorrectFeedbackDuration: 6000,
+    startTime: null,
+    endTime: null,
+    quizTime: 0,
+    quizId: null, // <<< Add state for quiz ID
 
     // --- Computed Properties (Getters) ---
     get currentQuestion() {
+      // ... (no change)
       return this.questions && this.questions.length > this.currentQuestionIndex
         ? this.questions[this.currentQuestionIndex]
         : null;
     },
     get isCorrect() {
-      return this.currentQuestion && this.selectedOptionIndex !== null
+      // ... (no change)
+       return this.currentQuestion && this.selectedOptionIndex !== null
         ? this.selectedOptionIndex === this.currentQuestion.answerIndex
         : null;
     },
     get starRatingDisplay() {
-      const totalQuestions = this.questions.length;
+      // ... (no change)
+       const totalQuestions = this.questions.length;
       if (totalQuestions === 0) return "☆☆☆☆☆"; // Default empty stars if no questions
 
       const maxPossibleScore = totalQuestions;
@@ -108,7 +83,8 @@ window.quizApp = function () {
 
     // --- Methods ---
     emitQuizEvent(eventName, data = {}) {
-      console.log(
+      // ... (no change)
+       console.log(
         "DEBUG: emitQuizEvent called for:",
         eventName,
         "TESTING_MODE:",
@@ -122,7 +98,8 @@ window.quizApp = function () {
     },
 
     init() {
-      console.log("DEBUG: quizApp component init() entered.");
+      // ... (previous init logic)
+       console.log("DEBUG: quizApp component init() entered.");
       if (initialized) {
         console.log("DEBUG: init() skipped - already initialized.");
         return;
@@ -132,7 +109,7 @@ window.quizApp = function () {
         "DEBUG: quizApp component init() running for the first time."
       );
 
-      window.TESTING_MODE = true;
+      window.TESTING_MODE = true; // Keep for now if tests rely on it
       console.log("DEBUG: window.TESTING_MODE set to true at start of init.");
 
       const dataElement = document.getElementById("quiz-data");
@@ -150,6 +127,15 @@ window.quizApp = function () {
         console.warn("Quiz data element (#quiz-data) not found in HTML.");
         this.questions = [];
         this.userAnswers = [];
+      }
+
+      // <<< Get Quiz ID from data attribute >>>
+      const container = document.getElementById("quiz-app-container");
+      this.quizId = container ? container.dataset.quizId : null;
+      if (!this.quizId) {
+          console.warn("Could not find quiz ID (data-quiz-id attribute on container). Submission might fail.");
+      } else {
+          console.log("DEBUG: Quiz ID loaded:", this.quizId);
       }
 
       this.currentQuestionIndex = 0;
@@ -185,13 +171,15 @@ window.quizApp = function () {
 
       this.emitQuizEvent("quiz-initialized", {
         questionsCount: this.questions.length,
+        quizId: this.quizId // Include quizId in event
       });
 
       console.log("DEBUG: quizApp component init() finished.");
     },
 
     selectOption(index) {
-      console.log(`DEBUG: selectOption(${index}) called.`);
+       // ... (no change)
+       console.log(`DEBUG: selectOption(${index}) called.`);
       if (this.isAnswered || !this.currentQuestion) {
         console.log(
           "DEBUG: Selection ignored - already answered or no current question"
@@ -295,32 +283,93 @@ window.quizApp = function () {
           score: this.score,
           wrongAnswers: this.wrongAnswers,
           timeSeconds: this.quizTime,
+          quizId: this.quizId,
         });
+
+        // <<< CALL SUBMIT RESULTS HERE >>>
+        this.submitResults();
       }
       console.log("DEBUG: nextQuestion finished.");
     },
 
+    // <<< START NEW METHOD >>>
+    submitResults() {
+        if (!this.quizId) {
+            console.error("Cannot submit results: Quiz ID is missing.");
+            return;
+        }
+        if (!this.quizCompleted) {
+             console.warn("Attempted to submit results before quiz was completed.");
+            return;
+        }
+
+        const data = {
+            quiz_id: this.quizId,
+            score: this.score,
+            total_questions: this.questions.length,
+            percentage: this.calculatePercentage(),
+            // Send end time in ISO format (UTC)
+            end_time: this.endTime ? this.endTime.toISOString() : new Date().toISOString(),
+            // We could potentially send detailed answers here too if needed
+            // userAnswers: this.userAnswers
+        };
+
+        console.log("DEBUG: Submitting quiz results:", data);
+
+        fetch('/quiz/submit_attempt/', { // Use the correct URL defined in urls.py
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // 'X-CSRFToken': getCookie('csrftoken') // IMPORTANT: Add CSRF token handling if not using @csrf_exempt
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) {
+                // Attempt to read error details if possible
+                 return response.text().then(text => {
+                     throw new Error(`HTTP error ${response.status}: ${text || response.statusText}`);
+                 });
+            }
+            return response.json();
+        })
+        .then(result => {
+            console.log('DEBUG: Submission successful:', result);
+            this.emitQuizEvent("results-submitted", { attemptId: result.attempt_id });
+        })
+        .catch(error => {
+            console.error('DEBUG: Error submitting quiz results:', error);
+            this.emitQuizEvent("results-submission-failed", { error: error.message });
+            // Optionally show a user-facing error message here
+        });
+    },
+    // <<< END NEW METHOD >>>
+
     restartQuiz() {
-      console.log("DEBUG: Restarting quiz...");
-      initialized = false;
-      this.init();
+      // ... (no change)
+       console.log("DEBUG: Restarting quiz...");
+      initialized = false; // Reset initialization flag
+      this.init(); // Re-initialize the component
       console.log("DEBUG: About to emit quiz:quiz-restarted...");
       this.emitQuizEvent("quiz-restarted", {});
     },
 
     // --- Helper Methods for Results (unchanged) ---
     calculatePercentage() {
-      if (this.questions.length === 0) return 0;
+       // ... (no change)
+        if (this.questions.length === 0) return 0;
       return Math.round((this.score / this.questions.length) * 100);
     },
 
     calculateQuizTime() {
-      if (!this.startTime || !this.endTime) return 0;
+       // ... (no change)
+       if (!this.startTime || !this.endTime) return 0;
       this.quizTime = Math.floor((this.endTime - this.startTime) / 1000);
       return this.quizTime;
     },
 
     formatTime(seconds) {
+      // ... (no change)
       if (!seconds && seconds !== 0) return "--:--";
       if (seconds === 0) return "00:00";
 
@@ -331,8 +380,9 @@ window.quizApp = function () {
         .padStart(2, "0")}`;
     },
 
-    // --- Dynamic Class Logic (MODIFIED FOR INSTANT HIDE) ---
+    // --- Dynamic Class Logic (Unchanged from previous state) ---
     getOptionClass(index) {
+      // ... (Keep the existing complex logic for feedback styles) ...
       if (!this.currentQuestion) {
         // Default classes if no question - Use original default return
         return "option-button p-4 rounded-xl font-semibold text-lg md:text-lg sm:text-base text-center transition-all duration-200 ease-in-out border-none cursor-pointer relative overflow-hidden shadow-md flex flex-col items-center justify-center bg-slate-700 text-gray-200";
@@ -340,25 +390,11 @@ window.quizApp = function () {
 
       // Original base classes including original transition
       let baseClasses = [
-        "option-button",
-        "p-4",
-        "rounded-xl",
-        "font-semibold",
-        "text-base",
-        "text-center",
-        "transition-all",
-        "duration-200",
-        "ease-in-out", // ORIGINAL transition
-        "border-none",
-        "cursor-pointer",
-        "relative",
-        "overflow-hidden", //"shadow-md",
-        "flex",
-        "flex-col",
-        "items-center",
-        "justify-center",
-        "disabled:opacity-100",
-        "disabled:cursor-not-allowed",
+        "option-button", "p-4", "rounded-xl", "font-semibold", "text-base", "text-center", "transition-all",
+        "duration-200", "ease-in-out", // ORIGINAL transition
+        "border-none", "cursor-pointer", "relative", "overflow-hidden", //"shadow-md",
+        "flex", "flex-col", "items-center", "justify-center",
+        "disabled:opacity-100", "disabled:cursor-not-allowed",
       ];
 
       // State 1: Question NOT Answered Yet (Original Logic)
@@ -384,29 +420,19 @@ window.quizApp = function () {
           // Correct answer - Original logic: combine filtered base + effect
           feedbackClasses = correctFeedbackEffect; // Defined globally
           const filteredBase = baseClasses.filter(
-            (cls) =>
-              !cls.startsWith("hover:") &&
-              !cls.startsWith("active:") &&
-              cls !== "visible"
+            (cls) => !cls.startsWith("hover:") && !cls.startsWith("active:") && cls !== "visible"
           );
           return filteredBase.join(" ") + " " + feedbackClasses; // Apply transition
         } else if (index === userChoiceIndex) {
           // User's incorrect choice - Original logic: combine filtered base + specific red style
           feedbackClasses = "visible !bg-red-500 !text-white shadow-lg"; // Explicitly visible, red background
           const filteredBase = baseClasses.filter(
-            (cls) =>
-              !cls.startsWith("hover:") &&
-              !cls.startsWith("active:") &&
-              cls !== "visible"
+            (cls) => !cls.startsWith("hover:") && !cls.startsWith("active:") && cls !== "visible"
           );
           return filteredBase.join(" ") + " " + feedbackClasses; // Apply transition
-
-          // --- INSTANT HIDE using CSS class ---
         } else {
-          // Other options disappear instantly using CSS class.
-          // Return *ONLY* the CSS class name. This replaces all other classes.
+           // Other options disappear instantly using CSS class.
           return "option-hidden-immediately"; // NO transition will apply here
-          // --- INSTANT HIDE using CSS class ---
         }
       }
     }, // End of getOptionClass
@@ -417,3 +443,40 @@ window.quizApp = function () {
 console.log(
   "quizApp component function defined. Registered globally via window.quizApp."
 );
+
+// Helper function to get CSRF token (Add this if not using @csrf_exempt)
+/*
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+*/
+
+// --- Define global correctFeedbackEffect (ensure it's defined before use) ---
+const glowSize = 2;
+const glowBlur = glowSize * 4;
+const glowOpacity = 0.8;
+const scaleFactor = 105;
+const pulseDuration = 1.5; // seconds
+
+// Base effect class string
+const correctFeedbackEffect = `
+  visible
+  !bg-green-500
+  !text-black
+  scale-[${scaleFactor}%]
+  shadow-[0_0_${glowBlur}px_${glowSize}px_rgba(255,255,255,${glowOpacity})]
+  animate-[pulse-glow-scale_${pulseDuration}s_ease-in-out_infinite]
+`
+  .trim()
+  .replace(/\s+/g, " ");

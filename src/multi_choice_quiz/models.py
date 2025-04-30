@@ -1,4 +1,6 @@
+# src/multi_choice_quiz/models.py
 from django.db import models
+from django.contrib.auth import get_user_model  # <<< Add this import
 
 
 class Topic(models.Model):
@@ -137,3 +139,34 @@ class Option(models.Model):
         verbose_name_plural = "Options"
         # Ensure each option has a unique position within a question
         unique_together = ["question", "position"]
+
+
+# <<< START NEW MODEL >>>
+class QuizAttempt(models.Model):
+    """Model representing a user's attempt at a quiz."""
+
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="attempts")
+    user = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.SET_NULL,  # Keep attempt if user is deleted
+        null=True,  # Allow anonymous attempts
+        blank=True,  # Allow blank in forms/admin
+        related_name="quiz_attempts",
+    )
+    score = models.IntegerField(help_text="Number of correct answers")
+    total_questions = models.IntegerField()
+    percentage = models.FloatField()
+    # Timestamps
+    start_time = models.DateTimeField(auto_now_add=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+
+    # We could add a JSONField here later to store detailed answers if needed
+
+    def __str__(self):
+        user_str = f"User {self.user.username}" if self.user else "Anonymous User"
+        return f"{user_str}'s attempt on {self.quiz.title} ({self.score}/{self.total_questions})"
+
+    class Meta:
+        ordering = ["-start_time"]  # Show most recent attempts first
+        verbose_name = "Quiz Attempt"
+        verbose_name_plural = "Quiz Attempts"

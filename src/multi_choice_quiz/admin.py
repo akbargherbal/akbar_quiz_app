@@ -1,8 +1,13 @@
+# src/multi_choice_quiz/admin.py
+
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Quiz, Question, Option, Topic
+
+# Add QuizAttempt to the import
+from .models import Quiz, Question, Option, Topic, QuizAttempt
 
 
+# ... (Keep OptionInline, QuestionAdmin, QuestionInline, QuizAdmin, TopicAdmin) ...
 class OptionInline(admin.TabularInline):
     model = Option
     extra = 4  # Show 4 empty option forms by default
@@ -84,7 +89,32 @@ class TopicAdmin(admin.ModelAdmin):
     quiz_count.short_description = "Quizzes"
 
 
+# <<< START NEW ADMIN CLASS >>>
+class QuizAttemptAdmin(admin.ModelAdmin):
+    list_display = (
+        "quiz",
+        "user_display",
+        "score",
+        "total_questions",
+        "percentage",
+        "start_time",
+        "end_time",
+    )
+    list_filter = ("quiz", "user", "start_time")
+    search_fields = ("quiz__title", "user__username", "user__email")
+    readonly_fields = ("start_time", "end_time")  # These are set programmatically
+
+    def user_display(self, obj):
+        return obj.user.username if obj.user else "Anonymous"
+
+    user_display.short_description = "User"
+    user_display.admin_order_field = "user"  # Allows sorting by user
+
+
+# <<< END NEW ADMIN CLASS >>>
+
 admin.site.register(Quiz, QuizAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Topic, TopicAdmin)
+admin.site.register(QuizAttempt, QuizAttemptAdmin)  # <<< Register the new model admin
 # Options are managed through inline forms

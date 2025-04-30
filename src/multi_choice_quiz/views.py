@@ -1,11 +1,18 @@
+# src/multi_choice_quiz/views.py
+
 from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-from django.core.exceptions import ValidationError
+from django.http import JsonResponse, HttpResponseBadRequest
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import (
+    csrf_exempt,
+)  # For simplicity now, handle CSRF properly later if needed
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 import json
 import logging
 from django.utils.safestring import mark_safe
+from datetime import datetime  # <<< Add this import
 
-from .models import Quiz, Question
+from .models import Quiz, Question, QuizAttempt  # <<< Add QuizAttempt
 from .transform import models_to_frontend
 
 # Set up logging
@@ -19,29 +26,43 @@ def home(request):
     """
     try:
         # Try to get the first active quiz from the database
+        # Let's link this directly to the pages app home for now
+        # Redirect or render the pages app home view instead?
+        # For simplicity, let's keep the old logic but note it might be redundant
+        # with pages.views.home
         quiz = Quiz.objects.filter(is_active=True).first()
+        quiz_id_to_pass = None
+        quiz_data = []
 
         if quiz and quiz.questions.exists():
             # Get all questions for this quiz, ordered by position
             questions = quiz.questions.filter(is_active=True).order_by("position")
-
-            # Transform questions to frontend format (handling the index conversion)
             quiz_data = models_to_frontend(questions)
-
-            logger.info(f"Loaded quiz '{quiz.title}' with {len(quiz_data)} questions")
-
+            quiz_id_to_pass = quiz.id  # Get the ID
+            logger.info(
+                f"Loaded quiz '{quiz.title}' with {len(quiz_data)} questions for generic home view"
+            )
         else:
             # Fallback to hardcoded demo questions if no quiz is found
-            logger.warning("No active quizzes found in database, using demo questions")
+            logger.warning(
+                "No active quizzes found in database, using demo questions for generic home view"
+            )
             quiz_data = get_demo_questions()
+            # No quiz_id in demo mode
 
     except Exception as e:
         # Log the error and fall back to demo questions
-        logger.error(f"Error loading quiz from database: {str(e)}")
+        logger.error(
+            f"Error loading quiz from database for generic home view: {str(e)}"
+        )
         quiz_data = get_demo_questions()
+        quiz_id_to_pass = None
 
     # Mark the JSON as safe to prevent double-escaping of HTML entities
-    context = {"quiz_data": mark_safe(json.dumps(quiz_data))}
+    context = {
+        "quiz_data": mark_safe(json.dumps(quiz_data)),
+        "quiz_id": quiz_id_to_pass,  # Pass quiz_id if available
+    }
 
     return render(request, "multi_choice_quiz/index.html", context)
 
@@ -57,41 +78,113 @@ def quiz_detail(request, quiz_id):
         # Transform questions to frontend format
         quiz_data = models_to_frontend(questions)
 
-        logger.info(
-            f"""
-jjj quiz_data; TYPE: {type(quiz_data)}
-
-"""
-        )
-
-        logger.info(
-            f"""
-jjj quiz_data len: {len(quiz_data)}
-
-"""
-        )
-
-        logger.info(
-            f"""
-jjj quiz_data[0]: {quiz_data[0]}
-
-"""
-        )
-
         # Mark the JSON as safe to prevent double-escaping of HTML entities
-        context = {"quiz": quiz, "quiz_data": mark_safe(json.dumps(quiz_data))}
+        context = {
+            "quiz": quiz,  # Pass the whole quiz object if needed by template
+            "quiz_data": mark_safe(json.dumps(quiz_data)),
+            "quiz_id": quiz.id,  # <<< Pass the quiz ID here
+        }
 
         return render(request, "multi_choice_quiz/index.html", context)
 
     except Exception as e:
         logger.error(f"Error loading quiz {quiz_id}: {str(e)}")
-
-        # Simplified context to avoid potential errors
         context = {
             "error_message": f"The requested quiz (ID: {quiz_id}) could not be loaded."
         }
-
         return render(request, "multi_choice_quiz/error.html", context)
+
+
+# <<< START NEW VIEW >>>
+@csrf_exempt  # Temporarily disable CSRF for API endpoint simplicity
+@require_POST
+def submit_quiz_attempt(request):
+    """
+    API endpoint to receive and save quiz attempt results from the frontend.
+    """
+    try:
+        # Check if request body is valid JSON
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            logger.warning("Received invalid JSON in submit_quiz_attempt.")
+            return HttpResponseBadRequest("Invalid JSON data.")
+
+        # Validate required fields
+        required_fields = [
+            "quiz_id",
+            "score",
+            "total_questions",
+            "percentage",
+            "end_time",
+        ]
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            logger.warning(
+                f"Missing fields in submit_quiz_attempt data: {missing_fields}"
+            )
+            return HttpResponseBadRequest(
+                f"Missing required fields: {', '.join(missing_fields)}"
+            )
+
+        quiz_id = data["quiz_id"]
+        score = int(data["score"])
+        total_questions = int(data["total_questions"])
+        percentage = float(data["percentage"])
+        # Assuming end_time is sent as an ISO 8601 string from JS new Date().toISOString()
+        end_time_str = data["end_time"]
+        try:
+            end_time_dt = datetime.fromisoformat(
+                end_time_str.replace("Z", "+00:00")
+            )  # Handle 'Z' for UTC
+        except ValueError:
+            logger.warning(f"Invalid end_time format received: {end_time_str}")
+            return HttpResponseBadRequest("Invalid end_time format. Expected ISO 8601.")
+
+        # Get the quiz object
+        try:
+            quiz = Quiz.objects.get(id=quiz_id)
+        except ObjectDoesNotExist:
+            logger.warning(
+                f"Quiz with ID {quiz_id} not found during attempt submission."
+            )
+            return HttpResponseBadRequest("Quiz not found.")
+
+        # Determine the user
+        attempt_user = request.user if request.user.is_authenticated else None
+        user_log_str = (
+            f"User ID: {attempt_user.id}" if attempt_user else "Anonymous User"
+        )
+
+        # Create and save the QuizAttempt
+        attempt = QuizAttempt.objects.create(
+            quiz=quiz,
+            user=attempt_user,
+            score=score,
+            total_questions=total_questions,
+            percentage=percentage,
+            # start_time is set automatically by auto_now_add
+            end_time=end_time_dt,
+        )
+
+        logger.info(
+            f"Saved QuizAttempt ID: {attempt.id} for Quiz ID: {quiz_id} by {user_log_str}. Score: {score}/{total_questions}"
+        )
+        return JsonResponse({"status": "success", "attempt_id": attempt.id})
+
+    except (ValueError, TypeError) as e:
+        logger.error(f"Data type error processing quiz attempt: {e}\nData: {data}")
+        return HttpResponseBadRequest(f"Invalid data type: {e}")
+    except Exception as e:
+        logger.error(f"Unexpected error in submit_quiz_attempt: {e}", exc_info=True)
+        # Consider what status code to return, 500 might be appropriate
+        return JsonResponse(
+            {"status": "error", "message": "An internal server error occurred."},
+            status=500,
+        )
+
+
+# <<< END NEW VIEW >>>
 
 
 def get_demo_questions():

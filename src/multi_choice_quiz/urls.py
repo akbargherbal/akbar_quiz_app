@@ -8,5 +8,5 @@ app_name = "multi_choice_quiz"
 urlpatterns = [
     path("", views.home, name="home"),
     path("<int:quiz_id>/", views.quiz_detail, name="quiz_detail"),
-    # Add other URL patterns as needed
+    path("submit_attempt/", views.submit_quiz_attempt, name="submit_quiz_attempt"),
 ]
