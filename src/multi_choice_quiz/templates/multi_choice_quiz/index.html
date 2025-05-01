@@ -1,7 +1,6 @@
 {% extends 'multi_choice_quiz/base.html' %}
 {% load static %}
 
-{# <<< MODIFIED: Update the block title dynamically >>> #}
 {% block title %}{% if quiz %}{{ quiz.title }} | {% endif %}Quiz App{% endblock %}
 
 {% block extra_js_head %}
@@ -28,11 +27,14 @@
   <!-- Quiz Question Section -->
   <template x-if="!quizCompleted">
     <div>
-      {# <<< START NEW: Add Quiz Title Heading >>> #}
+      {# <<< REMOVED: Quiz Title Heading was here >>> #}
+      {#
       {% if quiz %}
       <h2 class="text-2xl md:text-3xl font-bold text-center text-purple-400 mb-4 md:mb-6">{{ quiz.title }}</h2>
       {% endif %}
-      {# <<< END NEW: Add Quiz Title Heading >>> #}
+      #}
+      {# <<< END REMOVAL >>> #}
+
 
       <!-- Progress Bar, Stars, Counter, Home Button -->
       <div class="sticky top-0 z-10 bg-slate-900 py-4 flex items-center relative min-h-[40px] gap-3" id="status-bar">
@@ -117,6 +119,13 @@
         x-transition:enter-start="opacity-0 transform scale-95"
         x-transition:enter-end="opacity-100 transform scale-100"
     >
+      {# <<< START ADDITION: Display Quiz Title in Results >>> #}
+      {% if quiz %} {# Check if quiz object exists in context #}
+      <h2 class="text-xl md:text-2xl font-semibold text-center text-purple-300 mb-2">{{ quiz.title }}</h2>
+      <hr class="border-slate-600 mb-5"> {# Optional separator #}
+      {% endif %}
+      {# <<< END ADDITION >>> #}
+
       <h3 class="text-gray-200 text-2xl md:text-3xl lg:text-4xl text-center mt-0 mb-6 font-bold">Quiz Results</h3>
 
       <!-- Results Content (Stats and Mistakes) -->
@@ -148,7 +157,7 @@
           </div>
 
           <!-- Mistakes Review Section -->
-          <div class="mt-5 md:mt-0 md:flex-grow min-w-0"> <!-- Added min-w-0 here too for belt-and-suspenders on the flex item -->
+          <div class="mt-5 md:mt-0 md:flex-grow min-w-0">
             <h4 class="text-lg text-center text-gray-200 mb-4 pb-2 border-b border-dashed border-slate-600 md:text-left">Mistakes Review</h4>
             <ul class="mistakes-review-list list-none p-0 m-0 max-h-60 md:max-h-72 lg:max-h-80 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-700">
                 <!-- No mistakes message -->
@@ -164,26 +173,15 @@
                   <template x-if="userAnswers[index] !== question.answerIndex">
                     <li class="flex items-start mb-4 pb-2.5 md:mb-5 md:pb-3.5 border-b border-slate-700 last:border-b-0 last:mb-0">
                       <span class="text-red-600 mr-2.5 md:mr-3 text-lg md:text-xl flex-shrink-0 mt-0.5">❌</span>
-                      <!-- --- START FIX --- -->
-                      <!--
-                        This div is the flex item's content wrapper.
-                        'flex-1' allows it to grow/shrink.
-                        'min-w-0' is CRUCIAL to allow it to shrink *below* its content's
-                        natural width, preventing wide content (like <pre>) from expanding the parent.
-                        'break-words' helps wrap long text *outside* of <pre> blocks.
-                      -->
                       <div class="mistake-content-wrapper flex-1 min-w-0 break-words" data-testid="mistake-item-content">
                         <div class="font-medium text-gray-200 mb-1 leading-snug text-sm md:text-base">
-                           <!-- Question text rendered via x-html, potentially contains <pre> or <code> -->
                            <div x-html="`Q${index + 1}. ${question.text}`"></div>
                         </div>
                         <div class="text-gray-400 text-xs md:text-sm">
                           <strong class="!text-green-600 font-semibold">Correct:</strong>
-                          <!-- Correct answer text rendered via x-html, potentially contains <pre> or <code> -->
                           <span x-html="question.options[question.answerIndex]"></span>
                         </div>
                       </div>
-                      <!-- --- END FIX --- -->
                     </li>
                   </template>
                 </template>
