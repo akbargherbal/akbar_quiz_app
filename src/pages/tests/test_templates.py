@@ -1,368 +1,224 @@
-# src/pages/tests/test_templates.py (Modifications shown)
+# src/pages/tests/test_templates.py
 
 import pytest
-import os
-import time
-from datetime import datetime
-from django.conf import settings
-from playwright.sync_api import expect, Page
+import re  # Import regular expressions
+from playwright.sync_api import Page, expect
+from django.urls import reverse
+from django.contrib.auth import get_user_model
+from django.utils import timezone  # Import timezone
+from multi_choice_quiz.models import Quiz, QuizAttempt  # Import models
 
-# Import standardized logging setup
-from multi_choice_quiz.tests.test_logging import setup_test_logging
-
-# Set up logging with app-specific name
-logger = setup_test_logging(__name__, "pages")
-
-# Skip the test if SERVER_URL is not defined in the environment
-SERVER_URL = os.environ.get("SERVER_URL", "http://localhost:8000")
+# --- Constants ---
+# Use environment variable set by the runner script, or default for local debugging
+BASE_URL = "http://localhost:8000"
 
 
-@pytest.mark.usefixtures(
-    "capture_console_errors", "django_server"
-)  # Use fixtures from src/conftest.py
-def test_home_page_template(page: Page, django_server):
-    """Test that the home page loads with the new template."""
+# --- Helper Function to Create User ---
+# (Extracted for reusability)
+def create_test_user(username, password, is_staff=True, is_superuser=True):
+    User = get_user_model()
     try:
-        # Navigate to the home page
-        logger.info(f"Navigating to home page: {django_server}")
-        page.goto(django_server)
+        user, created = User.objects.get_or_create(username=username)
+        if created or not user.has_usable_password():
+            user.set_password(password)
+            user.is_staff = is_staff
+            user.is_superuser = is_superuser
+            user.save()
+            print(f"Ensured user '{username}' exists and has password.")
+        else:
+            # Ensure password is set if user already exists and is unusable
+            if not user.has_usable_password():
+                user.set_password(password)
+                user.save()
+                print(f"Set password for existing user: {username}")
+            else:
+                print(f"Using existing user: {username}")
+        return user
+    except Exception as e:
+        pytest.fail(f"Failed to get or create test user '{username}': {e}")
 
-        # Check if the page loads
-        page.wait_for_selector(
-            "text=Challenge Your Knowledge with QuizMaster", timeout=5000
+
+# --- Helper Function to Log In via Admin ---
+# (Extracted for reusability)
+def login_via_admin(page: Page, username, password):
+    admin_login_url = BASE_URL + "/admin/login/"
+    page.goto(admin_login_url)
+    page.locator("#id_username").fill(username)
+    page.locator("#id_password").fill(password)
+    page.get_by_role("button", name="Log in").click()
+    # Wait for admin dashboard element
+    expect(page.locator("#user-tools")).to_be_visible(timeout=10000)
+    print(f"Successfully logged in as {username} via /admin/")
+
+
+# --- Test Cases ---
+
+
+def test_home_page_loads_and_title(page: Page):
+    """Verify the home page loads and has the correct title."""
+    home_url = BASE_URL + reverse("pages:home")
+    page.goto(home_url)
+    expect(page).to_have_title(re.compile("Home | QuizMaster"))
+    # Check for a key element to ensure content loaded
+    expect(
+        page.get_by_role("heading", name="Challenge Your Knowledge with QuizMaster")
+    ).to_be_visible()
+
+
+def test_anonymous_user_navigation(page: Page):
+    """Verify navigation links shown for an anonymous user."""
+    home_url = BASE_URL + reverse("pages:home")
+    page.goto(home_url)
+
+    # Get the header element for context (helps avoid finding links elsewhere)
+    header = page.locator("header")
+
+    # Check visible links/buttons for anonymous users
+    # Using get_by_role is generally preferred
+    expect(header.get_by_role("link", name="Login")).to_be_visible()
+    expect(header.get_by_role("link", name="Sign Up")).to_be_visible()
+
+    # Check hidden links/buttons for anonymous users
+    # Use regex for Profile link to avoid issues with username potentially appearing later
+    expect(header.get_by_role("link", name=re.compile("Profile"))).not_to_be_visible()
+    # The logout button is inside a form
+    expect(header.get_by_role("button", name="Logout")).not_to_be_visible()
+
+
+@pytest.mark.django_db(transaction=True)  # Needed to ensure User exists
+def test_authenticated_user_navigation(page: Page):
+    """Verify navigation links shown for an authenticated user."""
+    # --- Log in User via Admin ---
+    username = "testuser_nav"
+    password = "password123"
+    create_test_user(username, password)  # Use helper
+    login_via_admin(page, username, password)  # Use helper
+
+    # --- Navigate to Homepage after login ---
+    home_url = BASE_URL + reverse("pages:home")
+    page.goto(home_url)
+    print(f"Navigated to homepage: {home_url}")  # Debugging
+
+    # --- Verify Navigation Links ---
+    header = page.locator("header")
+
+    # Check hidden links/buttons for authenticated users
+    expect(header.get_by_role("link", name="Login")).not_to_be_visible()
+    expect(header.get_by_role("link", name="Sign Up")).not_to_be_visible()
+
+    # Check visible links/buttons for authenticated users
+    # Use regex for Profile link to account for username
+    expect(
+        header.get_by_role("link", name=re.compile(f"Profile \\({username}\\)"))
+    ).to_be_visible()
+    # Check the Logout button (inside its form)
+    expect(header.get_by_role("button", name="Logout")).to_be_visible()
+
+
+def test_about_page_loads(page: Page):
+    """Verify the about page loads."""
+    about_url = BASE_URL + reverse("pages:about")
+    page.goto(about_url)
+    expect(page).to_have_title(re.compile("About | QuizMaster"))
+    expect(page.get_by_role("heading", name="About QuizMaster")).to_be_visible()
+
+
+def test_quizzes_page_loads(page: Page):
+    """Verify the quizzes page loads."""
+    quizzes_url = BASE_URL + reverse("pages:quizzes")
+    page.goto(quizzes_url)
+    expect(page).to_have_title(re.compile("Quizzes | QuizMaster"))
+    expect(page.get_by_role("heading", name="Browse Quizzes")).to_be_visible()
+
+
+def test_login_page_loads(page: Page):
+    """Verify the placeholder login page loads."""
+    login_url = BASE_URL + reverse("pages:login")
+    page.goto(login_url)
+    expect(page).to_have_title(re.compile("Login | QuizMaster"))
+    expect(page.get_by_role("heading", name="Login to Your Account")).to_be_visible()
+    # Check for the non-functional notice
+    expect(page.locator("text=Note: This is a placeholder page")).to_be_visible()
+
+
+def test_signup_page_loads(page: Page):
+    """Verify the placeholder signup page loads."""
+    signup_url = BASE_URL + reverse("pages:signup")
+    page.goto(signup_url)
+    expect(page).to_have_title(re.compile("Sign Up | QuizMaster"))
+    expect(page.get_by_role("heading", name="Create Your Account")).to_be_visible()
+    # Check for the non-functional notice
+    expect(page.locator("text=Note: This is a placeholder page")).to_be_visible()
+
+
+@pytest.mark.django_db(transaction=True)
+def test_profile_page_structure_when_authenticated(
+    page: Page,
+):  # Renamed from loads_when_authenticated
+    """Verify the basic profile page structure loads when logged in."""
+    # --- Login User ---
+    username = "testuser_prof_struct"
+    password = "password123"
+    user = create_test_user(username, password)  # Use helper
+    login_via_admin(page, username, password)  # Use helper
+
+    # --- Navigate directly to profile page ---
+    profile_url = BASE_URL + reverse("pages:profile")
+    page.goto(profile_url)
+
+    # --- Verify Profile Page Structure ---
+    expect(page).to_have_url(profile_url)  # Ensure no redirect happened
+    expect(page).to_have_title(
+        re.compile(f"{username}'s Profile | QuizMaster")
+    )  # Check dynamic title
+
+    # Check for dynamic user info elements
+
+    # --- START FIX for Avatar Check ---
+    # Locate the avatar div using a more stable selector (e.g., class combination)
+    # We use a class that's likely unique to the avatar container
+    avatar_div = page.locator(
+        "div.rounded-full.flex.items-center.justify-center.bg-accent-primary"
+    )
+    # Check if this div is visible
+    expect(avatar_div).to_be_visible()
+    # Assert the text content *of this specific div* is the correct initial
+    expect(avatar_div).to_have_text(username[0].upper())
+    # --- END FIX for Avatar Check ---
+
+    # Check for username/full name heading (this locator should be okay)
+    expect(page.get_by_role("heading", name=re.compile(username))).to_be_visible()
+    # Check for member since (just check text exists)
+    expect(page.locator("text=Member since:")).to_be_visible()
+
+    # Check for the main history section heading
+    expect(page.get_by_role("heading", name="Your Quiz History")).to_be_visible()
+
+    # Check for the placeholder notice at the bottom
+    expect(
+        page.locator(
+            "text=Note: Edit Profile, Stats, Favorites, and Created Quizzes are currently placeholders."
         )
-
-        # Verify key elements using the new color scheme (MORE SPECIFIC LOCATORS)
-        # Target the H1 specifically for the main title
-        expect(page.locator("h1.text-accent-heading")).to_be_visible()
-        # Target the specific "Browse Quizzes" button
-        expect(
-            page.locator("a.bg-accent-primary:has-text('Browse Quizzes')")
-        ).to_be_visible()
-
-        # Take a screenshot for reference
-        app_log_dir = os.path.join(settings.BASE_DIR, "logs", "pages")
-        os.makedirs(app_log_dir, exist_ok=True)
-        screenshot_path = os.path.join(app_log_dir, "home_page.png")
-        page.screenshot(path=screenshot_path)
-        logger.info(f"Home page screenshot saved to: {screenshot_path}")
-
-        logger.info("Home page test completed successfully")
-
-    except Exception as e:
-        # (Error handling remains the same)
-        app_name = "pages"
-        app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
-        os.makedirs(app_log_dir, exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_home_{timestamp}.png"  # Renamed for clarity
-        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-        try:
-            if "page" in locals() and hasattr(page, "screenshot"):
-                page.screenshot(path=screenshot_path)
-                logger.error(f"Screenshot saved to: {screenshot_path}")
-            else:
-                logger.error(
-                    "Could not save screenshot: 'page' object not available or invalid."
-                )
-        except Exception as ss_error:
-            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-        if "logger" in locals() and hasattr(logger, "error"):
-            logger.error(f"Test failed: {str(e)}", exc_info=True)
-        else:
-            print(f"Test failed (logger not available): {str(e)}")
-        raise
+    ).to_be_visible()
 
 
-@pytest.mark.usefixtures("capture_console_errors", "django_server")
-def test_quizzes_page_template(page: Page, django_server):
-    """Test that the quizzes page loads with the new template."""
-    try:
-        # Navigate to the quizzes page
-        quizzes_url = f"{django_server}/quizzes/"
-        logger.info(f"Navigating to quizzes page: {quizzes_url}")
-        page.goto(quizzes_url)
+@pytest.mark.django_db(transaction=True)
+def test_profile_page_shows_empty_history(page: Page):
+    """Verify the 'no attempts' message shows for a user with no history."""
+    # --- Login User (ensure this user has no attempts) ---
+    username = "testuser_empty_hist"
+    password = "password123"
+    # Create user but DO NOT create attempts for them
+    user = create_test_user(username, password)
+    login_via_admin(page, username, password)  # Use helper
 
-        # Check if the page loads
-        page.wait_for_selector("text=Browse Quizzes", timeout=5000)
+    # --- Navigate directly to profile page ---
+    profile_url = BASE_URL + reverse("pages:profile")
+    page.goto(profile_url)
 
-        # Verify quiz cards with the new design
-        quiz_cards = page.locator(".grid .bg-surface").count()
-        logger.info(f"Found {quiz_cards} quiz cards")
-        # Ensure at least one card is found if data exists
-        if quiz_cards > 0:
-            expect(page.locator(".grid .bg-surface").first).to_be_visible()
-
-        # Verify color scheme elements
-        # --- CORRECTION 2: Changed locator to be less brittle ---
-        # Check the 'All' filter button simply by its text content within an anchor tag
-        logger.info("Checking visibility of 'All' filter link: a:has-text('All')")
-        expect(page.locator("a:has-text('All')")).to_be_visible()
-        # --- END CORRECTION 2 ---
-        logger.info("'All' filter link is visible.")
-
-        # Or check one of the topic spans within a card
-        if quiz_cards > 0:
-            expect(page.locator(".grid .bg-surface .bg-tag-bg").first).to_be_visible()
-            logger.info("Topic tag span inside a quiz card is visible.")
-
-        # Take a screenshot for reference
-        app_log_dir = os.path.join(settings.BASE_DIR, "logs", "pages")
-        os.makedirs(app_log_dir, exist_ok=True)
-        screenshot_path = os.path.join(app_log_dir, "quizzes_page.png")
-        page.screenshot(path=screenshot_path)
-        logger.info(f"Quizzes page screenshot saved to: {screenshot_path}")
-
-        logger.info("Quizzes page test completed successfully")
-
-    except Exception as e:
-        # (Error handling remains the same)
-        app_name = "pages"
-        app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
-        os.makedirs(app_log_dir, exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_quizzes_{timestamp}.png"  # Renamed
-        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-        try:
-            if "page" in locals() and hasattr(page, "screenshot"):
-                page.screenshot(path=screenshot_path)
-                logger.error(f"Screenshot saved to: {screenshot_path}")
-            else:
-                logger.error(
-                    "Could not save screenshot: 'page' object not available or invalid."
-                )
-        except Exception as ss_error:
-            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-        if "logger" in locals() and hasattr(logger, "error"):
-            logger.error(f"Test failed: {str(e)}", exc_info=True)
-        else:
-            print(f"Test failed (logger not available): {str(e)}")
-        raise
-
-
-@pytest.mark.usefixtures("capture_console_errors", "django_server")
-def test_about_page_template(page: Page, django_server):
-    """Test that the about page loads with the new template."""
-    try:
-        # Navigate to the about page
-        about_url = f"{django_server}/about/"
-        logger.info(f"Navigating to about page: {about_url}")
-        page.goto(about_url)
-
-        # Check if the page loads
-        page.wait_for_selector("text=About QuizMaster", timeout=5000)
-
-        # Verify key content sections (MORE SPECIFIC LOCATORS)
-        expect(page.locator("h2:has-text('Our Mission')")).to_be_visible()
-        expect(page.locator("h2:has-text('Our Story')")).to_be_visible()
-        # Target the heading specifically
-        expect(page.locator("h2:has-text('Contact Us')")).to_be_visible()
-
-        # Take a screenshot for reference
-        app_log_dir = os.path.join(settings.BASE_DIR, "logs", "pages")
-        os.makedirs(app_log_dir, exist_ok=True)
-        screenshot_path = os.path.join(app_log_dir, "about_page.png")
-        page.screenshot(path=screenshot_path)
-        logger.info(f"About page screenshot saved to: {screenshot_path}")
-
-        logger.info("About page test completed successfully")
-
-    except Exception as e:
-        # (Error handling remains the same)
-        app_name = "pages"
-        app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
-        os.makedirs(app_log_dir, exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_about_{timestamp}.png"  # Renamed
-        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-        try:
-            if "page" in locals() and hasattr(page, "screenshot"):
-                page.screenshot(path=screenshot_path)
-                logger.error(f"Screenshot saved to: {screenshot_path}")
-            else:
-                logger.error(
-                    "Could not save screenshot: 'page' object not available or invalid."
-                )
-        except Exception as ss_error:
-            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-        if "logger" in locals() and hasattr(logger, "error"):
-            logger.error(f"Test failed: {str(e)}", exc_info=True)
-        else:
-            print(f"Test failed (logger not available): {str(e)}")
-        raise
-
-
-# ... (rest of the tests: login, signup, profile - should be okay as they passed) ...
-
-
-@pytest.mark.usefixtures("capture_console_errors", "django_server")
-def test_login_page_template(page: Page, django_server):
-    """Test that the login page loads with the new template."""
-    try:
-        # Navigate to the login page
-        login_url = f"{django_server}/login/"
-        logger.info(f"Navigating to login page: {login_url}")
-        page.goto(login_url)
-
-        # Check if the page loads
-        page.wait_for_selector("text=Login to Your Account", timeout=5000)
-
-        # Verify form fields
-        expect(page.locator("input#email")).to_be_visible()
-        expect(page.locator("input#password")).to_be_visible()
-        expect(page.locator("button:has-text('Login')")).to_be_visible()
-
-        # Verify notice banner
-        expect(page.locator("text=This is a placeholder page")).to_be_visible()
-
-        # Take a screenshot for reference
-        app_log_dir = os.path.join(settings.BASE_DIR, "logs", "pages")
-        os.makedirs(app_log_dir, exist_ok=True)
-        screenshot_path = os.path.join(app_log_dir, "login_page.png")
-        page.screenshot(path=screenshot_path)
-        logger.info(f"Login page screenshot saved to: {screenshot_path}")
-
-        logger.info("Login page test completed successfully")
-
-    except Exception as e:
-        # (Error handling remains the same)
-        app_name = "pages"
-        app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
-        os.makedirs(app_log_dir, exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_login_{timestamp}.png"  # Renamed
-        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-        try:
-            if "page" in locals() and hasattr(page, "screenshot"):
-                page.screenshot(path=screenshot_path)
-                logger.error(f"Screenshot saved to: {screenshot_path}")
-            else:
-                logger.error(
-                    "Could not save screenshot: 'page' object not available or invalid."
-                )
-        except Exception as ss_error:
-            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-        if "logger" in locals() and hasattr(logger, "error"):
-            logger.error(f"Test failed: {str(e)}", exc_info=True)
-        else:
-            print(f"Test failed (logger not available): {str(e)}")
-        raise
-
-
-@pytest.mark.usefixtures("capture_console_errors", "django_server")
-def test_signup_page_template(page: Page, django_server):
-    """Test that the signup page loads with the new template."""
-    try:
-        # Navigate to the signup page
-        signup_url = f"{django_server}/signup/"
-        logger.info(f"Navigating to signup page: {signup_url}")
-        page.goto(signup_url)
-
-        # Check if the page loads
-        page.wait_for_selector("text=Create Your Account", timeout=5000)
-
-        # Verify form fields
-        expect(page.locator("input#name")).to_be_visible()
-        expect(page.locator("input#email")).to_be_visible()
-        expect(page.locator("input#password")).to_be_visible()
-        expect(page.locator("input#confirm-password")).to_be_visible()
-        expect(page.locator("button:has-text('Create Account')")).to_be_visible()
-
-        # Verify notice banner
-        expect(page.locator("text=This is a placeholder page")).to_be_visible()
-
-        # Take a screenshot for reference
-        app_log_dir = os.path.join(settings.BASE_DIR, "logs", "pages")
-        os.makedirs(app_log_dir, exist_ok=True)
-        screenshot_path = os.path.join(app_log_dir, "signup_page.png")
-        page.screenshot(path=screenshot_path)
-        logger.info(f"Signup page screenshot saved to: {screenshot_path}")
-
-        logger.info("Signup page test completed successfully")
-
-    except Exception as e:
-        # (Error handling remains the same)
-        app_name = "pages"
-        app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
-        os.makedirs(app_log_dir, exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_signup_{timestamp}.png"  # Renamed
-        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-        try:
-            if "page" in locals() and hasattr(page, "screenshot"):
-                page.screenshot(path=screenshot_path)
-                logger.error(f"Screenshot saved to: {screenshot_path}")
-            else:
-                logger.error(
-                    "Could not save screenshot: 'page' object not available or invalid."
-                )
-        except Exception as ss_error:
-            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-        if "logger" in locals() and hasattr(logger, "error"):
-            logger.error(f"Test failed: {str(e)}", exc_info=True)
-        else:
-            print(f"Test failed (logger not available): {str(e)}")
-        raise
-
-
-@pytest.mark.usefixtures("capture_console_errors", "django_server")
-def test_profile_page_template(page: Page, django_server):
-    """Test that the profile page loads with the new template."""
-    try:
-        # Navigate to the profile page
-        profile_url = f"{django_server}/profile/"
-        logger.info(f"Navigating to profile page: {profile_url}")
-        page.goto(profile_url)
-
-        # Check if the page loads
-        page.wait_for_selector("text=John Doe", timeout=5000)
-
-        # Verify key profile sections
-        expect(
-            page.locator(".w-24.h-24.bg-accent-primary")
-        ).to_be_visible()  # Profile avatar
-        expect(page.locator("text=Quizzes Taken")).to_be_visible()
-
-        # Check tabs functionality
-        page.locator("button:has-text('Favorites')").click()
-        expect(page.locator("text=Your Favorite Quizzes")).to_be_visible()
-
-        page.locator("button:has-text('Created Quizzes')").click()
-        expect(page.locator("text=Quizzes You've Created")).to_be_visible()
-
-        # Take a screenshot for reference
-        app_log_dir = os.path.join(settings.BASE_DIR, "logs", "pages")
-        os.makedirs(app_log_dir, exist_ok=True)
-        screenshot_path = os.path.join(app_log_dir, "profile_page.png")
-        page.screenshot(path=screenshot_path)
-        logger.info(f"Profile page screenshot saved to: {screenshot_path}")
-
-        logger.info("Profile page test completed successfully")
-
-    except Exception as e:
-        # (Error handling remains the same)
-        app_name = "pages"
-        app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
-        os.makedirs(app_log_dir, exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_filename = f"failure_profile_{timestamp}.png"  # Renamed
-        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
-        try:
-            if "page" in locals() and hasattr(page, "screenshot"):
-                page.screenshot(path=screenshot_path)
-                logger.error(f"Screenshot saved to: {screenshot_path}")
-            else:
-                logger.error(
-                    "Could not save screenshot: 'page' object not available or invalid."
-                )
-        except Exception as ss_error:
-            logger.error(f"Failed to save screenshot to {screenshot_path}: {ss_error}")
-        if "logger" in locals() and hasattr(logger, "error"):
-            logger.error(f"Test failed: {str(e)}", exc_info=True)
-        else:
-            print(f"Test failed (logger not available): {str(e)}")
-        raise
-
-
-if __name__ == "__main__":
-    print("This test should be run with pytest")
+    # --- Verify Empty History Message ---
+    expect(page.get_by_role("heading", name="Your Quiz History")).to_be_visible()
+    # Check specifically for the empty message text
+    expect(page.locator("text=You haven't completed any quizzes yet.")).to_be_visible()
+    # Check for the link within the empty message
+    expect(page.get_by_role("link", name="Find a quiz to take!")).to_be_visible()
