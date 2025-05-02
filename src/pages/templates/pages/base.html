@@ -95,7 +95,7 @@
                             </form>
                             {# --- END Mobile Logout Form --- #}
                         {% else %}
-                            <a href="{% url 'pages:login' %}" class="block px-4 py-3 hover:bg-tag-bg text-text-secondary hover:text-accent-heading transition-colors">Login</a>
+                            <a href="{% url 'login' %}" class="block px-4 py-3 hover:bg-tag-bg text-text-secondary hover:text-accent-heading transition-colors">Login</a>
                             <a href="{% url 'pages:signup' %}" class="block px-4 py-3 hover:bg-tag-bg text-text-secondary hover:text-accent-heading transition-colors">Sign Up</a>
                         {% endif %}
                     </nav>
@@ -121,7 +121,7 @@
                             </form>
                              {# --- END Desktop Logout Form --- #}
                         {% else %}
-                            <a href="{% url 'pages:login' %}" class="border border-border rounded-lg px-4 py-2 text-sm font-medium text-text-secondary hover:bg-tag-bg transition-colors">Login</a>
+                            <a href="{% url 'login' %}" class="border border-border rounded-lg px-4 py-2 text-sm font-medium text-text-secondary hover:bg-tag-bg transition-colors">Login</a>
                             <a href="{% url 'pages:signup' %}" class="bg-accent-primary hover:bg-accent-hover text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">Sign Up</a>
                         {% endif %}
                     </div>

@@ -58,13 +58,6 @@ def about(request):
     return render(request, "pages/about.html")
 
 
-def login_view(request):
-    """Placeholder login page."""
-    # This view might eventually handle actual login logic or redirect
-    # For now, it just renders the placeholder template
-    return render(request, "pages/login.html")
-
-
 def signup_view(request):
     """Placeholder signup page."""
     return render(request, "pages/signup.html")

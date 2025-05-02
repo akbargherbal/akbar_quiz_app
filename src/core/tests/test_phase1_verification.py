@@ -1,156 +1,224 @@
 # src/core/tests/test_phase1_verification.py
-# REVISED to use Django's TestCase client
 
-import logging
-
-# import pytest # No longer strictly needed for markers here
+import pytest
+from pathlib import Path
 from django.conf import settings
-from django.urls import resolve, Resolver404
-from django.contrib.auth.models import User, Group, Permission
-from django.contrib.auth.views import LoginView, LogoutView
+from django.urls import reverse, NoReverseMatch
+from django.template.loader import get_template, TemplateDoesNotExist
+from django.test import Client
+from django.contrib.auth import get_user_model
 
-# Import Django's TestCase
-from django.test import Client, TestCase  # <<< CHANGE HERE: Import TestCase
-from django.contrib.auth.middleware import AuthenticationMiddleware
-from django.contrib.sessions.middleware import SessionMiddleware
-from django.contrib.auth.models import AnonymousUser
+# Mark all tests in this module as needing database access (even if just for settings/client)
+pytestmark = pytest.mark.django_db
 
-logger = logging.getLogger("phase1_verification")
+# --- Constants ---
+EXPECTED_LOGIN_URL_PATH = "/accounts/login/"
+EXPECTED_LOGOUT_URL_PATH = "/accounts/logout/"
+LOGIN_TEMPLATE_NAME = "registration/login.html"
+LOGGED_OUT_TEMPLATE_NAME = "registration/logged_out.html"
+BASE_TEMPLATE_MARKER = "<header"  # A simple marker from pages/base.html
+BASE_TEMPLATE_NAME = "pages/base.html"  # For checking template extension
 
 
-# Inherit from TestCase instead of object
-class TestPhase1Verification(TestCase):  # <<< CHANGE HERE
-    """Tests specifically verifying the configuration and setup after Phase 1."""
+class TestPhase1Verification:
+    """
+    Verifies the successful completion of Phase 1:
+    Enable Core Django Auth Backend & Basic Templates.
+    """
 
-    # No need for @pytest.mark.django_db when inheriting from TestCase
+    # --- Step 1.1: Configure Auth Apps & Middleware ---
 
     def test_auth_apps_configured(self):
-        """Verify that required authentication apps are in INSTALLED_APPS."""
-        logger.info("Verifying Step 1.1: Auth apps in INSTALLED_APPS...")
-        installed_apps = settings.INSTALLED_APPS
-        self.assertIn(
-            "django.contrib.auth",
-            installed_apps,
-            "'django.contrib.auth' not found in INSTALLED_APPS",
-        )
-        self.assertIn(
-            "django.contrib.sessions",
-            installed_apps,
-            "'django.contrib.sessions' not found in INSTALLED_APPS",
-        )
-        logger.info(
-            "SUCCESS: 'django.contrib.auth' and 'django.contrib.sessions' are in INSTALLED_APPS."
-        )
+        """Verify 'django.contrib.auth' and 'django.contrib.sessions' are in INSTALLED_APPS."""
+        assert (
+            "django.contrib.auth" in settings.INSTALLED_APPS
+        ), "'django.contrib.auth' not found in INSTALLED_APPS"
+        assert (
+            "django.contrib.sessions" in settings.INSTALLED_APPS
+        ), "'django.contrib.sessions' not found in INSTALLED_APPS"
 
     def test_auth_middleware_configured(self):
-        """Verify that required authentication middleware is in MIDDLEWARE and ordered correctly."""
-        logger.info("Verifying Step 1.1: Auth middleware in MIDDLEWARE...")
-        middleware = settings.MIDDLEWARE
-        session_middleware_fqn = "django.contrib.sessions.middleware.SessionMiddleware"
-        auth_middleware_fqn = "django.contrib.auth.middleware.AuthenticationMiddleware"
-
-        self.assertIn(
-            session_middleware_fqn,
-            middleware,
-            f"'{session_middleware_fqn}' not found in MIDDLEWARE",
-        )
-        self.assertIn(
-            auth_middleware_fqn,
-            middleware,
-            f"'{auth_middleware_fqn}' not found in MIDDLEWARE",
-        )
-
+        """Verify SessionMiddleware and AuthenticationMiddleware are in MIDDLEWARE."""
+        assert (
+            "django.contrib.sessions.middleware.SessionMiddleware"
+            in settings.MIDDLEWARE
+        ), "'SessionMiddleware' not found in MIDDLEWARE"
+        assert (
+            "django.contrib.auth.middleware.AuthenticationMiddleware"
+            in settings.MIDDLEWARE
+        ), "'AuthenticationMiddleware' not found in MIDDLEWARE"
+        # Optional: Check order (SessionMiddleware should ideally be before AuthenticationMiddleware)
         try:
-            session_index = middleware.index(session_middleware_fqn)
-            auth_index = middleware.index(auth_middleware_fqn)
-            self.assertLess(
-                session_index,
-                auth_index,
-                f"'{session_middleware_fqn}' must come before '{auth_middleware_fqn}' in MIDDLEWARE",
+            session_index = settings.MIDDLEWARE.index(
+                "django.contrib.sessions.middleware.SessionMiddleware"
             )
-            logger.info(
-                f"SUCCESS: '{session_middleware_fqn}' found at index {session_index}."
+            auth_index = settings.MIDDLEWARE.index(
+                "django.contrib.auth.middleware.AuthenticationMiddleware"
             )
-            logger.info(
-                f"SUCCESS: '{auth_middleware_fqn}' found at index {auth_index}."
-            )
-            logger.info("SUCCESS: Middleware order is correct.")
+            assert (
+                session_index < auth_index
+            ), "SessionMiddleware should come before AuthenticationMiddleware in MIDDLEWARE"
         except ValueError:
-            self.fail(
-                "One or both required middleware classes not found."
-            )  # Use self.fail
+            # This case is already covered by the individual asserts above
+            pass
 
-    def test_auth_urls_resolve(self):
-        """Verify that standard auth URLs resolve to the correct views."""
-        logger.info("Verifying Step 1.2: Default auth URLs resolve...")
+    # --- Step 1.2: Include Default Auth URLs ---
+
+    def test_login_logout_settings_configured(self):
+        """Verify LOGIN_URL, LOGIN_REDIRECT_URL, and LOGOUT_REDIRECT_URL are set."""
+        assert (
+            settings.LOGIN_URL == "login"
+        ), f"settings.LOGIN_URL should be 'login', but found '{settings.LOGIN_URL}'"
+        assert hasattr(
+            settings, "LOGIN_REDIRECT_URL"
+        ), "settings.LOGIN_REDIRECT_URL is not defined"
+        assert (
+            settings.LOGIN_REDIRECT_URL
+        ), "settings.LOGIN_REDIRECT_URL should not be empty"  # Check it's not empty
+        assert hasattr(
+            settings, "LOGOUT_REDIRECT_URL"
+        ), "settings.LOGOUT_REDIRECT_URL is not defined"
+        assert (
+            settings.LOGOUT_REDIRECT_URL
+        ), "settings.LOGOUT_REDIRECT_URL should not be empty"  # Check it's not empty
+
+    def test_auth_urls_included_and_resolvable(self):
+        """Verify standard auth URLs are included and resolve correctly."""
         try:
-            login_match = resolve("/accounts/login/")
-            self.assertEqual(
-                login_match.func.view_class,
-                LoginView,
-                f"URL /accounts/login/ resolved to {login_match.func}, expected LoginView",
+            login_url = reverse("login")
+            assert (
+                login_url == EXPECTED_LOGIN_URL_PATH
+            ), f"reverse('login') resolved to '{login_url}', expected '{EXPECTED_LOGIN_URL_PATH}'"
+        except NoReverseMatch:
+            pytest.fail(
+                "URL pattern named 'login' could not be reversed. Check core/urls.py and include('django.contrib.auth.urls')."
             )
-            logger.info("SUCCESS: '/accounts/login/' resolves to LoginView.")
 
-            logout_match = resolve("/accounts/logout/")
-            self.assertEqual(
-                logout_match.func.view_class,
-                LogoutView,
-                f"URL /accounts/logout/ resolved to {logout_match.func}, expected LogoutView",
-            )
-            logger.info("SUCCESS: '/accounts/logout/' resolves to LogoutView.")
-
-        except Resolver404 as e:
-            self.fail(f"Could not resolve standard auth URL: {e}")  # Use self.fail
-
-    def test_auth_models_available(self):
-        """Verify that core auth models are available and queryable."""
-        logger.info("Verifying Step 1.3: Core auth models are available...")
         try:
-            logger.info("SUCCESS: Imported User, Group, Permission models.")
-            # Database check: Can we perform a basic query?
-            self.assertFalse(User.objects.exists())  # Use standard unittest assert
-            self.assertFalse(Group.objects.exists())
-            self.assertTrue(Permission.objects.exists())  # Use standard unittest assert
-            logger.info(
-                "SUCCESS: Basic queries on User, Group, Permission models successful (confirms tables exist in test DB)."
+            logout_url = reverse("logout")
+            assert (
+                logout_url == EXPECTED_LOGOUT_URL_PATH
+            ), f"reverse('logout') resolved to '{logout_url}', expected '{EXPECTED_LOGOUT_URL_PATH}'"
+        except NoReverseMatch:
+            pytest.fail(
+                "URL pattern named 'logout' could not be reversed. Check core/urls.py and include('django.contrib.auth.urls')."
             )
+
+        # Check a few other standard auth URLs are present
+        try:
+            reverse("password_reset")
+        except NoReverseMatch:
+            pytest.fail("URL pattern named 'password_reset' could not be reversed.")
+        try:
+            reverse("password_change")
+        except NoReverseMatch:
+            pytest.fail("URL pattern named 'password_change' could not be reversed.")
+
+    # --- Step 1.3: Apply Auth Migrations ---
+
+    def test_user_model_available(self):
+        """Verify the standard User model can be imported (proxy for migrations applied)."""
+        try:
+            UserModel = get_user_model()
+            assert UserModel is not None, "get_user_model() returned None"
+            # Optional: Check if the model has expected fields like 'username'
+            assert hasattr(
+                UserModel, "username"
+            ), "User model does not have a 'username' attribute"
         except Exception as e:
-            self.fail(
-                f"Error accessing auth models or querying database: {e}"
-            )  # Use self.fail
+            pytest.fail(
+                f"Could not get User model. Migrations likely missing or failed. Error: {e}"
+            )
 
-    # Remove client fixture parameter, use self.client instead
-    def test_request_user_attribute_exists(self):  # <<< CHANGE HERE
-        """Verify that the 'user' attribute is added to requests."""
-        logger.info("Verifying Middleware: 'user' attribute exists on request...")
+    # --- Step 1.4: Create/Customize Core Auth Templates ---
+
+    def test_templates_dir_configured(self):
+        """Verify the top-level 'templates' directory is in settings.TEMPLATES DIRS."""
+        expected_templates_dir = settings.BASE_DIR / "templates"
+        configured_dirs = settings.TEMPLATES[0].get("DIRS", [])
+        assert any(
+            Path(d) == expected_templates_dir for d in configured_dirs
+        ), f"Top-level templates directory '{expected_templates_dir}' not found in settings.TEMPLATES[0]['DIRS']"
+
+    def test_login_template_exists_and_loads(self):
+        """Verify 'templates/registration/login.html' exists and can be loaded."""
+        template_path = settings.BASE_DIR / "templates" / LOGIN_TEMPLATE_NAME
+        assert (
+            template_path.exists()
+        ), f"Login template file not found at '{template_path}'"
         try:
-            # Use self.client provided by TestCase
-            response = self.client.get("/")  # <<< CHANGE HERE
-            self.assertEqual(
-                response.status_code,
-                200,
-                f"Homepage request failed with status {response.status_code}",
+            get_template(LOGIN_TEMPLATE_NAME)
+        except TemplateDoesNotExist:
+            pytest.fail(
+                f"Django could not load the template '{LOGIN_TEMPLATE_NAME}'. Check TEMPLATES settings and file location."
             )
 
-            # Check if the user attribute exists on the WSGIRequest attached to the response
-            self.assertTrue(
-                hasattr(response.wsgi_request, "user"),
-                "'user' attribute not found on request object.",
-            )
-            logger.info("SUCCESS: 'user' attribute found on request.")
-
-            # Check if the default user is AnonymousUser
-            self.assertIsInstance(
-                response.wsgi_request.user,
-                AnonymousUser,
-                f"Expected AnonymousUser, but got {type(response.wsgi_request.user)}",
-            )
-            logger.info(
-                f"SUCCESS: Request user is of type '{type(response.wsgi_request.user).__name__}'."
+    def test_logged_out_template_exists_and_loads(self):
+        """Verify 'templates/registration/logged_out.html' exists and can be loaded."""
+        template_path = settings.BASE_DIR / "templates" / LOGGED_OUT_TEMPLATE_NAME
+        assert (
+            template_path.exists()
+        ), f"Logged out template file not found at '{template_path}'"
+        try:
+            get_template(LOGGED_OUT_TEMPLATE_NAME)
+        except TemplateDoesNotExist:
+            pytest.fail(
+                f"Django could not load the template '{LOGGED_OUT_TEMPLATE_NAME}'. Check TEMPLATES settings and file location."
             )
 
-        except Exception as e:
-            self.fail(
-                f"Error during request or checking 'user' attribute: {e}"
-            )  # Use self.fail
+    def test_login_view_renders_styled_template(self, client: Client):
+        """Verify the login page loads, uses the base template, and has required elements."""
+        try:
+            login_url = reverse("login")
+        except NoReverseMatch:
+            pytest.fail(
+                "Cannot test login view rendering because 'login' URL did not resolve."
+            )
+
+        response = client.get(login_url)
+
+        assert (
+            response.status_code == 200
+        ), f"GET request to {login_url} failed with status {response.status_code}"
+
+        # 1. Check if it extends the base template (look for a unique element/string)
+        response_content = response.content.decode("utf-8")
+        assert (
+            BASE_TEMPLATE_MARKER in response_content
+        ), f"Login template does not seem to extend '{BASE_TEMPLATE_NAME}' (missing marker: '{BASE_TEMPLATE_MARKER}')"
+
+        # 2. Check for CSRF token
+        assert (
+            "{% csrf_token %}" not in response_content
+        ), "Template seems to contain the literal '{% csrf_token %}' tag instead of the rendered input."
+        assert (
+            'name="csrfmiddlewaretoken"' in response_content
+        ), "CSRF token hidden input ('csrfmiddlewaretoken') not found in the rendered login form."
+
+        # 3. Check for form elements
+        assert (
+            'name="username"' in response_content
+        ), "Input field with name='username' not found in the login form."
+        assert (
+            'name="password"' in response_content
+        ), "Input field with name='password' not found in the login form."
+        assert (
+            'method="POST"' in response_content or 'method="post"' in response_content
+        ), "Login form does not have method='POST'."
+
+    # --- Step 1.5: Full Regression Test (Minimal Smoke Test) ---
+    # Note: Full regression is handled by running *all* tests, but we add a basic check.
+
+    def test_homepage_loads_after_auth_setup(self, client: Client):
+        """Basic smoke test to ensure the homepage still loads after Phase 1 changes."""
+        try:
+            home_url = reverse("pages:home")  # Assumes 'pages' app handles homepage
+        except NoReverseMatch:
+            pytest.fail(
+                "Cannot run homepage smoke test because 'pages:home' URL did not resolve."
+            )
+
+        response = client.get(home_url)
+        assert (
+            response.status_code == 200
+        ), f"Homepage ({home_url}) failed to load (status {response.status_code}) after Phase 1 setup."

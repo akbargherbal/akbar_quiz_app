@@ -96,7 +96,7 @@ MIDDLEWARE = [
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -181,15 +181,17 @@ STATICFILES_DIRS = [
 
 # --- DEFAULTS ---
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "/"
-LOGIN_URL = "/login/"  # <<< ADD THIS LINE (Points to your pages:login URL)
 LOGOUT_REDIRECT_URL = "/"  # Redirect to homepage after logout
 
 
 # --- TESTING ---
 # Use the DJANGO_ENVIRONMENT variable set near the top
 if DJANGO_ENVIRONMENT == "development":
-    TEST_RUNNER = "multi_choice_quiz.test_runner.LoggingTestRunner"
+    TEST_RUNNER = (
+        "multi_choice_quiz.test_runner.LoggingTestRunner"  # Temporarily disable
+    )
 
 
 # --- PWA ---
