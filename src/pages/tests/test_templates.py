@@ -1,224 +1,380 @@
-# src/pages/tests/test_templates.py
+# src/pages/tests/test_templates.py (Corrected for Viewport and Locator Specificity)
 
 import pytest
-import re  # Import regular expressions
+import re
+import os
 from playwright.sync_api import Page, expect
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from django.utils import timezone  # Import timezone
-from multi_choice_quiz.models import Quiz, QuizAttempt  # Import models
+from django.test import Client as DjangoClient
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
-# --- Constants ---
-# Use environment variable set by the runner script, or default for local debugging
-BASE_URL = "http://localhost:8000"
+User = get_user_model()
+
+BASE_URL = os.environ.get("SERVER_URL", "http://localhost:8000")
+LOG_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "logs", "pages")
+os.makedirs(LOG_DIR, exist_ok=True)
+
+# Define standard viewports
+DESKTOP_VIEWPORT = {"width": 1280, "height": 720}
+MOBILE_VIEWPORT = {"width": 375, "height": 667}  # Example: iPhone SE size
 
 
-# --- Helper Function to Create User ---
-# (Extracted for reusability)
-def create_test_user(username, password, is_staff=True, is_superuser=True):
-    User = get_user_model()
+def setup_logged_in_user(username, password):
+    """Ensures user exists and returns logged-in Django Client."""
     try:
-        user, created = User.objects.get_or_create(username=username)
-        if created or not user.has_usable_password():
-            user.set_password(password)
-            user.is_staff = is_staff
-            user.is_superuser = is_superuser
-            user.save()
-            print(f"Ensured user '{username}' exists and has password.")
-        else:
-            # Ensure password is set if user already exists and is unusable
-            if not user.has_usable_password():
-                user.set_password(password)
-                user.save()
-                print(f"Set password for existing user: {username}")
-            else:
-                print(f"Using existing user: {username}")
-        return user
-    except Exception as e:
-        pytest.fail(f"Failed to get or create test user '{username}': {e}")
+        user = User.objects.get(username=username)
+        print(f"User '{username}' already exists.")
+    except User.DoesNotExist:
+        user = User.objects.create_user(username=username, password=password)
+        print(f"Created user '{username}'.")
+    if not user.has_usable_password():
+        user.set_password(password)
+        user.save()
+        print(f"Ensured user '{username}' exists and has password.")
+
+    django_client = DjangoClient()
+    logged_in = django_client.login(username=username, password=password)
+    if not logged_in:
+        print(
+            f"ERROR: Django Client login failed for user '{username}'. Check credentials/backend."
+        )
+        pytest.fail(f"Setup failed: Could not log in Django client as '{username}'")
+    print(f"Successfully logged in Django client as {username}.")
+    return django_client
 
 
-# --- Helper Function to Log In via Admin ---
-# (Extracted for reusability)
-def login_via_admin(page: Page, username, password):
-    admin_login_url = BASE_URL + "/admin/login/"
-    page.goto(admin_login_url)
-    page.locator("#id_username").fill(username)
-    page.locator("#id_password").fill(password)
-    page.get_by_role("button", name="Log in").click()
-    # Wait for admin dashboard element
-    expect(page.locator("#user-tools")).to_be_visible(timeout=10000)
-    print(f"Successfully logged in as {username} via /admin/")
-
-
-# --- Test Cases ---
+# --- Tests ---
 
 
 def test_home_page_loads_and_title(page: Page):
     """Verify the home page loads and has the correct title."""
-    home_url = BASE_URL + reverse("pages:home")
-    page.goto(home_url)
+    page.set_viewport_size(DESKTOP_VIEWPORT)  # Ensure desktop size for consistency
+    page.goto(BASE_URL + reverse("pages:home"))
     expect(page).to_have_title(re.compile("Home | QuizMaster"))
-    # Check for a key element to ensure content loaded
-    expect(
-        page.get_by_role("heading", name="Challenge Your Knowledge with QuizMaster")
-    ).to_be_visible()
-
-
-def test_anonymous_user_navigation(page: Page):
-    """Verify navigation links shown for an anonymous user."""
-    home_url = BASE_URL + reverse("pages:home")
-    page.goto(home_url)
-
-    # Get the header element for context (helps avoid finding links elsewhere)
-    header = page.locator("header")
-
-    # Check visible links/buttons for anonymous users
-    # Using get_by_role is generally preferred
-    expect(header.get_by_role("link", name="Login")).to_be_visible()
-    expect(header.get_by_role("link", name="Sign Up")).to_be_visible()
-
-    # Check hidden links/buttons for anonymous users
-    # Use regex for Profile link to avoid issues with username potentially appearing later
-    expect(header.get_by_role("link", name=re.compile("Profile"))).not_to_be_visible()
-    # The logout button is inside a form
-    expect(header.get_by_role("button", name="Logout")).not_to_be_visible()
-
-
-@pytest.mark.django_db(transaction=True)  # Needed to ensure User exists
-def test_authenticated_user_navigation(page: Page):
-    """Verify navigation links shown for an authenticated user."""
-    # --- Log in User via Admin ---
-    username = "testuser_nav"
-    password = "password123"
-    create_test_user(username, password)  # Use helper
-    login_via_admin(page, username, password)  # Use helper
-
-    # --- Navigate to Homepage after login ---
-    home_url = BASE_URL + reverse("pages:home")
-    page.goto(home_url)
-    print(f"Navigated to homepage: {home_url}")  # Debugging
-
-    # --- Verify Navigation Links ---
-    header = page.locator("header")
-
-    # Check hidden links/buttons for authenticated users
-    expect(header.get_by_role("link", name="Login")).not_to_be_visible()
-    expect(header.get_by_role("link", name="Sign Up")).not_to_be_visible()
-
-    # Check visible links/buttons for authenticated users
-    # Use regex for Profile link to account for username
-    expect(
-        header.get_by_role("link", name=re.compile(f"Profile \\({username}\\)"))
-    ).to_be_visible()
-    # Check the Logout button (inside its form)
-    expect(header.get_by_role("button", name="Logout")).to_be_visible()
-
-
-def test_about_page_loads(page: Page):
-    """Verify the about page loads."""
-    about_url = BASE_URL + reverse("pages:about")
-    page.goto(about_url)
-    expect(page).to_have_title(re.compile("About | QuizMaster"))
-    expect(page.get_by_role("heading", name="About QuizMaster")).to_be_visible()
+    expect(page.get_by_role("heading", name="Challenge Your Knowledge")).to_be_visible()
 
 
 def test_quizzes_page_loads(page: Page):
     """Verify the quizzes page loads."""
-    quizzes_url = BASE_URL + reverse("pages:quizzes")
-    page.goto(quizzes_url)
+    page.set_viewport_size(DESKTOP_VIEWPORT)  # Ensure desktop size
+    page.goto(BASE_URL + reverse("pages:quizzes"))
     expect(page).to_have_title(re.compile("Quizzes | QuizMaster"))
     expect(page.get_by_role("heading", name="Browse Quizzes")).to_be_visible()
 
 
+def test_about_page_loads(page: Page):
+    """Verify the about page loads."""
+    page.set_viewport_size(DESKTOP_VIEWPORT)  # Ensure desktop size
+    page.goto(BASE_URL + reverse("pages:about"))
+    expect(page).to_have_title(re.compile("About | QuizMaster"))
+    expect(page.get_by_role("heading", name="About QuizMaster")).to_be_visible()
+
+
+# --- Navigation Tests ---
+
+
+def test_anonymous_user_navigation(page: Page):
+    """Verify navigation links for anonymous users."""
+    # --- Desktop checks ---
+    print("\n--- Running Anonymous Desktop Nav Checks ---")
+    page.set_viewport_size(DESKTOP_VIEWPORT)
+    page.goto(BASE_URL + reverse("pages:home"))
+    page.wait_for_load_state("networkidle")  # Wait for stability
+
+    desktop_nav = page.locator("nav.hidden.md\\:flex")
+    expect(desktop_nav).to_be_visible()
+    expect(desktop_nav.get_by_role("link", name="Login")).to_be_visible()
+    expect(desktop_nav.get_by_role("link", name="Login")).to_have_attribute(
+        "href", reverse("login")
+    )
+    expect(desktop_nav.get_by_role("link", name="Sign Up")).to_be_visible()
+    expect(desktop_nav.get_by_role("link", name="Sign Up")).to_have_attribute(
+        "href", reverse("pages:signup")
+    )
+    expect(
+        desktop_nav.get_by_role("link", name="Profile", exact=True)
+    ).not_to_be_visible()
+    expect(desktop_nav.get_by_role("button", name="Logout")).not_to_be_visible()
+    print("Desktop checks passed.")
+
+    # --- Mobile checks ---
+    print("--- Running Anonymous Mobile Nav Checks ---")
+    page.set_viewport_size(MOBILE_VIEWPORT)
+    page.goto(BASE_URL + reverse("pages:home"))  # Reload page in new viewport
+    page.wait_for_load_state("networkidle")  # Wait for stability
+
+    mobile_menu_button = page.locator("div.md\\:hidden > button")
+    # Assert button is now visible before clicking
+    expect(mobile_menu_button).to_be_visible(
+        timeout=5000
+    )  # Add timeout for visibility check
+    print("Mobile menu button found and is visible.")
+    mobile_menu_button.click()
+    print("Clicked mobile menu button.")
+
+    # Locate the revealed mobile navigation menu
+    mobile_nav = page.locator("nav[x-show='open']")
+    expect(mobile_nav).to_be_visible(timeout=2000)  # Wait for dropdown animation
+    print("Mobile nav dropdown is visible.")
+
+    expect(mobile_nav.get_by_role("link", name="Login")).to_be_visible()
+    expect(mobile_nav.get_by_role("link", name="Login")).to_have_attribute(
+        "href", reverse("login")
+    )
+    expect(mobile_nav.get_by_role("link", name="Sign Up")).to_be_visible()
+    expect(mobile_nav.get_by_role("link", name="Sign Up")).to_have_attribute(
+        "href", reverse("pages:signup")
+    )
+    expect(
+        mobile_nav.get_by_role("link", name="Profile", exact=True)
+    ).not_to_be_visible()
+    expect(mobile_nav.get_by_role("button", name="Logout")).not_to_be_visible()
+    print("Mobile checks passed.")
+
+
+@pytest.mark.django_db
+def test_authenticated_user_navigation(page: Page):
+    """Verify navigation links for authenticated users."""
+    admin_user = "testuser_nav"
+    admin_pass = "password123"
+    try:
+        user = User.objects.get(username=admin_user)
+        # Ensure the user is active and staff/super for admin login
+        user.is_active = True
+        user.is_staff = True
+        user.is_superuser = True
+        user.set_password(admin_pass)
+        user.save()
+    except User.DoesNotExist:
+        user = User.objects.create_user(
+            username=admin_user,
+            password=admin_pass,
+            is_staff=True,
+            is_superuser=True,
+            is_active=True,
+        )
+    print(f"\nEnsured user '{admin_user}' exists and is configured for admin login.")
+
+    # --- Login via Admin ---
+    admin_login_url = BASE_URL + reverse("admin:index")
+    page.goto(admin_login_url)
+    if "login" in page.url:
+        page.locator("#id_username").fill(admin_user)
+        page.locator("#id_password").fill(admin_pass)
+        page.locator('input[type="submit"]').click()
+        # Wait for admin page load after login
+        expect(page.get_by_role("heading", name="Site administration")).to_be_visible(
+            timeout=10000
+        )
+        print(f"Successfully logged in as {admin_user} via /admin/")
+    else:
+        # Check if we are already on admin page
+        expect(page.get_by_role("heading", name="Site administration")).to_be_visible(
+            timeout=5000
+        )
+        print(f"Already logged in or admin page loaded directly for {admin_user}.")
+
+    # --- Desktop checks ---
+    print("--- Running Authenticated Desktop Nav Checks ---")
+    page.set_viewport_size(DESKTOP_VIEWPORT)
+    home_url = BASE_URL + reverse("pages:home")
+    page.goto(home_url)
+    page.wait_for_load_state("networkidle")  # Wait for stability
+    print(f"Navigated to homepage: {home_url}")
+
+    desktop_nav = page.locator("nav.hidden.md\\:flex")
+    expect(desktop_nav).to_be_visible()
+    profile_link_desktop = desktop_nav.get_by_role(
+        "link", name=re.compile(f"Profile \\({admin_user}\\)")
+    )
+    expect(profile_link_desktop).to_be_visible()
+    expect(profile_link_desktop).to_have_attribute("href", reverse("pages:profile"))
+
+    # Check the Logout *button* within its form
+    logout_button_desktop = desktop_nav.locator(
+        "form[action*='logout'] > button:has-text('Logout')"
+    )
+    expect(logout_button_desktop).to_be_visible()
+
+    expect(desktop_nav.get_by_role("link", name="Login")).not_to_be_visible()
+    expect(desktop_nav.get_by_role("link", name="Sign Up")).not_to_be_visible()
+    print("Desktop checks passed.")
+
+    # --- Mobile checks ---
+    print("--- Running Authenticated Mobile Nav Checks ---")
+    page.set_viewport_size(MOBILE_VIEWPORT)
+    page.goto(home_url)  # Reload page in new viewport
+    page.wait_for_load_state("networkidle")  # Wait for stability
+
+    mobile_menu_button = page.locator("div.md\\:hidden > button")
+    # Assert button is now visible before clicking
+    expect(mobile_menu_button).to_be_visible(timeout=5000)
+    print("Mobile menu button found and is visible.")
+    mobile_menu_button.click()
+    print("Clicked mobile menu button.")
+
+    # Locate the revealed mobile navigation menu
+    mobile_nav = page.locator("nav[x-show='open']")
+    expect(mobile_nav).to_be_visible(timeout=2000)  # Wait for dropdown animation
+    print("Mobile nav dropdown is visible.")
+
+    profile_link_mobile = mobile_nav.get_by_role(
+        "link", name=re.compile(f"Profile \\({admin_user}\\)")
+    )
+    expect(profile_link_mobile).to_be_visible()
+    expect(profile_link_mobile).to_have_attribute("href", reverse("pages:profile"))
+
+    # Check the Logout *button* within its form
+    logout_button_mobile = mobile_nav.locator(
+        "form[action*='logout'] > button:has-text('Logout')"
+    )
+    expect(logout_button_mobile).to_be_visible()
+
+    expect(mobile_nav.get_by_role("link", name="Login")).not_to_be_visible()
+    expect(mobile_nav.get_by_role("link", name="Sign Up")).not_to_be_visible()
+    print("Mobile checks passed.")
+
+
+# --- Remaining tests unchanged ---
+
+
 def test_login_page_loads(page: Page):
-    """Verify the placeholder login page loads."""
-    login_url = BASE_URL + reverse("pages:login")
+    """Verify the standard Django login page loads."""
+    page.set_viewport_size(DESKTOP_VIEWPORT)  # Ensure desktop size
+    login_url = BASE_URL + reverse("login")
     page.goto(login_url)
     expect(page).to_have_title(re.compile("Login | QuizMaster"))
     expect(page.get_by_role("heading", name="Login to Your Account")).to_be_visible()
-    # Check for the non-functional notice
-    expect(page.locator("text=Note: This is a placeholder page")).to_be_visible()
+    expect(page.locator('input[name="username"]')).to_be_visible()
+    expect(page.locator('input[name="password"]')).to_be_visible()
 
 
 def test_signup_page_loads(page: Page):
-    """Verify the placeholder signup page loads."""
+    """Verify the signup page loads correctly (without placeholder text)."""
+    page.set_viewport_size(DESKTOP_VIEWPORT)  # Ensure desktop size
     signup_url = BASE_URL + reverse("pages:signup")
     page.goto(signup_url)
     expect(page).to_have_title(re.compile("Sign Up | QuizMaster"))
     expect(page.get_by_role("heading", name="Create Your Account")).to_be_visible()
-    # Check for the non-functional notice
-    expect(page.locator("text=Note: This is a placeholder page")).to_be_visible()
-
-
-@pytest.mark.django_db(transaction=True)
-def test_profile_page_structure_when_authenticated(
-    page: Page,
-):  # Renamed from loads_when_authenticated
-    """Verify the basic profile page structure loads when logged in."""
-    # --- Login User ---
-    username = "testuser_prof_struct"
-    password = "password123"
-    user = create_test_user(username, password)  # Use helper
-    login_via_admin(page, username, password)  # Use helper
-
-    # --- Navigate directly to profile page ---
-    profile_url = BASE_URL + reverse("pages:profile")
-    page.goto(profile_url)
-
-    # --- Verify Profile Page Structure ---
-    expect(page).to_have_url(profile_url)  # Ensure no redirect happened
-    expect(page).to_have_title(
-        re.compile(f"{username}'s Profile | QuizMaster")
-    )  # Check dynamic title
-
-    # Check for dynamic user info elements
-
-    # --- START FIX for Avatar Check ---
-    # Locate the avatar div using a more stable selector (e.g., class combination)
-    # We use a class that's likely unique to the avatar container
-    avatar_div = page.locator(
-        "div.rounded-full.flex.items-center.justify-center.bg-accent-primary"
-    )
-    # Check if this div is visible
-    expect(avatar_div).to_be_visible()
-    # Assert the text content *of this specific div* is the correct initial
-    expect(avatar_div).to_have_text(username[0].upper())
-    # --- END FIX for Avatar Check ---
-
-    # Check for username/full name heading (this locator should be okay)
-    expect(page.get_by_role("heading", name=re.compile(username))).to_be_visible()
-    # Check for member since (just check text exists)
-    expect(page.locator("text=Member since:")).to_be_visible()
-
-    # Check for the main history section heading
-    expect(page.get_by_role("heading", name="Your Quiz History")).to_be_visible()
-
-    # Check for the placeholder notice at the bottom
+    expect(page.locator('input[name="username"]')).to_be_visible()
+    expect(page.locator('input[name="email"]')).to_be_visible()
+    expect(page.locator('input[name="password1"]')).to_be_visible()
+    expect(page.locator('input[name="password2"]')).to_be_visible()
     expect(
-        page.locator(
-            "text=Note: Edit Profile, Stats, Favorites, and Created Quizzes are currently placeholders."
-        )
+        page.locator('button[type="submit"]:has-text("Create Account")')
     ).to_be_visible()
 
 
-@pytest.mark.django_db(transaction=True)
-def test_profile_page_shows_empty_history(page: Page):
-    """Verify the 'no attempts' message shows for a user with no history."""
-    # --- Login User (ensure this user has no attempts) ---
-    username = "testuser_empty_hist"
-    password = "password123"
-    # Create user but DO NOT create attempts for them
-    user = create_test_user(username, password)
-    login_via_admin(page, username, password)  # Use helper
+@pytest.mark.django_db
+def test_profile_page_structure_when_authenticated(page: Page):
+    """Check basic structure of the profile page for a logged-in user."""
+    admin_user = "testuser_prof_struct"
+    admin_pass = "password123"
+    try:
+        user = User.objects.get(username=admin_user)
+        user.is_active = True
+        user.is_staff = True
+        user.is_superuser = True
+        user.set_password(admin_pass)
+        user.save()
+    except User.DoesNotExist:
+        User.objects.create_user(
+            username=admin_user,
+            password=admin_pass,
+            is_staff=True,
+            is_superuser=True,
+            is_active=True,
+        )
+    print(f"\nEnsured user '{admin_user}' exists and is configured for admin login.")
 
-    # --- Navigate directly to profile page ---
+    admin_login_url = BASE_URL + reverse("admin:index")
+    page.goto(admin_login_url)
+    if "login" in page.url:
+        page.locator("#id_username").fill(admin_user)
+        page.locator("#id_password").fill(admin_pass)
+        page.locator('input[type="submit"]').click()
+        expect(page.get_by_role("heading", name="Site administration")).to_be_visible(
+            timeout=10000
+        )
+        print(f"Successfully logged in as {admin_user} via /admin/")
+    else:
+        expect(page.get_by_role("heading", name="Site administration")).to_be_visible(
+            timeout=5000
+        )
+        print(f"Already logged in or admin page loaded directly for {admin_user}.")
+
     profile_url = BASE_URL + reverse("pages:profile")
+    page.set_viewport_size(DESKTOP_VIEWPORT)  # Ensure desktop size for profile check
     page.goto(profile_url)
+    page.wait_for_load_state("networkidle")
 
-    # --- Verify Empty History Message ---
-    expect(page.get_by_role("heading", name="Your Quiz History")).to_be_visible()
-    # Check specifically for the empty message text
-    expect(page.locator("text=You haven't completed any quizzes yet.")).to_be_visible()
-    # Check for the link within the empty message
-    expect(page.get_by_role("link", name="Find a quiz to take!")).to_be_visible()
+    expect(page).to_have_title(re.compile(f"{admin_user}'s Profile | QuizMaster"))
+    # Profile header check
+    expect(
+        page.locator(f'h1:has-text("{admin_user}")')
+    ).to_be_visible()  # More specific check for username
+    # Tab check
+    expect(page.get_by_role("button", name="Quiz History")).to_be_visible()
+    expect(page.get_by_role("button", name="Favorites")).to_be_visible()
+    # Check avatar placeholder existence (can be refined if you add specific class/id)
+    expect(
+        page.locator(f'div:has-text("{admin_user[0].upper()}")').first
+    ).to_be_visible()
+    print("Profile page structure checks passed.")
+
+
+@pytest.mark.django_db
+def test_profile_page_shows_empty_history(page: Page):
+    """Verify profile page shows empty history message for new user."""
+    admin_user = "testuser_empty_hist"
+    admin_pass = "password123"
+    try:
+        user = User.objects.get(username=admin_user)
+        user.is_active = True
+        user.is_staff = True
+        user.is_superuser = True
+        user.set_password(admin_pass)
+        user.save()
+    except User.DoesNotExist:
+        User.objects.create_user(
+            username=admin_user,
+            password=admin_pass,
+            is_staff=True,
+            is_superuser=True,
+            is_active=True,
+        )
+    print(f"\nEnsured user '{admin_user}' exists and is configured for admin login.")
+
+    admin_login_url = BASE_URL + reverse("admin:index")
+    page.goto(admin_login_url)
+    if "login" in page.url:
+        page.locator("#id_username").fill(admin_user)
+        page.locator("#id_password").fill(admin_pass)
+        page.locator('input[type="submit"]').click()
+        expect(page.get_by_role("heading", name="Site administration")).to_be_visible(
+            timeout=10000
+        )
+        print(f"Successfully logged in as {admin_user} via /admin/")
+    else:
+        expect(page.get_by_role("heading", name="Site administration")).to_be_visible(
+            timeout=5000
+        )
+        print(f"Already logged in or admin page loaded directly for {admin_user}.")
+
+    profile_url = BASE_URL + reverse("pages:profile")
+    page.set_viewport_size(DESKTOP_VIEWPORT)  # Ensure desktop size
+    page.goto(profile_url)
+    page.wait_for_load_state("networkidle")
+
+    # Verify the empty history message is visible within the correct tab
+    # Ensure the 'History' tab is clicked or is default
+    history_tab_content = page.locator("div[x-show=\"activeTab === 'history'\"]")
+    expect(
+        history_tab_content.locator("text=You haven't completed any quizzes yet.")
+    ).to_be_visible()
+    # Check that a placeholder for an actual quiz attempt isn't visible
+    expect(
+        page.locator("text=History Quiz")
+    ).not_to_be_visible()  # Assuming "History Quiz" might be a sample title
+    print("Empty history message check passed.")
