@@ -1,13 +1,18 @@
 # src/pages/views.py
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect  # Added redirect
+from django.contrib.auth import login  # Added login
+from django.contrib import messages  # Added messages
 from django.views.generic import TemplateView, ListView
-from django.contrib.auth.decorators import login_required  # <<< Add this import
+from django.contrib.auth.decorators import login_required
 from multi_choice_quiz.models import (
     Quiz,
     Topic,
     QuizAttempt,
-)  # <<< Add QuizAttempt import
+)
+
+# --- Add form import ---
+from .forms import SignUpForm
 
 
 def home(request):
@@ -58,9 +63,29 @@ def about(request):
     return render(request, "pages/about.html")
 
 
+# --- Corrected signup_view ---
 def signup_view(request):
-    """Placeholder signup page."""
-    return render(request, "pages/signup.html")
+    """Handles user registration."""
+    if request.method == "POST":
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)  # Log the user in automatically
+            messages.success(request, "Registration successful! Welcome.")
+            # Redirect to profile page after successful signup
+            return redirect("pages:profile")
+        else:
+            # Form is invalid, add error message (optional, form displays field errors)
+            messages.error(request, "Please correct the errors below.")
+    else:
+        # GET request, display blank form
+        form = SignUpForm()
+
+    # Ensure it renders signup.html and passes the form
+    return render(request, "pages/signup.html", {"form": form})
+
+
+# --- End corrected signup_view ---
 
 
 @login_required
