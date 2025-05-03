@@ -11,6 +11,7 @@ from django.core.management import call_command
 import pytest
 from playwright.sync_api import Page, expect
 
+
 # --- Import the standardized logging setup ---
 # Make sure the path is correct relative to src/
 try:
@@ -41,6 +42,7 @@ def is_port_in_use(port, host="localhost"):
 
 
 # --- Django Server Fixture ---
+@pytest.mark.django_db  # <<< ADD THIS DECORATOR
 @pytest.fixture(scope="session")
 def django_server():
     """Start Django development server for testing."""

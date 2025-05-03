@@ -6,7 +6,7 @@ import time
 from playwright.sync_api import Page, expect
 
 # --- Test Configuration ---
-TARGET_QUIZ_URL = "http://127.0.0.1:8000/quiz/38/"
+TARGET_QUIZ_URL = "http://127.0.0.1:8000/quiz/1/"
 EXPECTED_TOTAL_QUESTIONS = 12
 LARGE_VIEWPORT = {"width": 2560, "height": 1440}
 SCREENSHOT_DIR = "test_results_standalone"

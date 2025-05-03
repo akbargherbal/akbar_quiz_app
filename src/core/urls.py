@@ -1,7 +1,10 @@
 # src/core/urls.py
 
+# src/core/urls.py
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings  # <-- Import settings
+from django.conf.urls.static import static  # If you need static/media in DEBUG
 
 # No need to import auth_views if using the standard include below
 
@@ -26,8 +29,16 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
 ]
 
-# Notes:
-# - We removed the specific override for LoginView.
-# - Make sure settings.LOGIN_URL = 'login'.
-# - Make sure the login template is now located at 'templates/registration/login.html'
-#   and settings.TEMPLATES['DIRS'] points to the top-level 'templates' directory.
+
+# --- Add this block for Django Debug Toolbar ---
+if settings.DEBUG:
+    import debug_toolbar
+
+    urlpatterns = [
+        path("__debug__/", include(debug_toolbar.urls)),
+    ] + urlpatterns
+
+    # Optional: Serve static/media files locally during development
+    # urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # If you use media files
+# -----------------------------------------------
