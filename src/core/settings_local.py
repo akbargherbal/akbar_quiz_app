@@ -40,4 +40,4 @@ DEBUG_TOOLBAR_CONFIG = {
 }
 
 # --- Shell Plus Configuration ---
-SHELL_PLUS = "ipython"   # Use IPython for `manage.py shell_plus`
+SHELL_PLUS = "ipython"  # Use IPython for `manage.py shell_plus`

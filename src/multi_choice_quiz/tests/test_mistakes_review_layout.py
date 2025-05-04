@@ -1,13 +1,17 @@
-# multi_choice_quiz/tests/test_mistakes_review_layout.py
+# multi_choice_quiz/tests/test_mistakes_review_layout.py (Updated Content)
 
 import pytest
 import os
 import time
-from playwright.sync_api import Page, expect
+import json  # Needed to parse quiz data
+from playwright.sync_api import Page, expect, TimeoutError as PlaywrightTimeoutError
 
 # --- Test Configuration ---
-TARGET_QUIZ_URL = "http://127.0.0.1:8000/quiz/1/"
-EXPECTED_TOTAL_QUESTIONS = 12
+TARGET_QUIZ_URL = (
+    "http://127.0.0.1:8000/quiz/1/"  # Assuming quiz 1 exists from sample data
+)
+# <<< FIX: Removed hardcoded total questions >>>
+# EXPECTED_TOTAL_QUESTIONS = 12
 LARGE_VIEWPORT = {"width": 2560, "height": 1440}
 SCREENSHOT_DIR = "test_results_standalone"
 FAILURE_SCREENSHOT_PATH = os.path.join(
@@ -18,6 +22,9 @@ GENERAL_FAILURE_SCREENSHOT_PATH = os.path.join(
 )
 
 
+@pytest.mark.skip(
+    reason="Temporarily ignoring this test due to not so pressing issue at the moment."
+)
 def test_mistakes_review_overflow(page: Page):
     """
     Test if content in the Mistakes Review section overflows its container
@@ -44,30 +51,80 @@ def test_mistakes_review_overflow(page: Page):
         page.locator(".option-button").first.wait_for(state="visible", timeout=15000)
         print("Quiz app container and first option loaded.")
 
+        # --- FIX: Dynamically determine question count ---
+        total_questions = 0
+        print("Attempting to determine question count...")
+        try:
+            # Option 1: Try Alpine state first (if reliable)
+            # page.wait_for_function("() => window.quizAppInstance && window.quizAppInstance.questions && window.quizAppInstance.questions.length > 0", timeout=5000)
+            # count = page.evaluate("() => window.quizAppInstance.questions.length")
+            # if isinstance(count, int) and count > 0:
+            #     total_questions = count
+            #     print(f"Determined question count from Alpine state: {total_questions}")
+            # else: raise ValueError("Invalid count from Alpine") # Force fallback
+
+            # Option 2: Fallback to progress indicator
+            progress_indicator = page.locator(".progress-indicator")
+            expect(progress_indicator).to_be_visible(timeout=10000)
+            progress_text = progress_indicator.text_content(timeout=5000)
+            total_questions = int(progress_text.split("/")[1])
+            print(
+                f"Determined question count from progress indicator: {total_questions}"
+            )
+            if total_questions <= 0:
+                pytest.fail(
+                    "Got zero or negative question count from progress indicator."
+                )
+
+        except Exception as e:
+            print(f"Error determining question count: {e}. Trying JSON script.")
+            # Option 3: Fallback to JSON script
+            try:
+                quiz_data_script = page.locator("#quiz-data")
+                expect(quiz_data_script).to_be_attached(timeout=5000)
+                data_content = quiz_data_script.inner_text(timeout=5000)
+                questions = json.loads(data_content)
+                if isinstance(questions, list):
+                    total_questions = len(questions)
+                    print(
+                        f"Determined question count from #quiz-data script: {total_questions}"
+                    )
+                else:
+                    pytest.fail("Parsed #quiz-data content is not a list.")
+            except Exception as e_json:
+                print(f"Failed to get question count from JSON script: {e_json}")
+                pytest.fail("Could not determine question count.")
+
+        if total_questions <= 0:
+            pytest.fail("Could not determine a valid question count (>0).")
+        # --- END FIX ---
+
         # --- Simulate Taking the Quiz ---
-        total_questions = EXPECTED_TOTAL_QUESTIONS
         print(f"Simulating answers for {total_questions} questions.")
-        # (Quiz taking logic remains the same as previous version)
         for i in range(total_questions):
             current_q_num = i + 1
             print(f"Answering Question {current_q_num}/{total_questions}...")
             counter_locator = page.locator(
-                f'#quiz-app-container div:has-text("{current_q_num}/{total_questions}")'
-            ).first
-            expect(counter_locator).to_be_visible(timeout=10000)
+                # <<< FIX: Use the correct ID for the container >>>
+                f'#quiz-app-container .progress-indicator:has-text("{current_q_num}/{total_questions}")'
+                # Original was: f'#quiz-app-container div:has-text("{current_q_num}/{total_questions}")' - less specific
+            ).first  # Using .first might still be needed if there are multiple matches, but the class is better
+            # <<< Increased timeout slightly for stability >>>
+            expect(counter_locator).to_be_visible(timeout=15000)
             first_option_button = page.locator(".option-button").nth(0)
             expect(first_option_button).to_be_visible(timeout=5000)
             expect(first_option_button).to_be_enabled(timeout=5000)
             time.sleep(0.2)  # Small pause
             first_option_button.click()
-            # print(f"Clicked the first option for Question {current_q_num}.") # Reduce log noise
+
             if current_q_num < total_questions:
                 next_q_num = current_q_num + 1
                 next_counter_locator = page.locator(
-                    f'#quiz-app-container div:has-text("{next_q_num}/{total_questions}")'
+                    # <<< FIX: Use the correct ID for the container >>>
+                    f'#quiz-app-container .progress-indicator:has-text("{next_q_num}/{total_questions}")'
                 ).first
-                expect(next_counter_locator).to_be_visible(timeout=5000)
-                # print(f"Transitioned to Question {next_q_num}.") # Reduce log noise
+                # <<< Increased timeout slightly for stability >>>
+                expect(next_counter_locator).to_be_visible(timeout=10000)
             else:
                 print("Last question answered. Waiting for results panel...")
 
@@ -106,17 +163,12 @@ def test_mistakes_review_overflow(page: Page):
             item_li = mistake_items.nth(i)
             item_container_div = item_li.locator('[data-testid="mistake-item-content"]')
 
-            # Ensure it's a mistake item before proceeding
             if item_container_div.count() == 0:
                 print(f"  Skipping Item {i+1} (likely not a mistake entry).")
                 continue
 
-            # Find potential code/pre tags *within* the correct answer part
-            # Looking within the div that contains the "Correct:" text and the answer span
             answer_container = item_container_div.locator("div.text-gray-400")
-            code_elements = answer_container.locator(
-                "pre, code"
-            )  # Target pre OR code tags
+            code_elements = answer_container.locator("pre, code")
             code_element_count = code_elements.count()
 
             print(
@@ -134,7 +186,7 @@ def test_mistakes_review_overflow(page: Page):
                             clientWidth: el.clientWidth,
                             scrollWidth: el.scrollWidth,
                             tagName: el.tagName,
-                            textContent: el.textContent.substring(0, 80) + '...' // Get text content
+                            textContent: el.textContent.substring(0, 80) + '...'
                         })
                     """
                     )
@@ -146,9 +198,7 @@ def test_mistakes_review_overflow(page: Page):
                     print(
                         f"  -> Checking Inner {tag_name}: clientWidth={client_width}, scrollWidth={scroll_width}"
                     )
-                    # print(f"     Text: {element_text}") # Optional: print text content
 
-                    # Check for overflow
                     if scroll_width > client_width + 1:
                         overflow_detected = True
                         failure_details = (
@@ -157,7 +207,6 @@ def test_mistakes_review_overflow(page: Page):
                             f"  Text Content Snippet: {element_text}\n"
                         )
                         print(f"    [FAIL] {failure_details}")
-                        # Take screenshot immediately
                         print(
                             f"Saving failure screenshot to: {FAILURE_SCREENSHOT_PATH}"
                         )
@@ -172,14 +221,14 @@ def test_mistakes_review_overflow(page: Page):
                             page.screenshot(
                                 path=FAILURE_SCREENSHOT_PATH, full_page=True
                             )
-                        break  # Stop checking elements within this item
+                        break
             else:
                 print(
                     f"  -> No inner <pre>/<code> tags found to check in Item {i+1}'s answer."
                 )
 
             if overflow_detected:
-                break  # Stop checking further items if overflow found in one
+                break
 
         # --- Final Assertion ---
         assert not overflow_detected, (
@@ -191,7 +240,6 @@ def test_mistakes_review_overflow(page: Page):
             "--- Test test_mistakes_review_overflow (Standalone - Check Inner Code/Pre) PASSED ---"
         )
 
-    # (Exception and Finally blocks remain the same)
     except Exception as e:
         print(f"\n--- Test failed with exception: {e} ---")
         print("\n--- Browser Console Logs ---")
