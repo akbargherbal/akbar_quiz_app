@@ -1,4 +1,4 @@
-# src/pages/tests/test_templates.py (Corrected for Viewport and Locator Specificity)
+# src/pages/tests/test_templates.py (Refactored to use live_server)
 
 import pytest
 import re
@@ -6,12 +6,15 @@ import os
 from playwright.sync_api import Page, expect
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from django.test import Client as DjangoClient
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+# from django.test import Client as DjangoClient # Keep if setup_logged_in_user is used
+# from django.contrib.staticfiles.testing import StaticLiveServerTestCase # Not needed
 
 User = get_user_model()
 
-BASE_URL = os.environ.get("SERVER_URL", "http://localhost:8000")
+# <<< CHANGE >>> Remove BASE_URL definition and related os import
+# BASE_URL = os.environ.get("SERVER_URL", "http://localhost:8000")
+
+# --- Keep LOG_DIR if needed for other purposes, but it's not used in this snippet ---
 LOG_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "logs", "pages")
 os.makedirs(LOG_DIR, exist_ok=True)
 
@@ -19,78 +22,91 @@ os.makedirs(LOG_DIR, exist_ok=True)
 DESKTOP_VIEWPORT = {"width": 1280, "height": 720}
 MOBILE_VIEWPORT = {"width": 375, "height": 667}  # Example: iPhone SE size
 
+# --- Keep helper function if needed, but it uses DjangoClient, not Playwright directly ---
+# Note: This helper is mostly for backend state setup before Playwright interaction.
+# It works correctly with @pytest.mark.django_db.
+# Consider converting to a pytest fixture for better integration if desired later.
+# from django.test import Client as DjangoClient
+# def setup_logged_in_user(username, password):
+#     """Ensures user exists and returns logged-in Django Client."""
+#     try:
+#         user = User.objects.get(username=username)
+#         print(f"User '{username}' already exists.")
+#     except User.DoesNotExist:
+#         user = User.objects.create_user(username=username, password=password)
+#         print(f"Created user '{username}'.")
+#     if not user.has_usable_password():
+#         user.set_password(password)
+#         user.save()
+#         print(f"Ensured user '{username}' exists and has password.")
 
-def setup_logged_in_user(username, password):
-    """Ensures user exists and returns logged-in Django Client."""
-    try:
-        user = User.objects.get(username=username)
-        print(f"User '{username}' already exists.")
-    except User.DoesNotExist:
-        user = User.objects.create_user(username=username, password=password)
-        print(f"Created user '{username}'.")
-    if not user.has_usable_password():
-        user.set_password(password)
-        user.save()
-        print(f"Ensured user '{username}' exists and has password.")
-
-    django_client = DjangoClient()
-    logged_in = django_client.login(username=username, password=password)
-    if not logged_in:
-        print(
-            f"ERROR: Django Client login failed for user '{username}'. Check credentials/backend."
-        )
-        pytest.fail(f"Setup failed: Could not log in Django client as '{username}'")
-    print(f"Successfully logged in Django client as {username}.")
-    return django_client
-
+#     django_client = DjangoClient()
+#     logged_in = django_client.login(username=username, password=password)
+#     if not logged_in:
+#         print(
+#             f"ERROR: Django Client login failed for user '{username}'. Check credentials/backend."
+#         )
+#         pytest.fail(f"Setup failed: Could not log in Django client as '{username}'")
+#     print(f"Successfully logged in Django client as {username}.")
+#     return django_client
 
 # --- Tests ---
 
-
-def test_home_page_loads_and_title(page: Page):
+# <<< CHANGE >>> Add live_server fixture to signature
+def test_home_page_loads_and_title(page: Page, live_server):
     """Verify the home page loads and has the correct title."""
-    page.set_viewport_size(DESKTOP_VIEWPORT)  # Ensure desktop size for consistency
-    page.goto(BASE_URL + reverse("pages:home"))
+    page.set_viewport_size(DESKTOP_VIEWPORT)
+    # <<< CHANGE >>> Use live_server.url
+    home_url = f"{live_server.url}{reverse('pages:home')}"
+    page.goto(home_url)
     expect(page).to_have_title(re.compile("Home | QuizMaster"))
     expect(page.get_by_role("heading", name="Challenge Your Knowledge")).to_be_visible()
 
 
-def test_quizzes_page_loads(page: Page):
+# <<< CHANGE >>> Add live_server fixture to signature
+def test_quizzes_page_loads(page: Page, live_server):
     """Verify the quizzes page loads."""
-    page.set_viewport_size(DESKTOP_VIEWPORT)  # Ensure desktop size
-    page.goto(BASE_URL + reverse("pages:quizzes"))
+    page.set_viewport_size(DESKTOP_VIEWPORT)
+    # <<< CHANGE >>> Use live_server.url
+    quizzes_url = f"{live_server.url}{reverse('pages:quizzes')}"
+    page.goto(quizzes_url)
     expect(page).to_have_title(re.compile("Quizzes | QuizMaster"))
     expect(page.get_by_role("heading", name="Browse Quizzes")).to_be_visible()
 
 
-def test_about_page_loads(page: Page):
+# <<< CHANGE >>> Add live_server fixture to signature
+def test_about_page_loads(page: Page, live_server):
     """Verify the about page loads."""
-    page.set_viewport_size(DESKTOP_VIEWPORT)  # Ensure desktop size
-    page.goto(BASE_URL + reverse("pages:about"))
+    page.set_viewport_size(DESKTOP_VIEWPORT)
+    # <<< CHANGE >>> Use live_server.url
+    about_url = f"{live_server.url}{reverse('pages:about')}"
+    page.goto(about_url)
     expect(page).to_have_title(re.compile("About | QuizMaster"))
     expect(page.get_by_role("heading", name="About QuizMaster")).to_be_visible()
 
 
 # --- Navigation Tests ---
 
-
-def test_anonymous_user_navigation(page: Page):
+# <<< CHANGE >>> Add live_server fixture to signature
+def test_anonymous_user_navigation(page: Page, live_server):
     """Verify navigation links for anonymous users."""
     # --- Desktop checks ---
     print("\n--- Running Anonymous Desktop Nav Checks ---")
     page.set_viewport_size(DESKTOP_VIEWPORT)
-    page.goto(BASE_URL + reverse("pages:home"))
-    page.wait_for_load_state("networkidle")  # Wait for stability
+    # <<< CHANGE >>> Use live_server.url
+    home_url = f"{live_server.url}{reverse('pages:home')}"
+    page.goto(home_url)
+    page.wait_for_load_state("networkidle")
 
     desktop_nav = page.locator("nav.hidden.md\\:flex")
     expect(desktop_nav).to_be_visible()
     expect(desktop_nav.get_by_role("link", name="Login")).to_be_visible()
     expect(desktop_nav.get_by_role("link", name="Login")).to_have_attribute(
-        "href", reverse("login")
+        "href", reverse("login") # href attribute doesn't need full URL
     )
     expect(desktop_nav.get_by_role("link", name="Sign Up")).to_be_visible()
     expect(desktop_nav.get_by_role("link", name="Sign Up")).to_have_attribute(
-        "href", reverse("pages:signup")
+        "href", reverse("pages:signup") # href attribute doesn't need full URL
     )
     expect(
         desktop_nav.get_by_role("link", name="Profile", exact=True)
@@ -101,30 +117,27 @@ def test_anonymous_user_navigation(page: Page):
     # --- Mobile checks ---
     print("--- Running Anonymous Mobile Nav Checks ---")
     page.set_viewport_size(MOBILE_VIEWPORT)
-    page.goto(BASE_URL + reverse("pages:home"))  # Reload page in new viewport
-    page.wait_for_load_state("networkidle")  # Wait for stability
+    # <<< CHANGE >>> Use live_server.url (reload page)
+    page.goto(home_url)
+    page.wait_for_load_state("networkidle")
 
     mobile_menu_button = page.locator("div.md\\:hidden > button")
-    # Assert button is now visible before clicking
-    expect(mobile_menu_button).to_be_visible(
-        timeout=5000
-    )  # Add timeout for visibility check
+    expect(mobile_menu_button).to_be_visible(timeout=5000)
     print("Mobile menu button found and is visible.")
     mobile_menu_button.click()
     print("Clicked mobile menu button.")
 
-    # Locate the revealed mobile navigation menu
     mobile_nav = page.locator("nav[x-show='open']")
-    expect(mobile_nav).to_be_visible(timeout=2000)  # Wait for dropdown animation
+    expect(mobile_nav).to_be_visible(timeout=2000)
     print("Mobile nav dropdown is visible.")
 
     expect(mobile_nav.get_by_role("link", name="Login")).to_be_visible()
     expect(mobile_nav.get_by_role("link", name="Login")).to_have_attribute(
-        "href", reverse("login")
+        "href", reverse("login") # href attribute doesn't need full URL
     )
     expect(mobile_nav.get_by_role("link", name="Sign Up")).to_be_visible()
     expect(mobile_nav.get_by_role("link", name="Sign Up")).to_have_attribute(
-        "href", reverse("pages:signup")
+        "href", reverse("pages:signup") # href attribute doesn't need full URL
     )
     expect(
         mobile_nav.get_by_role("link", name="Profile", exact=True)
@@ -134,13 +147,13 @@ def test_anonymous_user_navigation(page: Page):
 
 
 @pytest.mark.django_db
-def test_authenticated_user_navigation(page: Page):
+# <<< CHANGE >>> Add live_server fixture to signature
+def test_authenticated_user_navigation(page: Page, live_server):
     """Verify navigation links for authenticated users."""
     admin_user = "testuser_nav"
     admin_pass = "password123"
     try:
         user = User.objects.get(username=admin_user)
-        # Ensure the user is active and staff/super for admin login
         user.is_active = True
         user.is_staff = True
         user.is_superuser = True
@@ -157,19 +170,18 @@ def test_authenticated_user_navigation(page: Page):
     print(f"\nEnsured user '{admin_user}' exists and is configured for admin login.")
 
     # --- Login via Admin ---
-    admin_login_url = BASE_URL + reverse("admin:index")
+    # <<< CHANGE >>> Use live_server.url
+    admin_login_url = f"{live_server.url}{reverse('admin:index')}"
     page.goto(admin_login_url)
     if "login" in page.url:
         page.locator("#id_username").fill(admin_user)
         page.locator("#id_password").fill(admin_pass)
         page.locator('input[type="submit"]').click()
-        # Wait for admin page load after login
         expect(page.get_by_role("heading", name="Site administration")).to_be_visible(
             timeout=10000
         )
         print(f"Successfully logged in as {admin_user} via /admin/")
     else:
-        # Check if we are already on admin page
         expect(page.get_by_role("heading", name="Site administration")).to_be_visible(
             timeout=5000
         )
@@ -178,9 +190,10 @@ def test_authenticated_user_navigation(page: Page):
     # --- Desktop checks ---
     print("--- Running Authenticated Desktop Nav Checks ---")
     page.set_viewport_size(DESKTOP_VIEWPORT)
-    home_url = BASE_URL + reverse("pages:home")
+    # <<< CHANGE >>> Use live_server.url
+    home_url = f"{live_server.url}{reverse('pages:home')}"
     page.goto(home_url)
-    page.wait_for_load_state("networkidle")  # Wait for stability
+    page.wait_for_load_state("networkidle")
     print(f"Navigated to homepage: {home_url}")
 
     desktop_nav = page.locator("nav.hidden.md\\:flex")
@@ -189,9 +202,10 @@ def test_authenticated_user_navigation(page: Page):
         "link", name=re.compile(f"Profile \\({admin_user}\\)")
     )
     expect(profile_link_desktop).to_be_visible()
-    expect(profile_link_desktop).to_have_attribute("href", reverse("pages:profile"))
+    expect(profile_link_desktop).to_have_attribute(
+        "href", reverse("pages:profile") # href attribute doesn't need full URL
+    )
 
-    # Check the Logout *button* within its form
     logout_button_desktop = desktop_nav.locator(
         "form[action*='logout'] > button:has-text('Logout')"
     )
@@ -204,28 +218,28 @@ def test_authenticated_user_navigation(page: Page):
     # --- Mobile checks ---
     print("--- Running Authenticated Mobile Nav Checks ---")
     page.set_viewport_size(MOBILE_VIEWPORT)
-    page.goto(home_url)  # Reload page in new viewport
-    page.wait_for_load_state("networkidle")  # Wait for stability
+    # <<< CHANGE >>> Use live_server.url (reload)
+    page.goto(home_url)
+    page.wait_for_load_state("networkidle")
 
     mobile_menu_button = page.locator("div.md\\:hidden > button")
-    # Assert button is now visible before clicking
     expect(mobile_menu_button).to_be_visible(timeout=5000)
     print("Mobile menu button found and is visible.")
     mobile_menu_button.click()
     print("Clicked mobile menu button.")
 
-    # Locate the revealed mobile navigation menu
     mobile_nav = page.locator("nav[x-show='open']")
-    expect(mobile_nav).to_be_visible(timeout=2000)  # Wait for dropdown animation
+    expect(mobile_nav).to_be_visible(timeout=2000)
     print("Mobile nav dropdown is visible.")
 
     profile_link_mobile = mobile_nav.get_by_role(
         "link", name=re.compile(f"Profile \\({admin_user}\\)")
     )
     expect(profile_link_mobile).to_be_visible()
-    expect(profile_link_mobile).to_have_attribute("href", reverse("pages:profile"))
+    expect(profile_link_mobile).to_have_attribute(
+        "href", reverse("pages:profile") # href attribute doesn't need full URL
+    )
 
-    # Check the Logout *button* within its form
     logout_button_mobile = mobile_nav.locator(
         "form[action*='logout'] > button:has-text('Logout')"
     )
@@ -236,27 +250,33 @@ def test_authenticated_user_navigation(page: Page):
     print("Mobile checks passed.")
 
 
-# --- Remaining tests unchanged ---
+# --- Remaining tests ---
 
-
-def test_login_page_loads(page: Page):
+# <<< CHANGE >>> Add live_server fixture to signature
+def test_login_page_loads(page: Page, live_server):
     """Verify the standard Django login page loads."""
-    page.set_viewport_size(DESKTOP_VIEWPORT)  # Ensure desktop size
-    login_url = BASE_URL + reverse("login")
+    page.set_viewport_size(DESKTOP_VIEWPORT)
+    # <<< CHANGE >>> Use live_server.url
+    login_url = f"{live_server.url}{reverse('login')}" # Note: Uses built-in 'login' name
     page.goto(login_url)
+    # Check title based on registration/login.html template
     expect(page).to_have_title(re.compile("Login | QuizMaster"))
+    # Check heading based on registration/login.html template
     expect(page.get_by_role("heading", name="Login to Your Account")).to_be_visible()
-    expect(page.locator('input[name="username"]')).to_be_visible()
-    expect(page.locator('input[name="password"]')).to_be_visible()
+    expect(page.locator('input[name="username"]')).to_be_visible() # Use name attribute
+    expect(page.locator('input[name="password"]')).to_be_visible() # Use name attribute
 
 
-def test_signup_page_loads(page: Page):
+# <<< CHANGE >>> Add live_server fixture to signature
+def test_signup_page_loads(page: Page, live_server):
     """Verify the signup page loads correctly (without placeholder text)."""
-    page.set_viewport_size(DESKTOP_VIEWPORT)  # Ensure desktop size
-    signup_url = BASE_URL + reverse("pages:signup")
+    page.set_viewport_size(DESKTOP_VIEWPORT)
+    # <<< CHANGE >>> Use live_server.url
+    signup_url = f"{live_server.url}{reverse('pages:signup')}"
     page.goto(signup_url)
     expect(page).to_have_title(re.compile("Sign Up | QuizMaster"))
     expect(page.get_by_role("heading", name="Create Your Account")).to_be_visible()
+    # Using name attributes which are standard for the SignUpForm
     expect(page.locator('input[name="username"]')).to_be_visible()
     expect(page.locator('input[name="email"]')).to_be_visible()
     expect(page.locator('input[name="password1"]')).to_be_visible()
@@ -267,7 +287,8 @@ def test_signup_page_loads(page: Page):
 
 
 @pytest.mark.django_db
-def test_profile_page_structure_when_authenticated(page: Page):
+# <<< CHANGE >>> Add live_server fixture to signature
+def test_profile_page_structure_when_authenticated(page: Page, live_server):
     """Check basic structure of the profile page for a logged-in user."""
     admin_user = "testuser_prof_struct"
     admin_pass = "password123"
@@ -288,7 +309,8 @@ def test_profile_page_structure_when_authenticated(page: Page):
         )
     print(f"\nEnsured user '{admin_user}' exists and is configured for admin login.")
 
-    admin_login_url = BASE_URL + reverse("admin:index")
+    # <<< CHANGE >>> Use live_server.url
+    admin_login_url = f"{live_server.url}{reverse('admin:index')}"
     page.goto(admin_login_url)
     if "login" in page.url:
         page.locator("#id_username").fill(admin_user)
@@ -304,20 +326,18 @@ def test_profile_page_structure_when_authenticated(page: Page):
         )
         print(f"Already logged in or admin page loaded directly for {admin_user}.")
 
-    profile_url = BASE_URL + reverse("pages:profile")
-    page.set_viewport_size(DESKTOP_VIEWPORT)  # Ensure desktop size for profile check
+    # <<< CHANGE >>> Use live_server.url
+    profile_url = f"{live_server.url}{reverse('pages:profile')}"
+    page.set_viewport_size(DESKTOP_VIEWPORT)
     page.goto(profile_url)
     page.wait_for_load_state("networkidle")
 
     expect(page).to_have_title(re.compile(f"{admin_user}'s Profile | QuizMaster"))
-    # Profile header check
     expect(
         page.locator(f'h1:has-text("{admin_user}")')
-    ).to_be_visible()  # More specific check for username
-    # Tab check
+    ).to_be_visible()
     expect(page.get_by_role("button", name="Quiz History")).to_be_visible()
     expect(page.get_by_role("button", name="Favorites")).to_be_visible()
-    # Check avatar placeholder existence (can be refined if you add specific class/id)
     expect(
         page.locator(f'div:has-text("{admin_user[0].upper()}")').first
     ).to_be_visible()
@@ -325,7 +345,8 @@ def test_profile_page_structure_when_authenticated(page: Page):
 
 
 @pytest.mark.django_db
-def test_profile_page_shows_empty_history(page: Page):
+# <<< CHANGE >>> Add live_server fixture to signature
+def test_profile_page_shows_empty_history(page: Page, live_server):
     """Verify profile page shows empty history message for new user."""
     admin_user = "testuser_empty_hist"
     admin_pass = "password123"
@@ -346,7 +367,8 @@ def test_profile_page_shows_empty_history(page: Page):
         )
     print(f"\nEnsured user '{admin_user}' exists and is configured for admin login.")
 
-    admin_login_url = BASE_URL + reverse("admin:index")
+    # <<< CHANGE >>> Use live_server.url
+    admin_login_url = f"{live_server.url}{reverse('admin:index')}"
     page.goto(admin_login_url)
     if "login" in page.url:
         page.locator("#id_username").fill(admin_user)
@@ -362,19 +384,17 @@ def test_profile_page_shows_empty_history(page: Page):
         )
         print(f"Already logged in or admin page loaded directly for {admin_user}.")
 
-    profile_url = BASE_URL + reverse("pages:profile")
-    page.set_viewport_size(DESKTOP_VIEWPORT)  # Ensure desktop size
+    # <<< CHANGE >>> Use live_server.url
+    profile_url = f"{live_server.url}{reverse('pages:profile')}"
+    page.set_viewport_size(DESKTOP_VIEWPORT)
     page.goto(profile_url)
     page.wait_for_load_state("networkidle")
 
-    # Verify the empty history message is visible within the correct tab
-    # Ensure the 'History' tab is clicked or is default
     history_tab_content = page.locator("div[x-show=\"activeTab === 'history'\"]")
     expect(
         history_tab_content.locator("text=You haven't completed any quizzes yet.")
     ).to_be_visible()
-    # Check that a placeholder for an actual quiz attempt isn't visible
     expect(
-        page.locator("text=History Quiz")
-    ).not_to_be_visible()  # Assuming "History Quiz" might be a sample title
+        page.locator("text=History Quiz") # Check for example attempt text
+    ).not_to_be_visible()
     print("Empty history message check passed.")
