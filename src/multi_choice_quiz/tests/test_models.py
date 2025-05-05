@@ -1,3 +1,6 @@
+# src/multi_choice_quiz/tests/test_models.py
+# UPDATED based on Session 4 evaluation
+
 from django.test import TestCase
 from multi_choice_quiz.models import Quiz, Question, Option, Topic
 from multi_choice_quiz.transform import (
@@ -5,6 +8,8 @@ from multi_choice_quiz.transform import (
     models_to_frontend,
     frontend_to_models,
 )
+import json  # Needed for some tests
+from django.db import IntegrityError  # <<< ADDED for test_unique_position
 
 
 class TopicModelTests(TestCase):
@@ -157,8 +162,9 @@ class OptionModelTests(TestCase):
         """Test that options must have unique positions within a question."""
         Option.objects.create(question=self.question, text="Option 1", position=1)
 
-        # Creating another option with the same position should raise an error
-        with self.assertRaises(Exception):
+        # Creating another option with the same position should raise an IntegrityError
+        # <<< UPDATED EXCEPTION TYPE >>>
+        with self.assertRaises(IntegrityError):
             Option.objects.create(question=self.question, text="Option 2", position=1)
 
 
@@ -172,6 +178,8 @@ class TransformationTests(TestCase):
                 "text": "Test question?",
                 "options": ["A", "B", "C", "D"],
                 "answerIndex": 2,  # 1-based index
+                "tag": "q-tag",  # <<< ADDED tag to input >>>
+                "chapter_no": "CH1",  # <<< ADDED chapter to input >>>
             }
         ]
 
@@ -187,12 +195,20 @@ class TransformationTests(TestCase):
         self.assertEqual(quiz.questions.count(), 1)
         question = quiz.questions.first()
         self.assertEqual(question.text, "Test question?")
+        self.assertEqual(question.tag, "q-tag")  # <<< VERIFY tag saved >>>
+        self.assertEqual(question.chapter_no, "CH1")  # <<< VERIFY chapter saved >>>
+        self.assertEqual(
+            question.topic.name, "Test Topic"
+        )  # <<< VERIFY topic linked to question >>>
 
         # Verify options
         self.assertEqual(question.options.count(), 4)
         correct_option = question.correct_option()
         self.assertIsNotNone(correct_option)
         self.assertEqual(correct_option.position, 2)  # 1-based position
+        self.assertEqual(
+            correct_option.text, "B"
+        )  # <<< VERIFY text of correct option >>>
 
     def test_models_to_frontend(self):
         """Test converting models to frontend format (0-based indexing)."""
@@ -202,10 +218,12 @@ class TransformationTests(TestCase):
                 "text": "Test question?",
                 "options": ["A", "B", "C", "D"],
                 "answerIndex": 2,  # 1-based index
+                "tag": "model-tag",  # <<< ADDED tag >>>
+                "chapter_no": "CH1",  # <<< ADDED chapter >>>
             }
         ]
 
-        quiz = quiz_bank_to_models(test_data, "Test Quiz")
+        quiz = quiz_bank_to_models(test_data, "Test Quiz", "Test Topic")
         question = quiz.questions.first()
 
         # Convert to frontend format
@@ -216,22 +234,36 @@ class TransformationTests(TestCase):
         self.assertEqual(frontend_data[0]["text"], "Test question?")
         self.assertEqual(len(frontend_data[0]["options"]), 4)
         self.assertEqual(frontend_data[0]["answerIndex"], 1)  # 0-based index
+        self.assertEqual(
+            frontend_data[0]["tag"], "model-tag"
+        )  # <<< VERIFY tag included >>>
+        # Chapter_no is not part of the frontend format per `Question.to_dict()`, so no need to check here.
 
     def test_frontend_to_models(self):
         """Test converting frontend format (0-based) to models (1-based)."""
         frontend_test = [
             {
+                "id": 99,  # Simulate potential ID from frontend (should be ignored)
                 "text": "Frontend test?",
                 "options": ["X", "Y", "Z"],
                 "answerIndex": 1,  # 0-based index (second option)
+                "tag": "frontend-tag",  # <<< ADDED tag >>>
+                # chapter_no is not typically sent from frontend, so not included here
             }
         ]
 
-        quiz = frontend_to_models(frontend_test, "Frontend Test Quiz")
+        quiz = frontend_to_models(frontend_test, "Frontend Test Quiz", "Frontend Topic")
 
         # Verify question
         question = quiz.questions.first()
         self.assertEqual(question.text, "Frontend test?")
+        self.assertEqual(question.tag, "frontend-tag")  # <<< VERIFY tag saved >>>
+        self.assertEqual(
+            question.chapter_no, ""
+        )  # <<< VERIFY chapter is blank (not in input) >>>
+        self.assertEqual(
+            question.topic.name, "Frontend Topic"
+        )  # <<< VERIFY topic linked >>>
 
         # Verify options
         options = list(question.options.order_by("position"))
@@ -251,26 +283,45 @@ class TransformationTests(TestCase):
                 "text": "Round trip test?",
                 "options": ["Option 1", "Option 2", "Option 3"],
                 "answerIndex": 3,  # 1-based index (third option)
+                "tag": "round-trip",  # <<< ADDED tag >>>
+                "chapter_no": "RT1",  # <<< ADDED chapter >>>
             }
         ]
 
         # First transformation: quiz bank → models
-        quiz1 = quiz_bank_to_models(quiz_bank_data, "First Quiz")
+        quiz1 = quiz_bank_to_models(quiz_bank_data, "First Quiz", "Round Trip Topic")
         question1 = quiz1.questions.first()
+        # <<< ADDED asserts after first step >>>
+        self.assertEqual(question1.tag, "round-trip")
+        self.assertEqual(question1.chapter_no, "RT1")
+        self.assertEqual(question1.topic.name, "Round Trip Topic")
+        # <<< END Added asserts >>>
 
         # Second transformation: models → frontend
         frontend_data = models_to_frontend([question1])
 
-        # Verify frontend data has 0-based index
+        # Verify frontend data has 0-based index and tag
         self.assertEqual(frontend_data[0]["answerIndex"], 2)  # 0-based index
+        self.assertEqual(
+            frontend_data[0]["tag"], "round-trip"
+        )  # <<< VERIFY tag included >>>
 
         # Third transformation: frontend → models
-        quiz2 = frontend_to_models(frontend_data, "Second Quiz")
+        quiz2 = frontend_to_models(
+            frontend_data, "Second Quiz", "Round Trip Topic"
+        )  # Topic name passed here
         question2 = quiz2.questions.first()
 
-        # Verify final result matches original
+        # Verify final result matches original relevant fields
         self.assertEqual(question1.text, question2.text)
         self.assertEqual(
             question1.correct_option().position, question2.correct_option().position
         )
         self.assertEqual(question1.options.count(), question2.options.count())
+        self.assertEqual(question1.tag, question2.tag)  # <<< VERIFY tag survived >>>
+        # chapter_no won't survive round trip as it's not in frontend format
+        self.assertEqual(question2.chapter_no, "")  # <<< VERIFY chapter blank >>>
+        # Topic association will be based on the name provided to frontend_to_models
+        self.assertEqual(
+            question2.topic.name, "Round Trip Topic"
+        )  # <<< VERIFY topic association >>>

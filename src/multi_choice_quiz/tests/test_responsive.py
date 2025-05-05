@@ -1,20 +1,20 @@
-# tests/test_responsive.py
+# src/multi_choice_quiz/tests/test_responsive.py # <<< CORRECT FILE PATH
 import pytest
 import os
-
-# Renamed expect to expect_pw to avoid confusion with numerical checks
-from playwright.sync_api import (
+import json
+import logging
+import uuid
+from playwright.sync_api import (  # <<< Import directly
     Page,
-    expect as expect_pw,
+    expect as expect_pw,  # <<< Rename expect
     Locator,
     TimeoutError as PlaywrightTimeoutError,
 )
-import time
-import json
-import logging
-import uuid  # Import uuid for unique flag names
+from django.conf import settings  # <<< Import settings
+from django.urls import reverse  # <<< Import reverse
+from pathlib import Path  # <<< Use Path
 
-# --- Setup Logging ---
+# --- Setup Logging --- # <<< Logging already setup, good
 log_format = (
     "%(asctime)s - %(levelname)s - %(name)s - [%(filename)s:%(lineno)d] - %(message)s"
 )
@@ -30,19 +30,20 @@ BREAKPOINTS = {
     "xl": {"width": 1280, "height": 800},
     "2xl": {"width": 1536, "height": 960},
 }
-BASE_URL = "http://127.0.0.1:8000"
-# !!! IMPORTANT: Ensure Quiz ID 1 exists with > 0 questions, e.g., via add_sample_quizzes !!!
-QUIZ_URL = "/quiz/1/"
-SCREENSHOT_DIR = "playwright_screenshots"
-os.makedirs(SCREENSHOT_DIR, exist_ok=True)
+# BASE_URL = "http://127.0.0.1:8000" # <<< DELETE BASE_URL
+# QUIZ_URL = "/quiz/1/" # <<< DELETE QUIZ_URL
+
+# --- Screenshot Dir Setup --- # <<< NEW Consistent Setup
+APP_NAME = "multi_choice_quiz"  # <<< Define App Name
+SCREENSHOT_DIR = settings.BASE_DIR / "screenshots" / APP_NAME
+SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
+logger.info(f"Screenshots will be saved under: {SCREENSHOT_DIR}")
+# --- End Screenshot Dir Setup ---
 
 # Timeouts (consider adjusting based on actual performance)
 DEFAULT_VISIBILITY_TIMEOUT = 20000  # ms for elements to become visible initially
 INSTANCE_WAIT_TIMEOUT = 10000  # ms to wait specifically for window.quizAppInstance
-# Timeout for waiting for custom events (should cover longest feedback + processing)
-# app.js has 5000ms for incorrect feedback. Add buffer.
 EVENT_WAIT_TIMEOUT = 8000  # ms
-# Timeout for UI elements to render *after* an event has fired
 POST_EVENT_UI_TIMEOUT = 5000  # ms
 
 
@@ -50,20 +51,13 @@ POST_EVENT_UI_TIMEOUT = 5000  # ms
 def check_results_panel_visibility(page: Page, breakpoint_name: str):
     """Checks visibility of key elements within the results panel."""
     logger.info(f"Checking results panel visibility at {breakpoint_name}...")
-
-    # --- Use the specific ID for the results panel ---
     results_panel_locator_str = "#quiz-results-panel"
     logger.info(f"Using locator: {results_panel_locator_str}")
     results_panel = page.locator(results_panel_locator_str)
-    # -------------------------------------------------
 
-    # Ensure the container itself is visible first
-    # Increased timeout slightly just in case transition takes a moment longer
     expect_pw(
         results_panel, f"Results panel container should be visible at {breakpoint_name}"
-    ).to_be_visible(
-        timeout=POST_EVENT_UI_TIMEOUT + 3000
-    )  # Extra time after completion event
+    ).to_be_visible(timeout=POST_EVENT_UI_TIMEOUT + 3000)
     logger.info("Results panel container is visible.")
 
     results_heading = results_panel.locator('h3:text("Quiz Results")')
@@ -71,40 +65,48 @@ def check_results_panel_visibility(page: Page, breakpoint_name: str):
         results_heading, f"Results heading should be visible at {breakpoint_name}"
     ).to_be_visible()
 
-    stats_section = results_panel.locator('div:has-text("Rating")').first
+    # --- Updated Locators based on template ---
+    stats_container = results_panel.locator(
+        "div.pb-5.border-b"
+    )  # More specific container for stats
     expect_pw(
-        stats_section, f"Stats section should be visible at {breakpoint_name}"
+        stats_container,
+        f"Stats section container should be visible at {breakpoint_name}",
+    ).to_be_visible()
+
+    expect_pw(
+        stats_container.locator('span:text("Rating")'), "Rating label should be visible"
     ).to_be_visible()
     expect_pw(
-        stats_section.locator('span:text("Score")'), "Score label should be visible"
+        stats_container.locator('span:text("Score")'), "Score label should be visible"
     ).to_be_visible()
     expect_pw(
-        stats_section.locator('span:text("Percentage")'),
+        stats_container.locator('span:text("Percentage")'),
         "Percentage label should be visible",
     ).to_be_visible()
     expect_pw(
-        stats_section.locator('span:text("Time")'), "Time label should be visible"
-    ).to_be_visible()
-    expect_pw(
-        stats_section.locator('span:text("Rating")'), "Rating label should be visible"
+        stats_container.locator('span:text("Time")'), "Time label should be visible"
     ).to_be_visible()
 
     mistakes_section = results_panel.locator('div:has-text("Mistakes Review")').first
     expect_pw(
         mistakes_section, f"Mistakes section should be visible at {breakpoint_name}"
     ).to_be_visible()
-    mistakes_list = mistakes_section.locator("ul")
+    mistakes_list = mistakes_section.locator(
+        "ul.mistakes-review-list"
+    )  # Be more specific
     expect_pw(
         mistakes_list, f"Mistakes list should be visible at {breakpoint_name}"
     ).to_be_visible()
 
-    go_home_button = results_panel.locator('a[href="/"]:text("Go Home")')
+    # --- Updated Button Locators ---
+    go_home_button = results_panel.locator('a:text("Go Home")')
     expect_pw(
         go_home_button, f"Go Home button should be visible at {breakpoint_name}"
     ).to_be_visible()
     expect_pw(
         go_home_button, f"Go Home button should be enabled at {breakpoint_name}"
-    ).to_be_enabled()
+    ).to_be_enabled()  # Links are usually enabled if visible
 
     play_again_button = results_panel.locator('button:text("Play Again")')
     expect_pw(
@@ -117,9 +119,26 @@ def check_results_panel_visibility(page: Page, breakpoint_name: str):
     logger.info(f"Results panel checks passed for {breakpoint_name}.")
 
 
+# --- Helper Function for Screenshots --- # <<< NEW
+def get_screenshot_path(breakpoint_name: str, suffix: str = "") -> Path:
+    filename = f"responsive_results_{breakpoint_name}{suffix}.png"
+    return SCREENSHOT_DIR / filename
+
+
+def get_html_path(breakpoint_name: str, suffix: str = "") -> Path:
+    filename = f"responsive_results_{breakpoint_name}{suffix}.html"
+    return SCREENSHOT_DIR / filename
+
+
+# --- End Helper Function ---
+
+
 # --- Test Function ---
+@pytest.mark.django_db  # <<< ADD django_db marker
 @pytest.mark.parametrize("name, size", BREAKPOINTS.items())
-def test_results_layout_responsiveness(page: Page, name: str, size: dict):
+def test_results_layout_responsiveness(
+    page: Page, live_server, name: str, size: dict
+):  # <<< ADD live_server
     """
     Test the layout of the quiz results view across different breakpoints
     by answering questions and synchronizing with wait_for_function.
@@ -138,8 +157,59 @@ def test_results_layout_responsiveness(page: Page, name: str, size: dict):
     logger.info("Added browser console and page error listeners.")
     # --- END OF ADDED LISTENERS ---
 
+    # --- ADD Test Data Creation --- # <<< NEW - Quiz 1 must exist in test DB
+    logger.info("Creating necessary test data (Quiz ID 1)...")
     try:
-        page.goto(f"{BASE_URL}{QUIZ_URL}")
+        from multi_choice_quiz.models import (
+            Quiz,
+            Question,
+            Option,
+            Topic,
+        )  # Import here
+
+        topic, _ = Topic.objects.get_or_create(name="Responsive Test Topic")
+        quiz1, created = Quiz.objects.update_or_create(
+            id=1, defaults={"title": "Responsive Test Quiz 1", "is_active": True}
+        )
+        if created:
+            quiz1.topics.add(topic)
+        q1, _ = Question.objects.update_or_create(
+            quiz=quiz1, position=1, defaults={"text": "Resp Q1?"}
+        )
+        Option.objects.update_or_create(
+            question=q1, position=1, defaults={"text": "Resp Opt1", "is_correct": True}
+        )
+        Option.objects.update_or_create(
+            question=q1, position=2, defaults={"text": "Resp Opt2"}
+        )
+        q2, _ = Question.objects.update_or_create(
+            quiz=quiz1, position=2, defaults={"text": "Resp Q2?"}
+        )
+        Option.objects.update_or_create(
+            question=q2, position=1, defaults={"text": "Resp Opt3"}
+        )
+        Option.objects.update_or_create(
+            question=q2, position=2, defaults={"text": "Resp Opt4", "is_correct": True}
+        )
+        logger.info(f"Test data created/ensured for Quiz ID: {quiz1.id}")
+    except Exception as e:
+        logger.error(f"Failed to create test data: {e}")
+        pytest.fail(f"Test data creation failed: {e}")
+        return
+    # --- End Test Data Creation ---
+
+    # --- Use live_server.url --- # <<< NEW
+    target_url = (
+        f"{live_server.url}{reverse('multi_choice_quiz:quiz_detail', args=[quiz1.id])}"
+    )
+    logger.info(f"Target URL: {target_url}")
+    # --- End URL ---
+
+    try:
+        # page.goto(f"{BASE_URL}{QUIZ_URL}") # <<< OLD
+        page.goto(
+            target_url, wait_until="networkidle"
+        )  # <<< Use new target_url and networkidle
         logger.info(f"Navigated to {page.url}")
 
         # --- Wait for Quiz to Load & Alpine Instance ---
@@ -162,21 +232,19 @@ def test_results_layout_responsiveness(page: Page, name: str, size: dict):
             )
             logger.info("window.quizAppInstance is available.")
             # Also ensure TESTING_MODE is set for events to fire
-            logger.info(f"Waiting up to 2000ms for window.TESTING_MODE === true...")
-            page.wait_for_function("() => window.TESTING_MODE === true", timeout=2000)
-            logger.info("window.TESTING_MODE confirmed true.")
+            # TESTING_MODE should be set automatically in app.js init now.
+            # logger.info(f"Waiting up to 2000ms for window.TESTING_MODE === true...")
+            # page.wait_for_function("() => window.TESTING_MODE === true", timeout=2000)
+            # logger.info("window.TESTING_MODE confirmed true.")
 
         except PlaywrightTimeoutError:
             logger.error(
-                "Timeout waiting for window.quizAppInstance or TESTING_MODE. Check app.js init."
+                "Timeout waiting for window.quizAppInstance. Check app.js init."
             )
-            page.screenshot(
-                path=os.path.join(
-                    SCREENSHOT_DIR, f"results_INSTANCE_TIMEOUT_ERROR_{name}.png"
-                )
-            )
+            instance_fail_path = get_screenshot_path(name, "_INSTANCE_TIMEOUT_ERROR")
+            page.screenshot(path=instance_fail_path)
             pytest.fail(
-                "window.quizAppInstance did not become available or TESTING_MODE not set."
+                f"window.quizAppInstance did not become available. Screenshot: {instance_fail_path}"
             )
             return
 
@@ -194,38 +262,32 @@ def test_results_layout_responsiveness(page: Page, name: str, size: dict):
         logger.info("Attempting to determine question count...")
         try:
             # Prefer Alpine state
-            count = page.evaluate(
-                "() => window.quizAppInstance?.questions?.length"
-            )  # No timeout arg needed
+            count = page.evaluate("() => window.quizAppInstance?.questions?.length")
             if isinstance(count, int) and count > 0:
                 question_count = count
                 logger.info(
                     f"Determined question count from Alpine state: {question_count}"
                 )
             else:
-                logger.warning(
-                    f"Alpine state returned invalid count ({count}). Falling back."
-                )
+                logger.warning(f"Alpine state returned invalid count ({count}).")
                 raise ValueError("Invalid count from Alpine")
         except Exception as e_alpine:
             logger.warning(
-                f"Error getting count from Alpine ({e_alpine}). Trying JSON script fallback..."
+                f"Error getting count from Alpine ({e_alpine}). Trying JSON script."
             )
             try:
                 quiz_data_script = page.locator("#quiz-data")
-                # Use to_be_attached, not to_be_visible for script tags
-                expect_pw(
-                    quiz_data_script, "Quiz data script should be attached"
-                ).to_be_attached(timeout=5000)
+                expect_pw(quiz_data_script, "Quiz data script attached").to_be_attached(
+                    timeout=5000
+                )
                 data_content = quiz_data_script.inner_text(timeout=5000)
                 questions = json.loads(data_content)
                 if isinstance(questions, list):
                     question_count = len(questions)
                     logger.info(
-                        f"Determined question count from #quiz-data script: {question_count}"
+                        f"Determined question count from #quiz-data: {question_count}"
                     )
                 else:
-                    logger.error("Parsed #quiz-data content is not a list.")
                     question_count = 0
             except Exception as e_json:
                 logger.error(f"Failed to get question count from JSON script: {e_json}")
@@ -235,12 +297,11 @@ def test_results_layout_responsiveness(page: Page, name: str, size: dict):
             logger.error(
                 "Could not determine a valid question count (>0). Ensure Quiz ID 1 exists and has questions."
             )
-            page.screenshot(
-                path=os.path.join(
-                    SCREENSHOT_DIR, f"results_NO_QUESTIONS_ERROR_{name}.png"
-                )
+            no_q_fail_path = get_screenshot_path(name, "_NO_QUESTIONS_ERROR")
+            page.screenshot(path=no_q_fail_path)
+            pytest.fail(
+                f"Failed to determine question count. Screenshot: {no_q_fail_path}"
             )
-            pytest.fail("Failed to determine question count for the quiz.")
             return
 
         # --- Click Through the Quiz Using Event Synchronization ---
@@ -252,247 +313,163 @@ def test_results_layout_responsiveness(page: Page, name: str, size: dict):
             expected_event_name = f"quiz:{'question-changed' if i < question_count - 1 else 'quiz-completed'}"
             logger.info(f"Expecting event '{expected_event_name}' after this answer.")
 
-            # Ensure current options are ready before interacting
             current_options = page.locator("#quiz-app-container button.option-button")
             expect_pw(
-                current_options.first,
-                f"Options for Q{q_num} should be visible before click",
+                current_options.first, f"Options for Q{q_num} visible"
             ).to_be_visible(timeout=POST_EVENT_UI_TIMEOUT)
             option_to_click = current_options.first
-            expect_pw(
-                option_to_click, f"Option 1 for Q{q_num} should be enabled before click"
-            ).to_be_enabled(timeout=POST_EVENT_UI_TIMEOUT)
+            expect_pw(option_to_click, f"Option 1 for Q{q_num} enabled").to_be_enabled(
+                timeout=POST_EVENT_UI_TIMEOUT
+            )
 
-            # --- MODIFIED: Use wait_for_function with injected listener ---
+            # Inject listener and wait for flag (Modified section from previous fix)
             listener_flag_name = (
                 f"__pw_event_{expected_event_name.replace(':', '_')}_{uuid.uuid4().hex}"
             )
             listener_detail_name = f"{listener_flag_name}_detail"
             listener_function_name = f"{listener_flag_name}_func"
-
             logger.info(
                 f"Injecting listener for '{expected_event_name}' using flag '{listener_flag_name}'"
             )
-            # Inject the listener using page.evaluate
             page.evaluate(
                 f"""() => {{
-                window['{listener_flag_name}'] = false;
-                window['{listener_detail_name}'] = null;
-                window['{listener_function_name}'] = (event) => {{
-                    console.log('INTERNAL LISTENER: Event {expected_event_name} caught!');
-                    window['{listener_flag_name}'] = true;
-                    window['{listener_detail_name}'] = event.detail;
-                }};
+                window['{listener_flag_name}'] = false; window['{listener_detail_name}'] = null;
+                window['{listener_function_name}'] = (event) => {{ console.log('INTERNAL LISTENER: Event {expected_event_name} caught!'); window['{listener_flag_name}'] = true; window['{listener_detail_name}'] = event.detail; }};
                 document.addEventListener('{expected_event_name}', window['{listener_function_name}']);
-                console.log('INTERNAL LISTENER: Added listener for {expected_event_name}');
-            }}"""
+                console.log('INTERNAL LISTENER: Added listener for {expected_event_name}'); }}"""
             )
-
-            # Click the option
             logger.info(f"Clicking first option for Q{q_num}...")
             option_to_click.click()
-            logger.info(
-                f"Clicked first option for question {q_num}. Now waiting for flag '{listener_flag_name}'..."
-            )
-
-            # Wait for the flag to be set by the event listener
+            logger.info(f"Clicked. Waiting for flag '{listener_flag_name}'...")
             try:
                 page.wait_for_function(
                     f"() => window['{listener_flag_name}'] === true",
                     timeout=EVENT_WAIT_TIMEOUT,
                 )
-                # Optional: Get event detail
                 event_detail = page.evaluate(f"() => window['{listener_detail_name}']")
                 logger.info(
-                    f"Flag '{listener_flag_name}' received. Event '{expected_event_name}' confirmed. Detail: {event_detail}"
+                    f"Flag received. Event '{expected_event_name}' confirmed. Detail: {event_detail}"
                 )
-
             except PlaywrightTimeoutError:
                 logger.error(
-                    f"Timeout waiting for flag '{listener_flag_name}' for event '{expected_event_name}' after clicking Q{q_num}."
+                    f"Timeout waiting for flag '{listener_flag_name}' for event '{expected_event_name}' after Q{q_num}."
                 )
-                page.screenshot(
-                    path=os.path.join(
-                        SCREENSHOT_DIR, f"results_FLAG_TIMEOUT_Q{q_num}_{name}.png"
-                    )
-                )
+                flag_timeout_path = get_screenshot_path(name, f"_FLAG_TIMEOUT_Q{q_num}")
+                page.screenshot(path=flag_timeout_path)
                 pytest.fail(
-                    f"Timed out waiting for injected listener flag for event '{expected_event_name}' on Q{q_num} at {name}"
+                    f"Timed out waiting for event '{expected_event_name}' on Q{q_num} at {name}. Screenshot: {flag_timeout_path}"
                 )
             except Exception as e:
                 logger.error(
-                    f"Error occurred while waiting for flag '{listener_flag_name}' on Q{q_num}: {e}"
+                    f"Error waiting for flag '{listener_flag_name}' on Q{q_num}: {e}"
                 )
-                page.screenshot(
-                    path=os.path.join(
-                        SCREENSHOT_DIR, f"results_FLAG_ERROR_Q{q_num}_{name}.png"
-                    )
+                flag_error_path = get_screenshot_path(name, f"_FLAG_ERROR_Q{q_num}")
+                page.screenshot(path=flag_error_path)
+                pytest.fail(
+                    f"Error during flag wait on Q{q_num} at {name}. Screenshot: {flag_error_path}"
                 )
-                pytest.fail(f"Error during flag wait on Q{q_num} at {name}: {e}")
             finally:
-                # Clean up the injected listener and flags
                 logger.info(f"Cleaning up listener and flags for {listener_flag_name}")
                 page.evaluate(
-                    f"""() => {{
-                    if (window['{listener_function_name}']) {{
-                        document.removeEventListener('{expected_event_name}', window['{listener_function_name}']);
-                        console.log('INTERNAL LISTENER: Removed listener for {expected_event_name}');
-                    }}
-                    delete window['{listener_flag_name}'];
-                    delete window['{listener_detail_name}'];
-                    delete window['{listener_function_name}'];
-                }}"""
+                    f"""() => {{ if (window['{listener_function_name}']) {{ document.removeEventListener('{expected_event_name}', window['{listener_function_name}']); console.log('INTERNAL LISTENER: Removed listener for {expected_event_name}'); }}
+                    delete window['{listener_flag_name}']; delete window['{listener_detail_name}']; delete window['{listener_function_name}']; }}"""
                 )
-            # --- END OF MODIFIED SECTION ---
+            # End Modified Section
 
-            # (CRUCIAL) After event, wait for the *next* UI state to be ready
+            # Wait for next UI state
             if expected_event_name == "quiz:question-changed":
                 next_q_num = q_num + 1
-                logger.info(
-                    f"Event confirmed, waiting for Q{next_q_num}'s options to render (max {POST_EVENT_UI_TIMEOUT}ms)..."
-                )
+                logger.info(f"Waiting for Q{next_q_num} options to render...")
                 next_options = page.locator("#quiz-app-container button.option-button")
                 try:
-                    # Wait specifically for the *new* options to appear and be ready
                     expect_pw(
-                        next_options.first,
-                        f"First option for Q{next_q_num} should appear after event",
+                        next_options.first, f"Q{next_q_num} option visible"
                     ).to_be_visible(timeout=POST_EVENT_UI_TIMEOUT)
                     expect_pw(
-                        next_options.first,
-                        f"First option for Q{next_q_num} should be enabled after event",
+                        next_options.first, f"Q{next_q_num} option enabled"
                     ).to_be_enabled(timeout=POST_EVENT_UI_TIMEOUT)
-                    logger.info(f"Q{next_q_num}'s options are ready.")
+                    logger.info(f"Q{next_q_num} options ready.")
                 except PlaywrightTimeoutError:
-                    logger.error(
-                        f"Timeout waiting for Q{next_q_num}'s options to render after '{expected_event_name}'."
+                    logger.error(f"Timeout waiting for Q{next_q_num} options render.")
+                    next_q_render_path = get_screenshot_path(
+                        name, f"_NEXT_Q_RENDER_TIMEOUT_Q{next_q_num}"
                     )
-                    page.screenshot(
-                        path=os.path.join(
-                            SCREENSHOT_DIR,
-                            f"results_NEXT_Q_RENDER_TIMEOUT_Q{next_q_num}_{name}.png",
-                        )
+                    page.screenshot(path=next_q_render_path)
+                    pytest.fail(
+                        f"Timed out waiting for Q{next_q_num} render at {name}. Screenshot: {next_q_render_path}"
                     )
-                    pytest.fail(f"Timed out waiting for Q{next_q_num} render at {name}")
-
             elif expected_event_name == "quiz:quiz-completed":
-                logger.info(
-                    "Quiz completed event confirmed. Results panel should appear shortly."
-                )
-                # The check_results_panel_visibility helper function will now wait for the panel
+                logger.info("Quiz completed event confirmed.")
 
-        # --- Test the Results Panel Layout at the specific breakpoint ---
+        # --- Test the Results Panel Layout ---
         logger.info(f"--- Testing Results Panel Layout for Breakpoint: {name} ---")
+        check_results_panel_visibility(page, name)
 
-        # 1. Verify Results Panel Elements Visibility (includes waiting for the panel)
-        check_results_panel_visibility(
-            page, name
-        )  # This function now has waits built-in
-
-        # 2. Capture Screenshot (after verifying visibility)
-        screenshot_path = os.path.join(SCREENSHOT_DIR, f"quiz_results_{name}.png")
+        screenshot_path = get_screenshot_path(name, "_results")  # Suffix results
         page.screenshot(path=screenshot_path)
-        logger.info(f"Screenshot saved to {screenshot_path}")
+        logger.info(f"Results Screenshot saved to {screenshot_path}")
 
-        # 3. Check Button Layout (Stacking vs Row)
-        # Use the robust ID locator
+        # Check Button Layout
         results_panel = page.locator("#quiz-results-panel")
         play_again_button = results_panel.locator('button:text("Play Again")')
-        go_home_button = results_panel.locator('a[href="/"]:text("Go Home")')
-
-        # Bounding box checks require elements to be visible, which check_results_panel_visibility ensures
-        play_again_box = play_again_button.bounding_box(
-            timeout=2000
-        )  # Short timeout ok here
+        go_home_button = results_panel.locator('a:text("Go Home")')  # Updated selector
+        play_again_box = play_again_button.bounding_box(timeout=2000)
         go_home_box = go_home_button.bounding_box(timeout=2000)
-
         if play_again_box and go_home_box:
             button_height = play_again_box["height"]
             button_width = play_again_box["width"]
             y_diff = abs(play_again_box["y"] - go_home_box["y"])
             x_diff = abs(play_again_box["x"] - go_home_box["x"])
-
-            # Tailwind class `sm:flex-row` in index.html dictates layout change at 640px
-            if size["width"] < 640:
-                logger.info(f"Verifying button stacking for {name} (< 640px)")
-                # --- MODIFIED: Use standard Python assert ---
+            if size["width"] < 640:  # Check breakpoint
+                logger.info(f"Verifying button stacking for {name}")
                 assert y_diff > (
                     button_height * 0.5
-                ), f"Y diff ({y_diff:.1f}) should be > ~0.5 button height ({button_height * 0.5:.1f}) (stacked) at {name}"
+                ), f"Stacking fail (Y diff {y_diff:.1f}) at {name}"
                 assert x_diff < (
                     button_width * 0.5
-                ), f"X diff ({x_diff:.1f}) should be relatively small (stacked) at {name}"
-                # --- END MODIFICATION ---
+                ), f"Stacking fail (X diff {x_diff:.1f}) at {name}"
                 logger.info(f"Button stacking verified for {name}.")
             else:
-                logger.info(f"Verifying button row layout for {name} (>= 640px)")
-                # --- MODIFIED: Use standard Python assert ---
-                assert (
-                    y_diff < 15
-                ), f"Y diff ({y_diff:.1f}) should be small (< 15px) (row) at {name}"  # Allow tolerance for alignment
+                logger.info(f"Verifying button row layout for {name}")
+                assert y_diff < 15, f"Row fail (Y diff {y_diff:.1f}) at {name}"
                 assert x_diff > (
                     button_width * 0.5
-                ), f"X diff ({x_diff:.1f}) should be > ~0.5 button width ({button_width * 0.5:.1f}) (row) at {name}"
-                # --- END MODIFICATION ---
+                ), f"Row fail (X diff {x_diff:.1f}) at {name}"
                 logger.info(f"Button row layout verified for {name}.")
         else:
-            logger.warning(
-                f"Could not get bounding boxes for action buttons at {name}. Skipping layout check."
-            )
-            # Fail if boxes are None, as visibility should have been confirmed by check_results_panel_visibility
             if not play_again_box:
-                pytest.fail(
-                    f"Could not get bounding box for 'Play Again' button at {name} after it was deemed visible."
-                )
+                pytest.fail(f"No bounding box for 'Play Again' button at {name}")
             if not go_home_box:
-                pytest.fail(
-                    f"Could not get bounding box for 'Go Home' button at {name} after it was deemed visible."
-                )
+                pytest.fail(f"No bounding box for 'Go Home' button at {name}")
 
         logger.info(f"--- Test Completed Successfully: {test_name} ---")
 
     except PlaywrightTimeoutError as e:
-        logger.error(f"\n!!! Playwright Timeout Error Occurred during {test_name} !!!")
-        error_details = str(e)
-        # Try to get the specific timeout message from the exception if available
-        timeout_message = getattr(e, "message", error_details)
+        logger.error(f"\n!!! Playwright Timeout Error: {test_name} !!!")
+        timeout_message = getattr(e, "message", str(e))
         logger.error(f"Timeout details: {timeout_message}")
-        error_screenshot_path = os.path.join(
-            SCREENSHOT_DIR, f"results_TIMEOUT_ERROR_{name}.png"
-        )
+        error_screenshot_path = get_screenshot_path(name, "_TIMEOUT_ERROR")
+        error_html_path = get_html_path(name, "_TIMEOUT_ERROR")
         try:
             page.screenshot(path=error_screenshot_path, full_page=True)
-            logger.info(f"Timeout error screenshot saved to {error_screenshot_path}")
-            html_content = page.content()
-            html_path = os.path.join(
-                SCREENSHOT_DIR, f"results_TIMEOUT_ERROR_{name}.html"
-            )
-            with open(html_path, "w", encoding="utf-8") as f:
-                f.write(html_content)
-            logger.info(f"Timeout error HTML saved to {html_path}")
+            logger.info(f"Timeout screenshot: {error_screenshot_path}")
+            with open(error_html_path, "w", encoding="utf-8") as f:
+                f.write(page.content())
+            logger.info(f"Timeout HTML: {error_html_path}")
         except Exception as diag_error:
-            logger.error(f"Could not save diagnostic info on timeout: {diag_error}")
-        pytest.fail(f"Playwright TimeoutError in {test_name}: {timeout_message}")
+            logger.error(f"Could not save diagnostics: {diag_error}")
+        pytest.fail(f"TimeoutError in {test_name}: {timeout_message}")
 
     except Exception as e:
-        logger.exception(
-            f"\n!!! An unexpected error occurred during {test_name} !!!"
-        )  # Includes traceback
-        error_screenshot_path = os.path.join(
-            SCREENSHOT_DIR, f"results_UNEXPECTED_ERROR_{name}.png"
-        )
+        logger.exception(f"\n!!! Unexpected Error: {test_name} !!!")
+        error_screenshot_path = get_screenshot_path(name, "_UNEXPECTED_ERROR")
+        error_html_path = get_html_path(name, "_UNEXPECTED_ERROR")
         try:
             page.screenshot(path=error_screenshot_path, full_page=True)
-            logger.info(f"Unexpected error screenshot saved to {error_screenshot_path}")
-            html_content = page.content()
-            html_path = os.path.join(
-                SCREENSHOT_DIR, f"results_UNEXPECTED_ERROR_{name}.html"
-            )
-            with open(html_path, "w", encoding="utf-8") as f:
-                f.write(html_content)
-            logger.info(f"Unexpected error HTML saved to {html_path}")
+            logger.info(f"Error screenshot: {error_screenshot_path}")
+            with open(error_html_path, "w", encoding="utf-8") as f:
+                f.write(page.content())
+            logger.info(f"Error HTML: {error_html_path}")
         except Exception as diag_error:
-            logger.error(
-                f"Could not save diagnostic info on unexpected error: {diag_error}"
-            )
+            logger.error(f"Could not save diagnostics: {diag_error}")
         pytest.fail(f"Unexpected error in {test_name}: {e}")
