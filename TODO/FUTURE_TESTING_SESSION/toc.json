@@ -1,0 +1,905 @@
+[
+    {
+        "chapter_num": 1,
+        "chapter_title": "The \"Why\" of Testing in Django",
+        "section_num": "1.1",
+        "section_title": "Beyond Catching Bugs: The Real Value Proposition",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 1,
+        "chapter_title": "The \"Why\" of Testing in Django",
+        "section_num": "1.1",
+        "section_title": "Beyond Catching Bugs: The Real Value Proposition",
+        "subsection_text": "Confidence in Deployments"
+    },
+    {
+        "chapter_num": 1,
+        "chapter_title": "The \"Why\" of Testing in Django",
+        "section_num": "1.1",
+        "section_title": "Beyond Catching Bugs: The Real Value Proposition",
+        "subsection_text": "Safety Net for Refactoring"
+    },
+    {
+        "chapter_num": 1,
+        "chapter_title": "The \"Why\" of Testing in Django",
+        "section_num": "1.1",
+        "section_title": "Beyond Catching Bugs: The Real Value Proposition",
+        "subsection_text": "Living Documentation"
+    },
+    {
+        "chapter_num": 1,
+        "chapter_title": "The \"Why\" of Testing in Django",
+        "section_num": "1.1",
+        "section_title": "Beyond Catching Bugs: The Real Value Proposition",
+        "subsection_text": "Improved Design (Testability)"
+    },
+    {
+        "chapter_num": 1,
+        "chapter_title": "The \"Why\" of Testing in Django",
+        "section_num": "1.2",
+        "section_title": "Your Testing Pain Points: Acknowledging the Struggle",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 1,
+        "chapter_title": "The \"Why\" of Testing in Django",
+        "section_num": "1.2",
+        "section_title": "Your Testing Pain Points: Acknowledging the Struggle",
+        "subsection_text": "The Database Disconnect Nightmare"
+    },
+    {
+        "chapter_num": 1,
+        "chapter_title": "The \"Why\" of Testing in Django",
+        "section_num": "1.2",
+        "section_title": "Your Testing Pain Points: Acknowledging the Struggle",
+        "subsection_text": "Flaky UI Checks and Responsive Woes"
+    },
+    {
+        "chapter_num": 1,
+        "chapter_title": "The \"Why\" of Testing in Django",
+        "section_num": "1.2",
+        "section_title": "Your Testing Pain Points: Acknowledging the Struggle",
+        "subsection_text": "The Mystery of Failing Logins"
+    },
+    {
+        "chapter_num": 1,
+        "chapter_title": "The \"Why\" of Testing in Django",
+        "section_num": "1.3",
+        "section_title": "The Economics of Testing: Investment vs. Cost",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 1,
+        "chapter_title": "The \"Why\" of Testing in Django",
+        "section_num": "1.4",
+        "section_title": "Thinking Like a Tester: What Could Go Wrong?",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 2,
+        "chapter_title": "Your First Django Test: Hello, `pytest`!",
+        "section_num": "2.1",
+        "section_title": "Setting the Stage: Installation (`pytest`, `pytest-django`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 2,
+        "chapter_title": "Your First Django Test: Hello, `pytest`!",
+        "section_num": "2.2",
+        "section_title": "`pytest.ini`: Basic Configuration (`DJANGO_SETTINGS_MODULE`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 2,
+        "chapter_title": "Your First Django Test: Hello, `pytest`!",
+        "section_num": "2.3",
+        "section_title": "Writing Test Functions: Naming Conventions (`test_...`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 2,
+        "chapter_title": "Your First Django Test: Hello, `pytest`!",
+        "section_num": "2.4",
+        "section_title": "A Simple Assertion: `assert True`",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 2,
+        "chapter_title": "Your First Django Test: Hello, `pytest`!",
+        "section_num": "2.5",
+        "section_title": "Running `pytest`: The Command Line Basics",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 2,
+        "chapter_title": "Your First Django Test: Hello, `pytest`!",
+        "section_num": "2.6",
+        "section_title": "Interpreting Output: PASS, FAIL, ERROR, SKIP",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 2,
+        "chapter_title": "Your First Django Test: Hello, `pytest`!",
+        "section_num": "2.7",
+        "section_title": "The AAA Pattern: Arrange, Act, Assert in Practice",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 3,
+        "chapter_title": "The Testing Pyramid in Django",
+        "section_num": "3.1",
+        "section_title": "Unit Tests: Small, Fast, Isolated",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 3,
+        "chapter_title": "The Testing Pyramid in Django",
+        "section_num": "3.1",
+        "section_title": "Unit Tests: Small, Fast, Isolated",
+        "subsection_text": "What to Unit Test (Models, Forms, Utils)"
+    },
+    {
+        "chapter_num": 3,
+        "chapter_title": "The Testing Pyramid in Django",
+        "section_num": "3.1",
+        "section_title": "Unit Tests: Small, Fast, Isolated",
+        "subsection_text": "Example: Testing a Model Method"
+    },
+    {
+        "chapter_num": 3,
+        "chapter_title": "The Testing Pyramid in Django",
+        "section_num": "3.2",
+        "section_title": "Integration Tests: How Pieces Fit Together",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 3,
+        "chapter_title": "The Testing Pyramid in Django",
+        "section_num": "3.2",
+        "section_title": "Integration Tests: How Pieces Fit Together",
+        "subsection_text": "What to Integrate (Views + Models, Views + Forms)"
+    },
+    {
+        "chapter_num": 3,
+        "chapter_title": "The Testing Pyramid in Django",
+        "section_num": "3.2",
+        "section_title": "Integration Tests: How Pieces Fit Together",
+        "subsection_text": "Example: Testing a View's Response with DB Interaction"
+    },
+    {
+        "chapter_num": 3,
+        "chapter_title": "The Testing Pyramid in Django",
+        "section_num": "3.3",
+        "section_title": "End-to-End (E2E) Tests: The User's Journey",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 3,
+        "chapter_title": "The Testing Pyramid in Django",
+        "section_num": "3.3",
+        "section_title": "End-to-End (E2E) Tests: The User's Journey",
+        "subsection_text": "What to E2E Test (Critical User Flows: Login, Signup, Core Features)"
+    },
+    {
+        "chapter_num": 3,
+        "chapter_title": "The Testing Pyramid in Django",
+        "section_num": "3.3",
+        "section_title": "End-to-End (E2E) Tests: The User's Journey",
+        "subsection_text": "Example: Simulating a User Login"
+    },
+    {
+        "chapter_num": 3,
+        "chapter_title": "The Testing Pyramid in Django",
+        "section_num": "3.4",
+        "section_title": "Balancing the Pyramid: Where to Focus Your Efforts",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 4,
+        "chapter_title": "The MAGIC Behind Django Tests: The Test Database! (CRITICAL!)",
+        "section_num": "4.1",
+        "section_title": "Why Not Use Your Development Database? (The Dangers)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 4,
+        "chapter_title": "The MAGIC Behind Django Tests: The Test Database! (CRITICAL!)",
+        "section_num": "4.2",
+        "section_title": "`pytest-django` to the Rescue: Automatic Test DB Creation",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 4,
+        "chapter_title": "The MAGIC Behind Django Tests: The Test Database! (CRITICAL!)",
+        "section_num": "4.3",
+        "section_title": "The Lifecycle: Creation, Migrations, Data, Destruction",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 4,
+        "chapter_title": "The MAGIC Behind Django Tests: The Test Database! (CRITICAL!)",
+        "section_num": "4.4",
+        "section_title": "True Isolation: How It Prevents Interference",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 4,
+        "chapter_title": "The MAGIC Behind Django Tests: The Test Database! (CRITICAL!)",
+        "section_num": "4.5",
+        "section_title": "Connecting the Dots: Why Your Login Tests Failed Before This",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 5,
+        "chapter_title": "Testing Your Models",
+        "section_num": "5.1",
+        "section_title": "Setting Up: `@pytest.mark.django_db` Explained",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 5,
+        "chapter_title": "Testing Your Models",
+        "section_num": "5.2",
+        "section_title": "Creating Test Data with the ORM",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 5,
+        "chapter_title": "Testing Your Models",
+        "section_num": "5.3",
+        "section_title": "Asserting Field Values and Defaults",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 5,
+        "chapter_title": "Testing Your Models",
+        "section_num": "5.4",
+        "section_title": "Testing Custom Properties and Methods (`@property`, `def my_method`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 5,
+        "chapter_title": "Testing Your Models",
+        "section_num": "5.5",
+        "section_title": "Testing Model Managers and QuerySet Methods (Brief Intro)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 6,
+        "chapter_title": "Testing Your Views (Without a Browser)",
+        "section_num": "6.1",
+        "section_title": "The `client` Fixture: Your Internal Browser",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 6,
+        "chapter_title": "Testing Your Views (Without a Browser)",
+        "section_num": "6.2",
+        "section_title": "Simulating GET Requests (`client.get`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 6,
+        "chapter_title": "Testing Your Views (Without a Browser)",
+        "section_num": "6.2",
+        "section_title": "Simulating GET Requests (`client.get`)",
+        "subsection_text": "Checking Status Codes (200 OK, 404 Not Found, etc.)"
+    },
+    {
+        "chapter_num": 6,
+        "chapter_title": "Testing Your Views (Without a Browser)",
+        "section_num": "6.2",
+        "section_title": "Simulating GET Requests (`client.get`)",
+        "subsection_text": "Checking Which Template Was Used (`response.templates`)"
+    },
+    {
+        "chapter_num": 6,
+        "chapter_title": "Testing Your Views (Without a Browser)",
+        "section_num": "6.2",
+        "section_title": "Simulating GET Requests (`client.get`)",
+        "subsection_text": "Checking HTML Content (`response.content`, `assertContains`)"
+    },
+    {
+        "chapter_num": 6,
+        "chapter_title": "Testing Your Views (Without a Browser)",
+        "section_num": "6.3",
+        "section_title": "Simulating POST Requests (`client.post`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 6,
+        "chapter_title": "Testing Your Views (Without a Browser)",
+        "section_num": "6.3",
+        "section_title": "Simulating POST Requests (`client.post`)",
+        "subsection_text": "Sending Form Data"
+    },
+    {
+        "chapter_num": 6,
+        "chapter_title": "Testing Your Views (Without a Browser)",
+        "section_num": "6.3",
+        "section_title": "Simulating POST Requests (`client.post`)",
+        "subsection_text": "Handling CSRF in Tests (Usually automatic with `client`)"
+    },
+    {
+        "chapter_num": 6,
+        "chapter_title": "Testing Your Views (Without a Browser)",
+        "section_num": "6.4",
+        "section_title": "Inspecting the Context (`response.context`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 6,
+        "chapter_title": "Testing Your Views (Without a Browser)",
+        "section_num": "6.5",
+        "section_title": "Testing View Logic with Different Users (Anonymous vs. Logged-in)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 6,
+        "chapter_title": "Testing Your Views (Without a Browser)",
+        "section_num": "6.5",
+        "section_title": "Testing View Logic with Different Users (Anonymous vs. Logged-in)",
+        "subsection_text": "Using `client.login()` / `force_login()`"
+    },
+    {
+        "chapter_num": 6,
+        "chapter_title": "Testing Your Views (Without a Browser)",
+        "section_num": "6.6",
+        "section_title": "Testing Redirects (302 Status Code, `response.url`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 6,
+        "chapter_title": "Testing Your Views (Without a Browser)",
+        "section_num": "6.7",
+        "section_title": "Testing Django Messages (`get_messages`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 7,
+        "chapter_title": "Testing Your Forms",
+        "section_num": "7.1",
+        "section_title": "Instantiating Forms with Test Data",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 7,
+        "chapter_title": "Testing Your Forms",
+        "section_num": "7.2",
+        "section_title": "Testing `form.is_valid()` with Valid Data",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 7,
+        "chapter_title": "Testing Your Forms",
+        "section_num": "7.3",
+        "section_title": "Testing `form.is_valid()` with Invalid Data",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 7,
+        "chapter_title": "Testing Your Forms",
+        "section_num": "7.4",
+        "section_title": "Checking Specific Field Errors (`form.errors['field_name']`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 7,
+        "chapter_title": "Testing Your Forms",
+        "section_num": "7.5",
+        "section_title": "Testing Form `save()` Method (if applicable)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 7,
+        "chapter_title": "Testing Your Forms",
+        "section_num": "7.6",
+        "section_title": "Testing Custom Form `clean()` Methods",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 8,
+        "chapter_title": "Introduction to `pytest` Fixtures",
+        "section_num": "8.1",
+        "section_title": "What Problem Do Fixtures Solve? (Setup/Teardown, Repetition)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 8,
+        "chapter_title": "Introduction to `pytest` Fixtures",
+        "section_num": "8.2",
+        "section_title": "Defining a Simple Fixture (`@pytest.fixture`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 8,
+        "chapter_title": "Introduction to `pytest` Fixtures",
+        "section_num": "8.3",
+        "section_title": "Requesting a Fixture in a Test Function",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 8,
+        "chapter_title": "Introduction to `pytest` Fixtures",
+        "section_num": "8.4",
+        "section_title": "How Fixtures Provide Resources (Yielding Values)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 8,
+        "chapter_title": "Introduction to `pytest` Fixtures",
+        "section_num": "8.5",
+        "section_title": "Built-in Fixtures Reviewed (`client`, `@pytest.mark.django_db`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 9,
+        "chapter_title": "Setting Up for Browser Tests (`pytest-playwright`)",
+        "section_num": "9.1",
+        "section_title": "Installation (`pytest-playwright`, `playwright install`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 9,
+        "chapter_title": "Setting Up for Browser Tests (`pytest-playwright`)",
+        "section_num": "9.2",
+        "section_title": "The `page` Fixture Explained",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 9,
+        "chapter_title": "Setting Up for Browser Tests (`pytest-playwright`)",
+        "section_num": "9.3",
+        "section_title": "Basic Navigation: `page.goto(url)`",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 9,
+        "chapter_title": "Setting Up for Browser Tests (`pytest-playwright`)",
+        "section_num": "9.4",
+        "section_title": "Taking Screenshots (`page.screenshot`) - Your Debugging Friend",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 10,
+        "chapter_title": "The `live_server` Fixture: The E2E Game Changer (CRITICAL!)",
+        "section_num": "10.1",
+        "section_title": "The Problem: Why `client` Doesn't Work for Playwright",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 10,
+        "chapter_title": "The `live_server` Fixture: The E2E Game Changer (CRITICAL!)",
+        "section_num": "10.2",
+        "section_title": "How `live_server` Works: Real Server + Test Database",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 10,
+        "chapter_title": "The `live_server` Fixture: The E2E Game Changer (CRITICAL!)",
+        "section_num": "10.3",
+        "section_title": "Getting the URL: `live_server.url`",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 10,
+        "chapter_title": "The `live_server` Fixture: The E2E Game Changer (CRITICAL!)",
+        "section_num": "10.4",
+        "section_title": "Combining `live_server`, `page`, and `@pytest.mark.django_db`",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 10,
+        "chapter_title": "The `live_server` Fixture: The E2E Game Changer (CRITICAL!)",
+        "section_num": "10.5",
+        "section_title": "**Case Study:** Fixing Your Login Test Failures (The DB Context Solution)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 11,
+        "chapter_title": "Finding Things on the Page: Locators",
+        "section_num": "11.1",
+        "section_title": "User-Facing Locators (Role, Text, Label, Placeholder) - The Preferred Way",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 11,
+        "chapter_title": "Finding Things on the Page: Locators",
+        "section_num": "11.2",
+        "section_title": "Other Locators (CSS Selectors, XPath, ID) - When to Use Them",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 11,
+        "chapter_title": "Finding Things on the Page: Locators",
+        "section_num": "11.3",
+        "section_title": "Chaining Locators for Specificity",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 11,
+        "chapter_title": "Finding Things on the Page: Locators",
+        "section_num": "11.4",
+        "section_title": "Avoiding Brittle Locators (Why `div > span:nth-child(3)` is often bad)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 11,
+        "chapter_title": "Finding Things on the Page: Locators",
+        "section_num": "11.5",
+        "section_title": "The Power of `data-testid` for Stable Tests",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 12,
+        "chapter_title": "Checking Things on the Page: Assertions with `expect`",
+        "section_num": "12.1",
+        "section_title": "Core Assertions: `to_be_visible`, `to_be_hidden`, `to_be_enabled`, `to_be_empty`",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 12,
+        "chapter_title": "Checking Things on the Page: Assertions with `expect`",
+        "section_num": "12.2",
+        "section_title": "Content Assertions: `to_have_text`, `to_contain_text`, `to_have_value`, `to_have_count`",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 12,
+        "chapter_title": "Checking Things on the Page: Assertions with `expect`",
+        "section_num": "12.3",
+        "section_title": "Attribute/CSS Assertions: `to_have_attribute`, `to_have_css`",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 12,
+        "chapter_title": "Checking Things on the Page: Assertions with `expect`",
+        "section_num": "12.4",
+        "section_title": "Page Assertions: `to_have_url`, `to_have_title`",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 12,
+        "chapter_title": "Checking Things on the Page: Assertions with `expect`",
+        "section_num": "12.5",
+        "section_title": "**Case Study:** Fixing Your Responsive Visibility Assertions",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 13,
+        "chapter_title": "Interacting with Pages: Actions",
+        "section_num": "13.1",
+        "section_title": "Clicking: `.click()`",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 13,
+        "chapter_title": "Interacting with Pages: Actions",
+        "section_num": "13.2",
+        "section_title": "Filling Input Fields: `.fill()`",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 13,
+        "chapter_title": "Interacting with Pages: Actions",
+        "section_num": "13.3",
+        "section_title": "Selecting Dropdowns: `.select_option()`",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 13,
+        "chapter_title": "Interacting with Pages: Actions",
+        "section_num": "13.4",
+        "section_title": "Checkboxes and Radio Buttons: `.check()`, `.uncheck()`",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 13,
+        "chapter_title": "Interacting with Pages: Actions",
+        "section_num": "13.5",
+        "section_title": "Hovering, Focusing, Drag-and-Drop (Brief Overview)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 13,
+        "chapter_title": "Interacting with Pages: Actions",
+        "section_num": "13.6",
+        "section_title": "Simulating Keyboard Input (`.press()`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 13,
+        "chapter_title": "Interacting with Pages: Actions",
+        "section_num": "13.7",
+        "section_title": "**Case Study:** Automating Your Admin Login Flow",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 14,
+        "chapter_title": "Handling Dynamic Content and Waits",
+        "section_num": "14.1",
+        "section_title": "How Playwright Waits Automatically (Actionability Checks)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 14,
+        "chapter_title": "Handling Dynamic Content and Waits",
+        "section_num": "14.2",
+        "section_title": "Waiting for Specific States (`page.wait_for_load_state`, `page.wait_for_url`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 14,
+        "chapter_title": "Handling Dynamic Content and Waits",
+        "section_num": "14.3",
+        "section_title": "Waiting for Elements with `expect` Timeouts",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 14,
+        "chapter_title": "Handling Dynamic Content and Waits",
+        "section_num": "14.4",
+        "section_title": "Waiting for Network Responses (`page.wait_for_response`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 14,
+        "chapter_title": "Handling Dynamic Content and Waits",
+        "section_num": "14.5",
+        "section_title": "The Problem with Fixed Waits (`page.wait_for_timeout` / `time.sleep`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 15,
+        "chapter_title": "Testing Responsive Design",
+        "section_num": "15.1",
+        "section_title": "Defining Viewports (`page.set_viewport_size`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 15,
+        "chapter_title": "Testing Responsive Design",
+        "section_num": "15.2",
+        "section_title": "Parameterizing Tests for Multiple Breakpoints (`@pytest.mark.parametrize`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 15,
+        "chapter_title": "Testing Responsive Design",
+        "section_num": "15.3",
+        "section_title": "Strategies: Checking Different Locators, Asserting Visibility within Context",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 15,
+        "chapter_title": "Testing Responsive Design",
+        "section_num": "15.4",
+        "section_title": "Detecting Layout Issues (Overflow Checks, Bounding Box Comparisons)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 15,
+        "chapter_title": "Testing Responsive Design",
+        "section_num": "15.5",
+        "section_title": "Screenshotting for Visual Regression (Basic Concept)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 16,
+        "chapter_title": "Mastering Fixtures: Reusable Setup",
+        "section_num": "16.1",
+        "section_title": "Refactoring Repeated Setup into Fixtures (The DRY Principle)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 16,
+        "chapter_title": "Mastering Fixtures: Reusable Setup",
+        "section_num": "16.2",
+        "section_title": "Creating Data with Fixtures (`@pytest.mark.django_db` in fixtures)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 16,
+        "chapter_title": "Mastering Fixtures: Reusable Setup",
+        "section_num": "16.2",
+        "section_title": "Creating Data with Fixtures (`@pytest.mark.django_db` in fixtures)",
+        "subsection_text": "*Addressing the Deprecation Warning We Saw*"
+    },
+    {
+        "chapter_num": 16,
+        "chapter_title": "Mastering Fixtures: Reusable Setup",
+        "section_num": "16.3",
+        "section_title": "Fixtures that Yield Resources (Like our `admin_logged_in_page`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 16,
+        "chapter_title": "Mastering Fixtures: Reusable Setup",
+        "section_num": "16.4",
+        "section_title": "Understanding Fixture Scopes (`function`, `class`, `module`, `session`) - When to use which?",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 16,
+        "chapter_title": "Mastering Fixtures: Reusable Setup",
+        "section_num": "16.5",
+        "section_title": "`conftest.py`: Sharing Fixtures Across Files/Apps",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 16,
+        "chapter_title": "Mastering Fixtures: Reusable Setup",
+        "section_num": "16.5",
+        "section_title": "`conftest.py`: Sharing Fixtures Across Files/Apps",
+        "subsection_text": "Top-level `src/conftest.py` vs. App-level `tests/conftest.py`"
+    },
+    {
+        "chapter_num": 16,
+        "chapter_title": "Mastering Fixtures: Reusable Setup",
+        "section_num": "16.6",
+        "section_title": "Using Fixtures for Teardown Logic",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 17,
+        "chapter_title": "Avoiding the Pitfalls (Lessons Revisited)",
+        "section_num": "17.1",
+        "section_title": "Recap: The Test Database & `live_server` Solution",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 17,
+        "chapter_title": "Avoiding the Pitfalls (Lessons Revisited)",
+        "section_num": "17.2",
+        "section_title": "Recap: Ditch the Custom Runners!",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 17,
+        "chapter_title": "Avoiding the Pitfalls (Lessons Revisited)",
+        "section_num": "17.3",
+        "section_title": "Recap: Robust Locators (`data-testid` promotion)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 17,
+        "chapter_title": "Avoiding the Pitfalls (Lessons Revisited)",
+        "section_num": "17.4",
+        "section_title": "Recap: Reliable Assertions (Asserting the definite outcome)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 17,
+        "chapter_title": "Avoiding the Pitfalls (Lessons Revisited)",
+        "section_num": "17.5",
+        "section_title": "Recap: Test Data Isolation (Creating data within tests/fixtures)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 17,
+        "chapter_title": "Avoiding the Pitfalls (Lessons Revisited)",
+        "section_num": "17.6",
+        "section_title": "The `@csrf_exempt` Shortcut: When to Use and When to Test CSRF Properly",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 18,
+        "chapter_title": "Organizing Your Tests",
+        "section_num": "18.1",
+        "section_title": "Recommended Directory Structure (`tests/test_models.py`, `tests/test_views.py`, etc.)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 18,
+        "chapter_title": "Organizing Your Tests",
+        "section_num": "18.2",
+        "section_title": "Using Classes to Group Related Tests (`class TestMyFeature:`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 18,
+        "chapter_title": "Organizing Your Tests",
+        "section_num": "18.3",
+        "section_title": "Using Markers for Test Categorization (`@pytest.mark.slow`, `@pytest.mark.e2e`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 18,
+        "chapter_title": "Organizing Your Tests",
+        "section_num": "18.4",
+        "section_title": "Naming Conventions for Clarity",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 19,
+        "chapter_title": "Running Tests Like a Pro",
+        "section_num": "19.1",
+        "section_title": "Running Specific Files, Classes, or Functions",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 19,
+        "chapter_title": "Running Tests Like a Pro",
+        "section_num": "19.2",
+        "section_title": "Filtering by Test Name (`-k 'expression'`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 19,
+        "chapter_title": "Running Tests Like a Pro",
+        "section_num": "19.3",
+        "section_title": "Filtering by Markers (`-m 'marker_name'`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 19,
+        "chapter_title": "Running Tests Like a Pro",
+        "section_num": "19.4",
+        "section_title": "Controlling Output Verbosity (`-v`, `-q`, `-s`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 19,
+        "chapter_title": "Running Tests Like a Pro",
+        "section_num": "19.5",
+        "section_title": "Stopping on First Failure (`-x`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 19,
+        "chapter_title": "Running Tests Like a Pro",
+        "section_num": "19.6",
+        "section_title": "Rerunning Only Failed Tests (`--lf`, `--ff`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 20,
+        "chapter_title": "Next Steps and Continuous Improvement",
+        "section_num": "20.1",
+        "section_title": "Measuring Test Coverage (`pytest-cov`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 20,
+        "chapter_title": "Next Steps and Continuous Improvement",
+        "section_num": "20.1",
+        "section_title": "Measuring Test Coverage (`pytest-cov`)",
+        "subsection_text": "What is Coverage? What Does it Tell You (and Not Tell You)?"
+    },
+    {
+        "chapter_num": 20,
+        "chapter_title": "Next Steps and Continuous Improvement",
+        "section_num": "20.1",
+        "section_title": "Measuring Test Coverage (`pytest-cov`)",
+        "subsection_text": "Generating HTML Reports"
+    },
+    {
+        "chapter_num": 20,
+        "chapter_title": "Next Steps and Continuous Improvement",
+        "section_num": "20.2",
+        "section_title": "Mocking External Services and Complex Dependencies (`unittest.mock`)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 20,
+        "chapter_title": "Next Steps and Continuous Improvement",
+        "section_num": "20.3",
+        "section_title": "Introduction to CI/CD: Automating Your Test Runs (GitHub Actions Example)",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 20,
+        "chapter_title": "Next Steps and Continuous Improvement",
+        "section_num": "20.4",
+        "section_title": "Refactoring Tests: Keeping Your Test Code Clean",
+        "subsection_text": null
+    },
+    {
+        "chapter_num": 20,
+        "chapter_title": "Next Steps and Continuous Improvement",
+        "section_num": "20.5",
+        "section_title": "Where to Go From Here (Advanced Topics, Other Testing Tools)",
+        "subsection_text": null
+    }
+]

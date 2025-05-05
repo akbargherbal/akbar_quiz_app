@@ -1,7 +1,3 @@
-Okay, absolutely! Let's flesh out the beginning and add more detail to the Table of Contents.
-
----
-
 ### **Django Testing with Pytest: From Zero to Confident**
 
 **(A Practical Guide for Akbar)**
@@ -191,7 +187,3 @@ By the end of this book, the goal is not just for you to be able to *write* test
 *   **Appendix B:** Common `pytest` / `pytest-django` / `pytest-playwright` Options
 *   **Appendix C:** Debugging Test Failures Checklist (DB Context?, Locator?, Assertion?, Wait?, Data?)
 *   **Appendix D:** Useful Playwright Selectors and Assertions Cheat Sheet
-
----
-
-This more detailed TOC should provide a very clear structure and cover the journey from the initial pain points to confident, effective testing using the tools and techniques we've discussed and implemented.
