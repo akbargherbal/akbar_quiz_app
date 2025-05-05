@@ -189,13 +189,6 @@ LOGOUT_REDIRECT_URL = "/"  # Redirect to homepage after logout
 # --- EMAIL SETTINGS (For Development - Console Output) ---
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-# --- TESTING ---
-# Use the DJANGO_ENVIRONMENT variable set near the top
-if DJANGO_ENVIRONMENT == "development":
-    TEST_RUNNER = (
-        "multi_choice_quiz.test_runner.LoggingTestRunner"  # Temporarily disable
-    )
-
 
 # --- PWA ---
 PWA_APP_ICONS = [

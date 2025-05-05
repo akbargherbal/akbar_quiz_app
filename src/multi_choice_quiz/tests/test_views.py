@@ -16,6 +16,12 @@ from multi_choice_quiz.models import (
     QuizAttempt,
 )
 
+# --- Replace existing logger setup with this ---
+from .test_logging import setup_test_logging
+
+logger = setup_test_logging(__name__, "multi_choice_quiz")
+# --- End Replacement ---
+
 User = get_user_model()
 
 

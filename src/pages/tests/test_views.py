@@ -6,6 +6,12 @@ from django.contrib.auth import get_user_model
 from multi_choice_quiz.models import Quiz, QuizAttempt  # Import models
 from django.utils import timezone  # To set end_time
 
+# --- Replace existing logger setup with this ---
+from multi_choice_quiz.tests.test_logging import setup_test_logging  # CORRECT
+
+logger = setup_test_logging(__name__, "pages")
+# --- End Replacement ---
+
 # Get the User model
 User = get_user_model()
 

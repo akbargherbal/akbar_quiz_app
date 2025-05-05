@@ -13,6 +13,13 @@ from django.core.management import call_command
 from multi_choice_quiz.models import Quiz, Question, Option, Topic
 
 
+# --- Replace existing logger setup with this ---
+from .test_logging import setup_test_logging
+
+logger = setup_test_logging(__name__, "multi_choice_quiz")
+# --- End Replacement ---
+
+
 class ImportQuizBankCommandTest(TestCase):
     """Test the import_quiz_bank management command."""
 

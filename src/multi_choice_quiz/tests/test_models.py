@@ -12,6 +12,13 @@ import json  # Needed for some tests
 from django.db import IntegrityError  # <<< ADDED for test_unique_position
 
 
+# --- Replace existing logger setup with this ---
+from .test_logging import setup_test_logging
+
+logger = setup_test_logging(__name__, "multi_choice_quiz")
+# --- End Replacement ---
+
+
 class TopicModelTests(TestCase):
     """Tests for the Topic model."""
 
