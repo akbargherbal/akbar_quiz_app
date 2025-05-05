@@ -361,3 +361,73 @@ Reflecting on the debugging journey and the refactoring we did, here are the key
 ---
 This context should give your future self (or me!) a clear picture of where we left off and why the testing process should feel much smoother going forward. Excellent progress!
 ---
+
+SESSION 3:
+
+Okay, let's conclude Session 3 and prepare the context for the next one.
+
+**Summary of Session 3:**
+
+*   **Goal:** Systematically evaluate and refactor `pages/tests/test_responsive.py` based on previous lessons and the multi-pass evaluation plan. Update the `TESTING_GUIDE.md`.
+*   **Evaluation (`test_responsive.py`):**
+    *   Confirmed the test was passing but identified critical flaws:
+        *   Incorrect use of hardcoded `BASE_URL` instead of `live_server.url`.
+        *   Redundant manual login logic instead of using the `admin_logged_in_page` fixture.
+    *   Identified brittle locators (Tailwind classes, `:has-text`) as needing improvement.
+    *   Noted the large scope of the main test function.
+*   **Refactoring (`test_responsive.py`):**
+    1.  Replaced all `BASE_URL` usage with `live_server.url`.
+    2.  Split the test into `test_responsive_layout_standard_pages` and `test_profile_responsive_layout`.
+    3.  Refactored the profile test to use the `admin_logged_in_page` fixture.
+    4.  Fixed intermediate `NameError` and Playwright `strict mode violation` errors.
+    5.  Added `data-testid` attributes to navigation elements in `pages/base.html`.
+    6.  Updated navigation locators in `test_responsive.py` to use the robust `data-testid` selectors.
+*   **Outcome:** All tests in `pages/tests/test_responsive.py` now pass reliably with correct fixture usage, improved structure, and more robust locators.
+*   **Documentation:** Reviewed the outdated `TESTING_GUIDE.md` and rewrote it from scratch to reflect the current `pytest`-centric approach, emphasizing correct fixture usage, robust locators, and explicitly warning against previously used anti-patterns (custom runners, hardcoded URLs).
+
+---
+
+### Updated Context for Future Session (Session 4)
+
+**(Project):** Django Quiz App ("QuizMaster")
+**(Core Tech):** Django, Python, Tailwind CSS (CDN)
+**(Testing Stack):** `pytest`, `pytest-django`, `pytest-playwright`
+
+**(Initial Problem - Previous Sessions):** Significant time was spent debugging flaky End-to-End (E2E) tests. Key issues involved:
+    *   **DB Context Mismatch:** Custom runner scripts or fixtures started servers using the *development* DB, while tests operated on an isolated *test* DB.
+    *   **Flawed Assertions:** Initial visibility checks (`to_be_visible`) failed in responsive layouts due to hidden elements.
+    *   **Missing Test Data:** Some E2E tests failed because they expected data (e.g., specific Quiz IDs) that didn't exist in the empty test DB.
+    *   **Brittle Locators:** Tests relied on CSS classes or ambiguous text, making them prone to breaking.
+    *   **Duplicated Setup:** Repetitive login sequences bloated test code.
+
+**(Key Resolutions - Sessions 1 & 2):**
+1.  **Standardized on `live_server`:** Replaced custom server setups with `pytest-django`'s `live_server` fixture for E2E tests needing DB state, using `live_server.url` for navigation.
+2.  **Improved Assertions:** Changed login checks to assert the *absence* of logged-out elements (`to_be_hidden`).
+3.  **Explicit Test Data:** Added ORM calls within tests (e.g., `test_quiz_e2e.py`) to create necessary data.
+4.  **Refactored Setup:** Created a reusable `admin_logged_in_page` fixture in `src/conftest.py` to handle admin login.
+5.  **Removed Custom Runners:** Deleted `run_*.py` scripts.
+6.  **Refined Console Logging:** Adjusted `capture_console_errors` fixture to be less sensitive to benign warnings.
+
+**(Goals & Actions - Session 3):** The goal was to apply these lessons systematically, focusing on `pages/tests/test_responsive.py` and updating documentation.
+1.  **Evaluated & Refactored `test_responsive.py`:**
+    *   Identified and fixed remaining incorrect `BASE_URL` usage, replacing it with `live_server.url`.
+    *   Split the large parameterized test into `test_responsive_layout_standard_pages` and `test_profile_responsive_layout`.
+    *   Replaced manual login logic in the profile test with the `admin_logged_in_page` fixture.
+    *   Diagnosed and fixed a Playwright `strict mode violation` caused by ambiguous text locators matching elements in both hidden desktop and visible mobile navs.
+    *   Added `data-testid` attributes to navigation elements in `pages/base.html`.
+    *   Updated navigation locators in `test_responsive.py` to use `get_by_test_id` for improved robustness.
+    *   Confirmed all tests in the file now pass with the improved structure and locators.
+2.  **Updated Documentation:** Reviewed the outdated `TESTING_GUIDE.md`. Rewrote it completely to align with the current `pytest`-based workflow, emphasizing correct fixture usage (`live_server`, `client`, custom fixtures), robust locators (`data-testid`), test database isolation, and explicitly warning against anti-patterns previously encountered (custom runners, hardcoded URLs, brittle locators).
+
+**(Current State):** The primary E2E test files (`test_templates.py`, `test_quiz_e2e.py`, `test_responsive.py`) have been significantly refactored for reliability and maintainability. They now correctly use fixtures (`live_server`, `admin_logged_in_page`), create necessary test data, and employ more robust locators (at least for navigation). The core setup issues causing E2E flakiness have been addressed. A new, accurate `TESTING_GUIDE.md` reflects the current best practices.
+
+**(Next Steps - Options):**
+1.  Evaluate one of the backend integration test files (e.g., `core/tests/test_phase1_verification.py`) using the systematic plan, focusing on Django `Client` usage, context data, and template rendering assertions.
+2.  Further refine existing E2E tests by improving remaining locators (e.g., page-specific content checks currently using `:has-text`).
+3.  Review other backend test files (`test_models.py`, `test_views.py`) for structure, clarity, and coverage.
+
+---
+
+This context provides a comprehensive overview of the journey so far and the current, much improved state of the test suite setup. Ready for the next session!
+
+---
