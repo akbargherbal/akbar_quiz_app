@@ -10,9 +10,9 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 import json
 import logging
 from django.utils.safestring import mark_safe
-from datetime import datetime  # <<< Add this import
+from datetime import datetime  # Keep this import
 
-from .models import Quiz, Question, QuizAttempt  # <<< Add QuizAttempt
+from .models import Quiz, Question, QuizAttempt  # Keep these imports
 from .transform import models_to_frontend
 
 # Set up logging
@@ -21,47 +21,59 @@ logger = logging.getLogger(__name__)
 
 def home(request):
     """
-    Display the home page with the first quiz found in the database.
-    If no quizzes exist, fall back to hardcoded demo questions.
+    Display the home page with the first available active quiz that has questions.
+    If no suitable quizzes exist, fall back to hardcoded demo questions.
     """
     try:
-        # Try to get the first active quiz from the database
-        # Let's link this directly to the pages app home for now
-        # Redirect or render the pages app home view instead?
-        # For simplicity, let's keep the old logic but note it might be redundant
-        # with pages.views.home
-        quiz = Quiz.objects.filter(is_active=True).first()
+        # --- START CORRECTED QUERY ---
+        # Try to get the latest active quiz that has questions from the database
+        quiz = (
+            Quiz.objects.filter(
+                is_active=True,
+                questions__isnull=False,  # Ensure it has related questions
+            )
+            .distinct()
+            .order_by("-created_at")
+            .first()
+        )  # Order by latest and get the first one
+        # --- END CORRECTED QUERY ---
+
         quiz_id_to_pass = None
         quiz_data = []
+        quiz_title_for_log = "Demo Quiz"  # Default for logging
 
-        if quiz and quiz.questions.exists():
-            # Get all questions for this quiz, ordered by position
+        if quiz:  # No need to check quiz.questions.exists() again, query ensures it
+            # Get all active questions for this quiz, ordered by position
             questions = quiz.questions.filter(is_active=True).order_by("position")
             quiz_data = models_to_frontend(questions)
             quiz_id_to_pass = quiz.id  # Get the ID
+            quiz_title_for_log = quiz.title  # Use actual title for logging
             logger.info(
-                f"Loaded quiz '{quiz.title}' with {len(quiz_data)} questions for generic home view"
+                f"Loaded quiz '{quiz_title_for_log}' (ID: {quiz_id_to_pass}) with {len(quiz_data)} questions for generic home view."
             )
         else:
-            # Fallback to hardcoded demo questions if no quiz is found
+            # Fallback to hardcoded demo questions if no suitable quiz is found
             logger.warning(
-                "No active quizzes found in database, using demo questions for generic home view"
+                "No active quizzes with questions found in database, using demo questions for generic home view."
             )
             quiz_data = get_demo_questions()
-            # No quiz_id in demo mode
+            # No quiz_id in demo mode (quiz_id_to_pass remains None)
 
     except Exception as e:
         # Log the error and fall back to demo questions
         logger.error(
-            f"Error loading quiz from database for generic home view: {str(e)}"
+            f"Error loading quiz from database for generic home view: {str(e)}",
+            exc_info=True,  # Include traceback in log
         )
         quiz_data = get_demo_questions()
         quiz_id_to_pass = None
+        quiz_title_for_log = "Demo Quiz (Error Fallback)"
 
     # Mark the JSON as safe to prevent double-escaping of HTML entities
     context = {
         "quiz_data": mark_safe(json.dumps(quiz_data)),
-        "quiz_id": quiz_id_to_pass,  # Pass quiz_id if available
+        "quiz_id": quiz_id_to_pass,  # Pass quiz_id if available, else None
+        "quiz_title": quiz_title_for_log,  # Pass title for potential template use
     }
 
     return render(request, "multi_choice_quiz/index.html", context)
@@ -75,6 +87,14 @@ def quiz_detail(request, quiz_id):
         quiz = get_object_or_404(Quiz, id=quiz_id, is_active=True)
         questions = quiz.questions.filter(is_active=True).order_by("position")
 
+        # Check if the quiz actually has questions (good practice)
+        if not questions.exists():
+            logger.warning(
+                f"Quiz ID {quiz_id} ('{quiz.title}') exists but has no active questions."
+            )
+            # Optionally handle this differently, e.g., show a message
+            # For now, it will render with an empty quiz_data list
+
         # Transform questions to frontend format
         quiz_data = models_to_frontend(questions)
 
@@ -82,20 +102,30 @@ def quiz_detail(request, quiz_id):
         context = {
             "quiz": quiz,  # Pass the whole quiz object if needed by template
             "quiz_data": mark_safe(json.dumps(quiz_data)),
-            "quiz_id": quiz.id,  # <<< Pass the quiz ID here
+            "quiz_id": quiz.id,
+            "quiz_title": quiz.title,  # Pass title
         }
 
         return render(request, "multi_choice_quiz/index.html", context)
 
-    except Exception as e:
-        logger.error(f"Error loading quiz {quiz_id}: {str(e)}")
+    except ObjectDoesNotExist:  # More specific exception
+        logger.warning(f"Quiz with ID {quiz_id} not found or not active.")
         context = {
-            "error_message": f"The requested quiz (ID: {quiz_id}) could not be loaded."
+            "error_message": f"The requested quiz (ID: {quiz_id}) could not be found or is not active."
         }
-        return render(request, "multi_choice_quiz/error.html", context)
+        return render(
+            request, "multi_choice_quiz/error.html", context, status=404
+        )  # Return 404 status
+    except Exception as e:
+        logger.error(f"Error loading quiz {quiz_id}: {str(e)}", exc_info=True)
+        context = {
+            "error_message": f"An error occurred while trying to load quiz ID: {quiz_id}."
+        }
+        return render(
+            request, "multi_choice_quiz/error.html", context, status=500
+        )  # Return 500 status
 
 
-# <<< START NEW VIEW >>>
 @csrf_exempt  # Temporarily disable CSRF for API endpoint simplicity
 @require_POST
 def submit_quiz_attempt(request):
@@ -127,12 +157,20 @@ def submit_quiz_attempt(request):
                 f"Missing required fields: {', '.join(missing_fields)}"
             )
 
-        quiz_id = data["quiz_id"]
-        score = int(data["score"])
-        total_questions = int(data["total_questions"])
-        percentage = float(data["percentage"])
-        # Assuming end_time is sent as an ISO 8601 string from JS new Date().toISOString()
-        end_time_str = data["end_time"]
+        # --- Validate data types early ---
+        try:
+            quiz_id = int(data["quiz_id"])
+            score = int(data["score"])
+            total_questions = int(data["total_questions"])
+            percentage = float(data["percentage"])
+            end_time_str = data["end_time"]  # Keep as string for format check
+        except (ValueError, TypeError) as e:
+            logger.warning(
+                f"Invalid data type received in submit_quiz_attempt: {e}. Data: {data}"
+            )
+            return HttpResponseBadRequest(f"Invalid data type for field: {e}")
+
+        # Validate end_time format
         try:
             end_time_dt = datetime.fromisoformat(
                 end_time_str.replace("Z", "+00:00")
@@ -172,9 +210,6 @@ def submit_quiz_attempt(request):
         )
         return JsonResponse({"status": "success", "attempt_id": attempt.id})
 
-    except (ValueError, TypeError) as e:
-        logger.error(f"Data type error processing quiz attempt: {e}\nData: {data}")
-        return HttpResponseBadRequest(f"Invalid data type: {e}")
     except Exception as e:
         logger.error(f"Unexpected error in submit_quiz_attempt: {e}", exc_info=True)
         # Consider what status code to return, 500 might be appropriate
@@ -182,9 +217,6 @@ def submit_quiz_attempt(request):
             {"status": "error", "message": "An internal server error occurred."},
             status=500,
         )
-
-
-# <<< END NEW VIEW >>>
 
 
 def get_demo_questions():
