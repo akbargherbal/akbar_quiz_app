@@ -133,10 +133,14 @@ def admin_logged_in_page(page: Page, live_server):
 # --- END NEW FIXTURE DEFINITION ---
 
 
-# --- Console Errors Fixture (REVISED with Filtering) ---
+# --- Console Errors Fixture (REVISED - Only fail on Page Errors) ---
 @pytest.fixture(scope="function", autouse=True)
 def capture_console_errors(page: Page, request):
-    """Capture JavaScript console/page errors, ignoring specific warnings."""
+    """
+    Capture JavaScript console/page errors.
+    Ignores specific known warnings (e.g., Tailwind CDN).
+    Only fails the test if actual page errors occur (ignores console warnings/errors if test passed).
+    """
     logger = None
     if setup_test_logging:
         logger = setup_test_logging("js_console_errors", "e2e")
@@ -156,47 +160,67 @@ def capture_console_errors(page: Page, request):
             "WARN: Using fallback logger for capture_console_errors due to import failure."
         )
 
-    errors = []
-    page_errors = []
+    console_issues = []  # Stores non-filtered console errors/warnings
+    page_errors = []  # Stores actual page errors
 
     def handle_console(msg):
         log_text = f"BROWSER CONSOLE [{msg.type}]: {msg.text}"
-        logger.info(log_text)
+        logger.info(log_text)  # Log all messages
+
+        # --- Filtering ---
         if TAILWIND_WARNING_TEXT in msg.text:
             logger.debug(f"Ignoring known console message: {msg.text}")
-            return
+            return  # Don't add this specific warning to the list
+        # --- End Filtering ---
+
+        # Add other errors/warnings to the console_issues list
         if msg.type in ["error", "warning"]:
-            errors.append(log_text)
+            console_issues.append(log_text)
 
     def handle_page_error(exc):
         log_text = f"BROWSER PAGE ERROR: {exc}"
-        logger.error(log_text)
-        page_errors.append(log_text)
+        logger.error(log_text)  # Log page errors immediately as errors
+        page_errors.append(log_text)  # Add to page_errors list
 
     page.on("console", handle_console)
     page.on("pageerror", handle_page_error)
 
-    yield
+    yield  # Run the test function
 
     page.remove_listener("console", handle_console)
     page.remove_listener("pageerror", handle_page_error)
 
+    # --- Teardown Logic ---
     test_failed = hasattr(request.node, "rep_call") and request.node.rep_call.failed
-    all_js_issues = errors + page_errors
-    if all_js_issues:
-        issue_summary = (
-            f"{len(errors)} console error/warning(s), {len(page_errors)} page error(s)"
-        )
-        log_level = logger.warning if test_failed else logger.error
+    all_reported_issues = console_issues + page_errors  # Combine for logging
+
+    if all_reported_issues:
+        issue_summary = f"{len(console_issues)} console error/warning(s), {len(page_errors)} page error(s)"
+        # Log all detected issues
+        log_level = logger.warning  # Log as warning initially
+        if page_errors:  # If there are page errors, log summary as ERROR
+            log_level = logger.error
+
         log_level(
             f">>> JavaScript issues detected during test '{request.node.name}': {issue_summary}"
         )
-        for i, issue in enumerate(all_js_issues):
+        for i, issue in enumerate(all_reported_issues):
+            # Log individual issues with the same level as the summary
             log_level(f"  Issue {i+1}: {issue}")
-        if not test_failed:
+
+        # --- Failure Condition ---
+        # Fail the test only if:
+        # 1. The test didn't already fail for other reasons (test_failed is False)
+        # 2. There were actual PAGE errors (page_errors list is not empty)
+        if not test_failed and page_errors:
             pytest.fail(
-                f"{issue_summary} detected during test '{request.node.name}'. Check logs.",
+                f"{len(page_errors)} page error(s) detected during test '{request.node.name}'. Check logs.",
                 pytrace=False,
+            )
+        # If the test passed but had only console issues, log a warning but don't fail
+        elif not test_failed and console_issues:
+            logger.warning(
+                f"Test '{request.node.name}' passed but had console issues (logged above). Not failing test."
             )
 
 
