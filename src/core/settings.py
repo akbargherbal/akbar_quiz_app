@@ -6,6 +6,12 @@ import socket  # <-- Added import
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# --- NEW: Define Project Root and Output Directories for logs and screenshots ---
+PROJECT_ROOT_DIR = BASE_DIR.parent  # Directory containing 'src/'
+LOGS_DIR = PROJECT_ROOT_DIR / "logs"
+SCREENSHOTS_DIR = PROJECT_ROOT_DIR / "screenshots"
+# --- END NEW ---
+
 # Initialize django-environ
 env = environ.Env(
     # Set defaults for key configuration values
