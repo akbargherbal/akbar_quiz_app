@@ -1,244 +1,368 @@
 # src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
 
-import os
 import sys
+import tempfile
+import shutil
 import pandas as pd
 from pathlib import Path
-from unittest import mock
+from io import StringIO
+from unittest.mock import patch, MagicMock
+import logging  # Import logging
+
 from django.test import TestCase
-from django.conf import settings
+from django.core.management import call_command
 
-try:
-    from dir_import_chapter_quizzes import main as dir_importer_main
-    from dir_import_chapter_quizzes import DEFAULT_IMPORT_DIRECTORY_RELATIVE_PATH
-except ImportError as e:
-    raise ImportError(
-        "Could not import 'main' from 'dir_import_chapter_quizzes.py'. "
-        f"Original error: {e}"
-    )
+import dir_import_chapter_quizzes  # Import the module
 
-from multi_choice_quiz.models import Quiz
-from .test_logging import setup_test_logging
-logger = setup_test_logging(__name__, "multi_choice_quiz_dir_import")
+from multi_choice_quiz.models import Quiz, Question, Topic
+from multi_choice_quiz.tests.test_logging import setup_test_logging
 
-def create_dummy_pkl_file(dir_path, filename, data_dict):
-    file_path = dir_path / filename
-    df = pd.DataFrame(data_dict)
-    df.to_pickle(file_path)
-    return file_path
+logger = setup_test_logging(__name__, "multi_choice_quiz_dir_import_script")
+
 
 class TestDirImportChapterQuizzesScript(TestCase):
-    def setUp(self):
-        self.mock_project_root = Path(settings.BASE_DIR)
-        
-        temp_dir_name_for_files = DEFAULT_IMPORT_DIRECTORY_RELATIVE_PATH.lstrip('../').lstrip('./')
-        if DEFAULT_IMPORT_DIRECTORY_RELATIVE_PATH.startswith('../'):
-            self.temp_quiz_collections_path_for_creating_files = self.mock_project_root / temp_dir_name_for_files
-        else:
-            self.temp_quiz_collections_path_for_creating_files = self.mock_project_root / 'src' / temp_dir_name_for_files
-        self.temp_quiz_collections_path_for_creating_files.mkdir(parents=True, exist_ok=True)
-        
-        logger.info(f"setUp: Temp dir for creating files: {self.temp_quiz_collections_path_for_creating_files}")
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        call_command("migrate", verbosity=0)
+        logger.info("Database schema ensured via migrate.")
 
-        self.sample_df_data1 = {
-            "chapter_no": [1], "question_text": ["Q1 Ch1?"], "options": [["A", "B"]], 
-            "answerIndex": [1], "CHAPTER_TITLE": ["Chapter 1 Title"], "topic": ["Topic A"], "tag": ["TagA"]
-        }
-        self.sample_df_data2 = {
-            "chapter_no": [2], "question_text": ["Q1 Ch2?"], "options": [["C", "D"]], 
-            "answerIndex": [2], "CHAPTER_TITLE": ["Chapter 2 Title"], "topic": ["Topic B"], "tag": ["TagB"]
-        }
+    def setUp(self):
+        self.test_temp_root = Path(tempfile.mkdtemp())
+        logger.info(f"Created temporary root for test: {self.test_temp_root}")
+        self.mock_quiz_collections_target_in_temp = (
+            self.test_temp_root / "QUIZ_COLLECTIONS_MOCKED"
+        )
+        self.mock_quiz_collections_target_in_temp.mkdir()
+        logger.info(
+            f"Created mock quiz collections dir for script to target: {self.mock_quiz_collections_target_in_temp}"
+        )
+
+        src_path = Path(dir_import_chapter_quizzes.__file__).resolve().parent
+        project_root_path_real = src_path.parent
+        self.real_path_script_targets = (
+            project_root_path_real
+            / Path(dir_import_chapter_quizzes.DEFAULT_IMPORT_DIRECTORY_RELATIVE_PATH)
+        ).resolve()
+        logger.info(
+            f"Script will try to resolve its QUIZ_COLLECTIONS to: {self.real_path_script_targets}"
+        )
+
+        # Store original Path methods carefully before any patching occurs per test method
+        self.original_path_is_dir = Path.is_dir
+        self.original_path_glob = Path.glob
+
+        Quiz.objects.all().delete()
+        Question.objects.all().delete()
+        Topic.objects.all().delete()
+        logger.info("Cleared Quiz, Question, Topic tables for fresh test method.")
 
     def tearDown(self):
-        import shutil
-        if hasattr(self, 'temp_quiz_collections_path_for_creating_files') and self.temp_quiz_collections_path_for_creating_files.exists():
-            shutil.rmtree(self.temp_quiz_collections_path_for_creating_files)
+        if self.test_temp_root.exists():
+            shutil.rmtree(self.test_temp_root)
+            logger.info(f"Removed temporary root: {self.test_temp_root}")
+        else:
+            logger.warning(
+                f"Temporary root {self.test_temp_root} did not exist at teardown."
+            )
 
-    # Test for directory not found - CORRECTED SIDE_EFFECTS
-    @mock.patch('dir_import_chapter_quizzes.sys.exit')
-    @mock.patch('dir_import_chapter_quizzes.import_questions_by_chapter')
-    @mock.patch('dir_import_chapter_quizzes.load_quiz_bank')
-    @mock.patch('pathlib.Path.is_dir') 
-    @mock.patch('pathlib.Path.resolve') 
-    @mock.patch('dir_import_chapter_quizzes.Path') 
-    def test_import_dir_directory_not_found(
-        self, mock_script_path_constructor, mock_path_resolve, mock_path_is_dir,
-        mock_load_quiz_bank, mock_import_questions, mock_sys_exit
+    def _create_dummy_pkl_file(
+        self,
+        filename_stem,
+        num_questions=1,
+        chapter_no=1,
+        topic="Dummy Topic",
+        chapter_title="Dummy Chapter Title",
     ):
-        logger.info("Testing --import-dir when directory not found (corrected side_effects)...")
-        mock_sys_argv = ["dir_import_chapter_quizzes.py", "--import-dir"]
+        data = {
+            "chapter_no": [chapter_no] * num_questions,
+            "question_text": [
+                f"Q{i+1} from {filename_stem}.pkl" for i in range(num_questions)
+            ],
+            "options": [[f"Opt A", f"Opt B", f"Opt C"]] * num_questions,
+            "answerIndex": [(i % 3) + 1 for i in range(num_questions)],
+            "topic": [topic] * num_questions,
+            "CHAPTER_TITLE": [f"{chapter_title} {chapter_no}"] * num_questions,
+        }
+        df = pd.DataFrame(data)
+        file_path = self.mock_quiz_collections_target_in_temp / f"{filename_stem}.pkl"
+        df.to_pickle(file_path)
+        logger.info(
+            f"Created dummy pkl file: {file_path} with {num_questions} questions."
+        )
+        return file_path
 
-        mock_path_dunder_file_obj = mock.MagicMock(spec=Path, name="MockPathFor__file__")
-        # Script calculates: script_dir = Path(__file__).resolve().parent
-        # So, Path(__file__).resolve() should return something whose .parent is the script_dir.
-        mock_path_dunder_file_obj.resolve.return_value = mock_path_dunder_file_obj 
-        mock_path_dunder_file_obj.parent = Path(settings.BASE_DIR) / 'src' # script_dir
+    def run_script_main(self, cli_args):
+        """Helper to run the script's main() function, capturing its log output."""
+        # Patch sys.argv for the script
+        with patch.object(sys, "argv", ["dir_import_chapter_quizzes.py"] + cli_args):
+            # Use self.assertLogs to capture logs from the script's logger
+            # The script's logger is named "quiz_import"
+            with self.assertLogs(logger="quiz_import", level="INFO") as log_cm:
+                logger.info(f"Running script main with args: {cli_args}")
+                try:
+                    exit_code = dir_import_chapter_quizzes.main()
+                except (
+                    Exception
+                ) as e:  # Catch exceptions from main to ensure logs are processed
+                    logger.error(f"Exception during script main: {e}", exc_info=True)
+                    exit_code = 1  # Assume error exit code
 
-        def script_path_constructor_side_effect(arg_to_path_constructor):
-            # This __file__ is the one from dir_import_chapter_quizzes.py context
-            # For simplicity, we assume the test's __file__ location is close enough
-            # or the script doesn't use __file__ for anything other than getting its dir.
-            # A more robust way if the script's __file__ is crucial and different:
-            # if arg_to_path_constructor == Path('dir_import_chapter_quizzes.py').resolve():
-            if isinstance(arg_to_path_constructor, str) and 'dir_import_chapter_quizzes.py' in arg_to_path_constructor:
-                 # This is a guess; depends on how the script refers to its own path if not __file__
-                return mock_path_dunder_file_obj
-            if arg_to_path_constructor == __file__: # Path(__file__) in the script
-                return mock_path_dunder_file_obj
-            return Path(arg_to_path_constructor) 
-        mock_script_path_constructor.side_effect = script_path_constructor_side_effect
-        
-        # Path the script will try to check: (project_root / DEFAULT_IMPORT_DIRECTORY_RELATIVE_PATH)
-        # project_root in script will be (Path(settings.BASE_DIR) / 'src').parent == Path(settings.BASE_DIR)
-        path_obj_before_resolve_in_script = (Path(settings.BASE_DIR) / DEFAULT_IMPORT_DIRECTORY_RELATIVE_PATH)
-        
-        mock_resolved_target_dir_obj = mock.MagicMock(spec=Path, name="MockResolvedCollectionsDir")
-        mock_resolved_target_dir_obj.__str__.return_value = "mocked/path/NON_EXISTENT_COLLECTIONS"
+                output_text = "\n".join(log_cm.output)
 
-        # Store original methods to call them if needed
-        _original_path_resolve = Path.resolve
-        _original_path_is_dir = Path.is_dir
+            logger.info(f"Script exit code: {exit_code}")
+            # logger.debug(f"Script output captured by assertLogs:\n{output_text}") # For debugging test
+            return exit_code, output_text
 
-        # ***** CORRECTED selective_resolve *****
-        def selective_resolve(instance_path_obj, strict=False): # Added 'instance_path_obj' for self
-            if instance_path_obj == path_obj_before_resolve_in_script:
-                return mock_resolved_target_dir_obj
-            return _original_path_resolve(instance_path_obj, strict=strict)
-        mock_path_resolve.side_effect = selective_resolve
-
-        # ***** CORRECTED selective_is_dir_global *****
-        def selective_is_dir_global(instance_path_obj): # Added 'instance_path_obj' for self
-            if instance_path_obj == mock_resolved_target_dir_obj:
-                return False # Directory does not exist
-            return _original_path_is_dir(instance_path_obj)
-        mock_path_is_dir.side_effect = selective_is_dir_global
-        
-        with mock.patch.object(sys, 'argv', mock_sys_argv):
-            return_code = dir_importer_main()
-
-        self.assertEqual(return_code, 1, "Main function should return 1 on directory not found.")
-        mock_load_quiz_bank.assert_not_called()
-        mock_import_questions.assert_not_called()
-        # is_dir should be called on the object returned by resolve
-        mock_path_is_dir.assert_any_call(mock_resolved_target_dir_obj)
-        # resolve should be called on the path object before it's resolved
-        mock_path_resolve.assert_any_call(path_obj_before_resolve_in_script, strict=False) # Check strict if Python version requires
-
-
-    # Test for successful processing - CORRECTED SIDE_EFFECTS
-    @mock.patch('dir_import_chapter_quizzes.sys.exit')
-    @mock.patch('dir_import_chapter_quizzes.import_questions_by_chapter')
-    @mock.patch('dir_import_chapter_quizzes.load_quiz_bank')
-    @mock.patch('pathlib.Path.glob') 
-    @mock.patch('pathlib.Path.is_dir')
-    @mock.patch('pathlib.Path.resolve')
-    @mock.patch('dir_import_chapter_quizzes.Path')
-    def test_import_dir_flag_processes_pkl_files(
-        self, mock_script_path_constructor, mock_path_resolve, mock_path_is_dir, mock_path_glob,
-        mock_load_quiz_bank, mock_import_questions, mock_sys_exit
+    def path_side_effect_for_target_dir(
+        self, original_path_method, path_instance, *method_args
     ):
-        logger.info("Testing --import-dir processes .pkl files (corrected side_effects)...")
-        mock_sys_argv = ["dir_import_chapter_quizzes.py", "--import-dir"]
+        """
+        A side_effect function for Path methods (is_dir, glob).
+        If the Path instance being operated on is the one the script calculated
+        for QUIZ_COLLECTIONS, it redirects the call to our
+        self.mock_quiz_collections_target_in_temp. Otherwise, it calls the original method.
+        `path_instance` is the Path object the method was called on.
+        `method_args` are any other args for the method (e.g., 'pattern' for glob).
+        """
+        # This debug logging can be very verbose, enable if needed
+        # logger.debug(f"SIDE_EFFECT: original_method={original_path_method.__name__}, path_instance='{path_instance}', method_args={method_args}")
 
-        pkl_file1 = create_dummy_pkl_file(self.temp_quiz_collections_path_for_creating_files, "quiz_data_01.pkl", self.sample_df_data1)
-        pkl_file2 = create_dummy_pkl_file(self.temp_quiz_collections_path_for_creating_files, "quiz_data_02.pkl", self.sample_df_data2)
+        if path_instance.resolve() == self.real_path_script_targets:
+            logger.info(
+                f"Redirecting Path.{original_path_method.__name__} for '{path_instance}' to operate on '{self.mock_quiz_collections_target_in_temp}'"
+            )
+            return getattr(
+                self.mock_quiz_collections_target_in_temp, original_path_method.__name__
+            )(*method_args)
+        else:
+            # logger.debug(f"Calling original Path.{original_path_method.__name__} for '{path_instance}'")
+            # Call the original unbound method, passing the instance and other args
+            return original_path_method(path_instance, *method_args)
 
-        mock_path_dunder_file_obj = mock.MagicMock(spec=Path, name="MockPathFor__file__Success")
-        mock_path_dunder_file_obj.resolve.return_value = mock_path_dunder_file_obj
-        mock_path_dunder_file_obj.parent = Path(settings.BASE_DIR) / 'src'
-        def script_path_constructor_side_effect_success(arg):
-            if arg == __file__: return mock_path_dunder_file_obj
-            return Path(arg)
-        mock_script_path_constructor.side_effect = script_path_constructor_side_effect_success
-        
-        path_obj_before_resolve_in_script = (Path(settings.BASE_DIR) / DEFAULT_IMPORT_DIRECTORY_RELATIVE_PATH)
-        mock_resolved_target_dir_obj = mock.MagicMock(spec=Path, name="MockResolvedCollectionsDirSuccess")
-        mock_resolved_target_dir_obj.__str__.return_value = str(self.temp_quiz_collections_path_for_creating_files)
+    @patch("pathlib.Path.is_dir", autospec=True)
+    @patch("pathlib.Path.glob", autospec=True)
+    def test_import_from_directory_success_one_file(self, mock_glob, mock_is_dir):
+        logger.info("--- Test: test_import_from_directory_success_one_file ---")
+        self._create_dummy_pkl_file("test_quiz_01", num_questions=2, chapter_no=1)
 
-        _original_path_resolve = Path.resolve
-        def selective_resolve_success(instance_path_obj, strict=False):
-            if instance_path_obj == path_obj_before_resolve_in_script: return mock_resolved_target_dir_obj
-            return _original_path_resolve(instance_path_obj, strict=strict)
-        mock_path_resolve.side_effect = selective_resolve_success
+        mock_is_dir.side_effect = lambda p_inst: self.path_side_effect_for_target_dir(
+            self.original_path_is_dir, p_inst
+        )
+        mock_glob.side_effect = (
+            lambda p_inst, pattern: self.path_side_effect_for_target_dir(
+                self.original_path_glob, p_inst, pattern
+            )
+        )
 
-        _original_path_is_dir = Path.is_dir
-        def selective_is_dir_success(instance_path_obj):
-            if instance_path_obj == mock_resolved_target_dir_obj: return True
-            return _original_path_is_dir(instance_path_obj)
-        mock_path_is_dir.side_effect = selective_is_dir_success
+        exit_code, output = self.run_script_main(["--import-dir"])
 
-        # mock_path_glob is now a global patch on Path.glob
-        # It will be called with mock_resolved_target_dir_obj as its 'self'
-        mock_path_glob.return_value = [pkl_file1, pkl_file2]
+        self.assertEqual(
+            exit_code, 0, f"Script should exit successfully. Output:\n{output}"
+        )
+        self.assertIn("Directory import mode. Processing .pkl files from", output)
+        # Check that the script logged the *actual path it believes it's using for QUIZ_COLLECTIONS*
+        self.assertIn(
+            str(self.real_path_script_targets.resolve()),
+            output,
+            "Log should show the script's calculated QUIZ_COLLECTIONS path",
+        )
+        self.assertIn(
+            "Successfully created '01 Dummy Chapter Title 1: Dummy Topic - Quiz 1'",
+            output,
+        )
 
-        mock_df1 = pd.DataFrame(self.sample_df_data1)
-        mock_df2 = pd.DataFrame(self.sample_df_data2)
-        mock_load_quiz_bank.side_effect = [mock_df1, mock_df2]
-        mock_import_questions.side_effect = [(1, 10), (1, 15)]
+        self.assertEqual(Quiz.objects.count(), 1)
+        self.assertEqual(Question.objects.count(), 2)
+        quiz = Quiz.objects.first()
+        self.assertEqual(quiz.title, "01 Dummy Chapter Title 1: Dummy Topic - Quiz 1")
+        self.assertEqual(quiz.question_count(), 2)
 
-        with mock.patch.object(sys, 'argv', mock_sys_argv):
-            return_code = dir_importer_main()
+    @patch("pathlib.Path.is_dir", autospec=True)
+    @patch("pathlib.Path.glob", autospec=True)
+    def test_import_from_directory_success_multiple_files(self, mock_glob, mock_is_dir):
+        logger.info("--- Test: test_import_from_directory_success_multiple_files ---")
+        self._create_dummy_pkl_file(
+            "test_quiz_A", num_questions=3, chapter_no=10, topic="Topic A"
+        )
+        self._create_dummy_pkl_file(
+            "test_quiz_B", num_questions=1, chapter_no=11, topic="Topic B"
+        )
 
-        self.assertEqual(return_code, 0)
-        mock_sys_exit.assert_not_called()
-        self.assertEqual(mock_load_quiz_bank.call_count, 2)
-        self.assertEqual(mock_import_questions.call_count, 2)
-        mock_path_glob.assert_any_call(mock_resolved_target_dir_obj, "*.pkl")
+        mock_is_dir.side_effect = lambda p_inst: self.path_side_effect_for_target_dir(
+            self.original_path_is_dir, p_inst
+        )
+        mock_glob.side_effect = (
+            lambda p_inst, pattern: self.path_side_effect_for_target_dir(
+                self.original_path_glob, p_inst, pattern
+            )
+        )
 
+        exit_code, output = self.run_script_main(["--import-dir"])
+        self.assertEqual(
+            exit_code, 0, f"Script should exit successfully. Output:\n{output}"
+        )
 
-    # Test for one file failing - CORRECTED SIDE_EFFECTS
-    @mock.patch('dir_import_chapter_quizzes.sys.exit')
-    @mock.patch('dir_import_chapter_quizzes.import_questions_by_chapter')
-    @mock.patch('dir_import_chapter_quizzes.load_quiz_bank')
-    @mock.patch('pathlib.Path.glob')
-    @mock.patch('pathlib.Path.is_dir')
-    @mock.patch('pathlib.Path.resolve')
-    @mock.patch('dir_import_chapter_quizzes.Path')
-    def test_import_dir_one_file_fails_to_load(
-        self, mock_script_path_constructor, mock_path_resolve, mock_path_is_dir, mock_path_glob,
-        mock_load_quiz_bank, mock_import_questions, mock_sys_exit
-    ):
-        logger.info("Testing --import-dir with one file load failure (corrected side_effects)...")
-        mock_sys_argv = ["dir_import_chapter_quizzes.py", "--import-dir"]
+        self.assertEqual(Quiz.objects.count(), 2)
+        self.assertEqual(Question.objects.count(), 3 + 1)
+        self.assertTrue(
+            Quiz.objects.filter(
+                title__contains="10 Dummy Chapter Title 10: Topic A - Quiz 1"
+            ).exists()
+        )
+        self.assertTrue(
+            Quiz.objects.filter(
+                title__contains="11 Dummy Chapter Title 11: Topic B - Quiz 1"
+            ).exists()
+        )
+        self.assertEqual(Topic.objects.count(), 2)
 
-        pkl_file_bad = create_dummy_pkl_file(self.temp_quiz_collections_path_for_creating_files, "bad_quiz.pkl", {"text": ["bad"]})
-        pkl_file_good = create_dummy_pkl_file(self.temp_quiz_collections_path_for_creating_files, "good_quiz.pkl", self.sample_df_data2)
-        
-        mock_path_dunder_file_obj = mock.MagicMock(spec=Path, name="MockPathFor__file__OneFail")
-        mock_path_dunder_file_obj.resolve.return_value = mock_path_dunder_file_obj
-        mock_path_dunder_file_obj.parent = Path(settings.BASE_DIR) / 'src'
-        def script_path_constructor_side_effect_one_fail(arg):
-            if arg == __file__: return mock_path_dunder_file_obj
-            return Path(arg)
-        mock_script_path_constructor.side_effect = script_path_constructor_side_effect_one_fail
+    @patch("pathlib.Path.is_dir", autospec=True)
+    @patch("pathlib.Path.glob", autospec=True)
+    def test_import_from_directory_not_found_by_script(self, mock_glob, mock_is_dir):
+        logger.info("--- Test: test_import_from_directory_not_found_by_script ---")
 
-        path_obj_before_resolve_in_script = (Path(settings.BASE_DIR) / DEFAULT_IMPORT_DIRECTORY_RELATIVE_PATH)
-        mock_resolved_target_dir_obj = mock.MagicMock(spec=Path, name="MockResolvedCollectionsDirOneFail")
-        mock_resolved_target_dir_obj.__str__.return_value = str(self.temp_quiz_collections_path_for_creating_files)
-        
-        _original_path_resolve = Path.resolve
-        def selective_resolve_one_fail(instance_path_obj, strict=False):
-            if instance_path_obj == path_obj_before_resolve_in_script: return mock_resolved_target_dir_obj
-            return _original_path_resolve(instance_path_obj, strict=strict)
-        mock_path_resolve.side_effect = selective_resolve_one_fail
-        
-        _original_path_is_dir = Path.is_dir
-        def selective_is_dir_one_fail(instance_path_obj):
-            if instance_path_obj == mock_resolved_target_dir_obj: return True
-            return _original_path_is_dir(instance_path_obj)
-        mock_path_is_dir.side_effect = selective_is_dir_one_fail
+        def is_dir_returns_false_for_target(path_instance_being_called_on):
+            # path_instance_being_called_on is the Path object .is_dir() was called on.
+            if path_instance_being_called_on.resolve() == self.real_path_script_targets:
+                logger.info(
+                    f"Mocking Path.is_dir for '{path_instance_being_called_on}' to return False."
+                )
+                return False
+            # For any other Path.is_dir call, use original behavior
+            return self.original_path_is_dir(path_instance_being_called_on)
 
-        mock_path_glob.return_value = [pkl_file_bad, pkl_file_good]
-        
-        mock_df_good = pd.DataFrame(self.sample_df_data2)
-        mock_load_quiz_bank.side_effect = [None, mock_df_good]
-        mock_import_questions.return_value = (1, 10)
+        mock_is_dir.side_effect = is_dir_returns_false_for_target
+        mock_glob.return_value = (
+            []
+        )  # Should not be called if is_dir is False for target
 
-        with mock.patch.object(sys, 'argv', mock_sys_argv):
-            return_code = dir_importer_main()
-        
-        self.assertEqual(return_code, 0)
-        mock_sys_exit.assert_not_called()
-        self.assertEqual(mock_load_quiz_bank.call_count, 2)
-        self.assertEqual(mock_import_questions.call_count, 1)
-        mock_path_glob.assert_any_call(mock_resolved_target_dir_obj, "*.pkl")
+        exit_code, output = self.run_script_main(["--import-dir"])
+
+        self.assertEqual(
+            exit_code,
+            1,
+            f"Script should exit with 1 for dir not found. Output:\n{output}",
+        )
+        self.assertIn(
+            f"Default import directory '{self.real_path_script_targets}' not found",
+            output,
+        )
+        self.assertEqual(Quiz.objects.count(), 0)
+
+    @patch("pathlib.Path.is_dir", autospec=True)
+    @patch("pathlib.Path.glob", autospec=True)
+    def test_import_from_directory_empty(self, mock_glob, mock_is_dir):
+        logger.info("--- Test: test_import_from_directory_empty ---")
+
+        mock_is_dir.side_effect = lambda p_inst: self.path_side_effect_for_target_dir(
+            self.original_path_is_dir, p_inst
+        )
+        mock_glob.side_effect = (
+            lambda p_inst, pattern: self.path_side_effect_for_target_dir(
+                self.original_path_glob, p_inst, pattern
+            )
+        )
+
+        exit_code, output = self.run_script_main(["--import-dir"])
+        self.assertEqual(
+            exit_code,
+            0,
+            f"Script should exit successfully even with empty dir. Output:\n{output}",
+        )
+        self.assertIn("Scanned 0 .pkl files", output)
+        self.assertEqual(Quiz.objects.count(), 0)
+
+    def test_test_mode_creates_sample_data(self):
+        logger.info("--- Test: test_test_mode_creates_sample_data ---")
+        exit_code, output = self.run_script_main(["--test"])
+        self.assertEqual(
+            exit_code,
+            0,
+            f"Script --test mode should exit successfully. Output:\n{output}",
+        )
+        self.assertIn("Running in test mode with generated data.", output)
+        self.assertEqual(Quiz.objects.count(), 3)
+        self.assertEqual(Question.objects.count(), 6)
+        self.assertTrue(
+            Quiz.objects.filter(
+                title__contains="01 Introduction to Testing: Test Topic A - Quiz 1"
+            ).exists()
+        )
+
+    @patch(
+        "os.path.exists", autospec=True
+    )  # Patch os.path.exists used by load_quiz_bank
+    def test_test_file_mode_success(self, mock_os_path_exists):
+        logger.info("--- Test: test_test_file_mode_success ---")
+        dummy_file_path_obj = self.test_temp_root / "specific_test_file.pkl"
+        dummy_file_path_str = str(dummy_file_path_obj)
+        data = {
+            "chapter_no": [1] * 2,
+            "question_text": ["TF Q1", "TF Q2"],
+            "options": [["A", "B", "C"]] * 2,
+            "answerIndex": [1] * 2,
+            "topic": ["FileTopic"] * 2,
+            "CHAPTER_TITLE": ["FileChapter 1"] * 2,
+        }
+        pd.DataFrame(data).to_pickle(dummy_file_path_obj)
+        logger.info(f"Created dummy file for --test-file: {dummy_file_path_str}")
+
+        # load_quiz_bank calls os.path.exists(file_path)
+        mock_os_path_exists.return_value = True
+
+        exit_code, output = self.run_script_main(["--test-file", dummy_file_path_str])
+
+        self.assertEqual(
+            exit_code,
+            0,
+            f"Script --test-file mode should exit successfully. Output:\n{output}",
+        )
+        # Ensure os.path.exists was called with the correct path
+        mock_os_path_exists.assert_called_with(dummy_file_path_str)
+        self.assertIn(
+            f"Running in test mode with provided file: {dummy_file_path_str}", output
+        )
+        self.assertEqual(Quiz.objects.count(), 1)
+        self.assertEqual(Question.objects.count(), 2)
+        self.assertTrue(
+            Quiz.objects.filter(
+                title__contains="01 FileChapter 1: FileTopic - Quiz 1"
+            ).exists()
+        )
+
+    @patch("os.path.exists", autospec=True)
+    def test_test_file_mode_file_not_found(self, mock_os_path_exists):
+        logger.info("--- Test: test_test_file_mode_file_not_found ---")
+        non_existent_file_str = str(self.test_temp_root / "not_real.pkl")
+        mock_os_path_exists.return_value = False
+
+        exit_code, output = self.run_script_main(["--test-file", non_existent_file_str])
+
+        self.assertEqual(
+            exit_code,
+            1,
+            f"Script --test-file mode should exit with 1 if file not found. Output:\n{output}",
+        )
+        mock_os_path_exists.assert_called_with(non_existent_file_str)
+        self.assertIn(f"Quiz bank file not found: {non_existent_file_str}", output)
+        self.assertEqual(Quiz.objects.count(), 0)
+
+    @patch("builtins.input", return_value="non_existent_file.pkl")
+    @patch("os.path.exists", return_value=False, autospec=True)
+    def test_interactive_mode_file_not_found(self, mock_os_exists, mock_input):
+        logger.info("--- Test: test_interactive_mode_file_not_found ---")
+        exit_code, output = self.run_script_main([])
+
+        self.assertEqual(
+            exit_code,
+            1,
+            f"Script interactive mode should exit with 1 if file not found. Output:\n{output}",
+        )
+        self.assertIn("Entering interactive mode.", output)
+        mock_input.assert_called_once()  # Verify input was called
+        mock_os_exists.assert_called_with(
+            "non_existent_file.pkl"
+        )  # Verify os.path.exists was called with user input
+        self.assertIn("Quiz bank file not found: non_existent_file.pkl", output)
+        self.assertEqual(Quiz.objects.count(), 0)
