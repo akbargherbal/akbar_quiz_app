@@ -37,7 +37,7 @@ CHAPTER_PREFIX_ZFILL = (
 # This script (import_chapter_quizzes.py) is expected to be in 'src/'
 # So, '../' from here goes to the project root (where manage.py is)
 # Then, 'QUIZ_COLLECTIONS' is a directory at that project root level.
-DEFAULT_IMPORT_DIRECTORY_RELATIVE_PATH = "../QUIZ_COLLECTIONS" 
+DEFAULT_IMPORT_DIRECTORY_RELATIVE_PATH = "QUIZ_COLLECTIONS" 
 
 
 try:
