@@ -1,6 +1,7 @@
 # src/multi_choice_quiz/models.py
 from django.db import models
 from django.contrib.auth import get_user_model  # <<< Add this import
+from django.db.models import JSONField  # <<< ADD THIS IMPORT
 
 
 class Topic(models.Model):
@@ -141,7 +142,6 @@ class Option(models.Model):
         unique_together = ["question", "position"]
 
 
-# <<< START NEW MODEL >>>
 class QuizAttempt(models.Model):
     """Model representing a user's attempt at a quiz."""
 
@@ -160,7 +160,13 @@ class QuizAttempt(models.Model):
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
 
-    # We could add a JSONField here later to store detailed answers if needed
+    # <<< START NEW FIELD ADDITION >>>
+    attempt_details = JSONField(
+        null=True,
+        blank=True,
+        help_text="Stores detailed mistake data (e.g., {question_id: {'user_answer_idx': X, 'correct_answer_idx': Y}})",
+    )
+    # <<< END NEW FIELD ADDITION >>>
 
     def __str__(self):
         user_str = f"User {self.user.username}" if self.user else "Anonymous User"

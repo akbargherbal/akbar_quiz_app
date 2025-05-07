@@ -10,6 +10,9 @@ from multi_choice_quiz.transform import (
 )
 import json  # Needed for some tests
 from django.db import IntegrityError  # <<< ADDED for test_unique_position
+from django.utils import timezone
+from multi_choice_quiz.models import QuizAttempt  # Ensure QuizAttempt is imported
+from django.contrib.auth import get_user_model  # <<< ADD THIS LINE
 
 
 # --- Replace existing logger setup with this ---
@@ -332,3 +335,65 @@ class TransformationTests(TestCase):
         self.assertEqual(
             question2.topic.name, "Round Trip Topic"
         )  # <<< VERIFY topic association >>>
+
+
+# Add this test class or add the test method to an existing relevant class
+class QuizAttemptModelTests(TestCase):
+    """Tests for the QuizAttempt model."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_user(
+            username="attempt_tester", password="password"
+        )
+        cls.quiz = Quiz.objects.create(title="Attempt Test Quiz")
+
+    def test_attempt_details_field_exists_and_accepts_data(self):
+        """Verify the attempt_details JSONField exists and works."""
+        logger.info("Testing QuizAttempt attempt_details field")
+
+        # Test creation with null details (default)
+        attempt1 = QuizAttempt.objects.create(
+            quiz=self.quiz,
+            user=self.user,
+            score=5,
+            total_questions=10,
+            percentage=50.0,
+            end_time=timezone.now(),
+            # attempt_details is null by default
+        )
+        self.assertTrue(
+            hasattr(attempt1, "attempt_details"),
+            "QuizAttempt should have 'attempt_details' attribute",
+        )
+        self.assertIsNone(
+            attempt1.attempt_details, "attempt_details should default to None"
+        )
+
+        # Test saving valid JSON data
+        details_data = {
+            "1": {"user_answer_idx": 1, "correct_answer_idx": 0},
+            "5": {
+                "user_answer_idx": 2,
+                "correct_answer_idx": 2,
+            },  # Example mistake data
+        }
+        attempt2 = QuizAttempt.objects.create(
+            quiz=self.quiz,
+            # user=None, # Test anonymous
+            score=8,
+            total_questions=10,
+            percentage=80.0,
+            end_time=timezone.now(),
+            attempt_details=details_data,
+        )
+        # Refresh from DB to be sure
+        attempt2.refresh_from_db()
+        self.assertIsInstance(attempt2.attempt_details, dict)
+        self.assertEqual(attempt2.attempt_details, details_data)
+
+        # Test updating details to None
+        attempt2.attempt_details = None
+        attempt2.save()
+        attempt2.refresh_from_db()
+        self.assertIsNone(attempt2.attempt_details)
