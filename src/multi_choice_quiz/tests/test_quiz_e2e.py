@@ -21,8 +21,13 @@ logger = setup_test_logging(__name__, "multi_choice_quiz")
 def test_quiz_loads_and_functions(page: Page, live_server):
     """Test that the quiz loads and basic functionality works using live_server."""
     app_name = "multi_choice_quiz"
-    app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
-    os.makedirs(app_log_dir, exist_ok=True)
+    # --- NEW: Define Screenshot Dir Consistently ---
+    E2E_SCREENSHOT_DIR = (
+        settings.SCREENSHOTS_DIR / app_name / "e2e_quiz_test"
+    )  # Specific sub-folder
+    E2E_SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
+    logger.info(f"E2E Quiz screenshots will be saved under: {E2E_SCREENSHOT_DIR}")
+    # --- END NEW ---
 
     # --- START: Create Test Data ---
     logger.info("Creating necessary test data (Quiz ID 1)...")
@@ -78,7 +83,7 @@ def test_quiz_loads_and_functions(page: Page, live_server):
         logger.info(f"Navigating to quiz app URL: {quiz_app_url}")
         page.goto(quiz_app_url, wait_until="domcontentloaded")
 
-        screenshot_path = os.path.join(app_log_dir, "initial_page_load_quiz_e2e.png")
+        screenshot_path = E2E_SCREENSHOT_DIR / "initial_page_load_quiz_e2e.png"  # NEW
         page.screenshot(path=screenshot_path)
         logger.info(f"Initial page screenshot saved to: {screenshot_path}")
 
@@ -157,7 +162,7 @@ def test_quiz_loads_and_functions(page: Page, live_server):
     except Exception as e:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         screenshot_filename = f"failure_quiz_e2e_{timestamp}.png"
-        screenshot_path = os.path.join(app_log_dir, screenshot_filename)
+        screenshot_path = E2E_SCREENSHOT_DIR / screenshot_filename  # NEW
         try:
             page.screenshot(path=screenshot_path, full_page=True)
             logger.error(f"Screenshot saved to: {screenshot_path}")

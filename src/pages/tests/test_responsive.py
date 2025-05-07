@@ -16,6 +16,7 @@ from django.contrib.auth import get_user_model
 from pathlib import Path
 import django
 
+
 # --- Django Setup ---
 if not os.environ.get("DJANGO_SETTINGS_MODULE"):
     print("Using core.settings for Django setup in test_responsive.py")
@@ -43,7 +44,8 @@ BREAKPOINTS = {
     "2xl": {"width": 1536, "height": 960},
 }
 
-SCREENSHOT_DIR = Path(__file__).parent.parent.parent / "screenshots" / "responsive"
+SCREENSHOT_DIR = settings.SCREENSHOTS_DIR / "responsive"  # NEW
+# --- END MODIFIED ---
 SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Timeouts

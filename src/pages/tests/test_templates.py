@@ -10,9 +10,6 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 # --- Constants ---
-LOG_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "logs", "pages")
-os.makedirs(LOG_DIR, exist_ok=True)
-
 DESKTOP_VIEWPORT = {"width": 1280, "height": 720}
 MOBILE_VIEWPORT = {"width": 375, "height": 667}
 

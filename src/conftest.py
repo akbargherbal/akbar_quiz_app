@@ -1,15 +1,13 @@
 # src/conftest.py (Revised - django_server removed, admin_logged_in_page added)
 
 import os
-import sys
-import time
-import subprocess
-import re  # <<< Added for URL regex matching in fixture
 import django
 import pytest
 from playwright.sync_api import Page, expect, Error as PlaywrightError
 from django.contrib.auth import get_user_model  # <<< Added for fixture
 from django.urls import reverse  # <<< Added for fixture
+from django.conf import settings
+
 
 # --- Import the standardized logging setup ---
 try:
@@ -86,13 +84,14 @@ def admin_logged_in_page(page: Page, live_server):
             print(f"[Fixture] Successfully logged in as {admin_user} via /admin/")
         except Exception as e:
             try:
-                screenshot_dir = os.path.join(
-                    os.path.dirname(__file__), "playwright_screenshots"
+                # --- MODIFIED: Use settings.SCREENSHOTS_DIR ---
+                screenshot_dir_base = settings.SCREENSHOTS_DIR / "fixture_failures"
+                screenshot_dir_base.mkdir(parents=True, exist_ok=True)
+                fail_screenshot_path = (
+                    screenshot_dir_base / f"fixture_login_fail_{admin_user}.png"
                 )
-                os.makedirs(screenshot_dir, exist_ok=True)
-                fail_screenshot_path = os.path.join(
-                    screenshot_dir, f"fixture_login_fail_{admin_user}.png"
-                )
+                # --- END MODIFIED ---
+
                 page.screenshot(path=fail_screenshot_path, full_page=True)
                 print(f"[Fixture] Screenshot saved to {fail_screenshot_path}")
             except Exception as screen_err:
@@ -108,13 +107,13 @@ def admin_logged_in_page(page: Page, live_server):
             )
         except Exception as e:
             try:
-                screenshot_dir = os.path.join(
-                    os.path.dirname(__file__), "playwright_screenshots"
+                # --- MODIFIED: Use settings.SCREENSHOTS_DIR ---
+                screenshot_dir_base = settings.SCREENSHOTS_DIR / "fixture_failures"
+                screenshot_dir_base.mkdir(parents=True, exist_ok=True)
+                fail_screenshot_path = (
+                    screenshot_dir_base / f"fixture_admin_load_fail_{admin_user}.png"
                 )
-                os.makedirs(screenshot_dir, exist_ok=True)
-                fail_screenshot_path = os.path.join(
-                    screenshot_dir, f"fixture_admin_load_fail_{admin_user}.png"
-                )
+                # --- END MODIFIED ---
                 page.screenshot(path=fail_screenshot_path, full_page=True)
                 print(f"[Fixture] Screenshot saved to {fail_screenshot_path}")
             except Exception as screen_err:

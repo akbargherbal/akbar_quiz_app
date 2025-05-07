@@ -21,8 +21,7 @@ def setup_test_logging(logger_name: str, app_name: str):
     Returns:
         Configured logger instance.
     """
-    # Define the app-specific log directory path INSIDE the function
-    app_log_dir = os.path.join(settings.BASE_DIR, "logs", app_name)
+    app_log_dir = settings.LOGS_DIR / app_name  # NEW - uses Path object from settings
 
     # Create the app-specific directory if it doesn't exist
     os.makedirs(app_log_dir, exist_ok=True)

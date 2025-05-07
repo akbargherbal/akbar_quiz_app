@@ -2,7 +2,6 @@
 import pytest
 import os
 import json
-import logging
 import uuid
 from playwright.sync_api import (  # <<< Import directly
     Page,
@@ -14,12 +13,15 @@ from django.conf import settings  # <<< Import settings
 from django.urls import reverse  # <<< Import reverse
 from pathlib import Path  # <<< Use Path
 
-# --- Setup Logging --- # <<< Logging already setup, good
-log_format = (
-    "%(asctime)s - %(levelname)s - %(name)s - [%(filename)s:%(lineno)d] - %(message)s"
-)
-logging.basicConfig(level=logging.INFO, format=log_format)
-logger = logging.getLogger(__name__)
+# --- Setup Logging ---
+from .test_logging import (
+    setup_test_logging,
+)  # Use relative import if preferred within the same test dir
+
+logger = setup_test_logging(
+    __name__, "multi_choice_quiz"
+)  # Use app name 'multi_choice_quiz'
+
 
 # --- Constants ---
 BREAKPOINTS = {
@@ -35,8 +37,12 @@ BREAKPOINTS = {
 
 # --- Screenshot Dir Setup --- # <<< NEW Consistent Setup
 APP_NAME = "multi_choice_quiz"  # <<< Define App Name
-SCREENSHOT_DIR = settings.BASE_DIR / "screenshots" / APP_NAME
+# SCREENSHOT_DIR = settings.BASE_DIR / "screenshots" / APP_NAME # OLD
+SCREENSHOT_DIR = settings.SCREENSHOTS_DIR / APP_NAME  # NEW
+# --- END MODIFIED ---
 SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
+
+
 logger.info(f"Screenshots will be saved under: {SCREENSHOT_DIR}")
 # --- End Screenshot Dir Setup ---
 

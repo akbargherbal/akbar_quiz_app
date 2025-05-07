@@ -1,13 +1,6 @@
 # src/multi_choice_quiz/tests/test_database_quiz.py
 
 import pytest
-import os
-import sys
-import time
-import socket
-import json
-import signal
-import subprocess
 from playwright.sync_api import Page, expect, Error as PlaywrightError
 from django.core.management import call_command
 from django.conf import settings
@@ -15,6 +8,8 @@ from datetime import datetime
 from django.urls import reverse  # <<< ADD reverse import
 import re  # <<< ADD re import
 from pathlib import Path  # <<< Use Path
+from django.conf import settings
+
 
 # Import our standardized logging setup
 from multi_choice_quiz.tests.test_logging import setup_test_logging
@@ -36,7 +31,8 @@ def test_database_quiz_flow(page: Page, live_server):  # <<< CHANGE fixture name
     app_name = "multi_choice_quiz"
 
     # --- Define Screenshot Dir Consistently --- # <<< NEW
-    SCREENSHOT_DIR = settings.BASE_DIR / "screenshots" / app_name
+    SCREENSHOT_DIR = settings.SCREENSHOTS_DIR / app_name  # NEW
+    # --- END MODIFIED ---
     SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
     logger.info(f"Screenshots will be saved under: {SCREENSHOT_DIR}")
     # --- End New Screenshot Dir ---
