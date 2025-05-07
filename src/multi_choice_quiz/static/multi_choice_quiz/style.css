@@ -96,15 +96,18 @@
 
 
 .option-button pre {
-  word-break: keep-all !important;
+  word-break: break-all !important;
   font-size: 0.85em !important;
 }
 
 .option-button code,
 .option-button pre code {
-  word-break: break-all !important;
+  /* Old: word-break: break-all !important; */
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
   font-size: 0.85em !important;
 }
+
 
 
 #status-bar {

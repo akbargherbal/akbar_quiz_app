@@ -1,7 +1,5 @@
 // src/multi_choice_quiz/static/multi_choice_quiz/app.js
 
-// ... (Keep existing code: constants, quizApp definition, state, getters, emitQuizEvent, init, selectOption) ...
-
 window.quizApp = function () {
   let initialized = false;
 
