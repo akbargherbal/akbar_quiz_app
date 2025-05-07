@@ -1,0 +1,177 @@
+{
+  "test_files": [
+    {
+      "file_name": "test_import_chapter_script.py",
+      "path": "src/multi_choice_quiz/tests/test_import_chapter_script.py",
+      "purpose": "Tests the `import_questions_by_chapter` function from the `import_chapter_quizzes.py` script, covering various scenarios like question counts, coverage, and title formatting.",
+      "related_files": ["src/import_chapter_quizzes.py", "src/multi_choice_quiz/models.py"],
+      "test_count": 8
+    },
+    {
+      "file_name": "test_utils.py",
+      "path": "src/multi_choice_quiz/tests/test_utils.py",
+      "purpose": "Tests utility functions in `multi_choice_quiz/utils.py`, specifically `import_from_dataframe` and `curate_data`, for importing and processing quiz data from DataFrames.",
+      "related_files": ["src/multi_choice_quiz/utils.py", "src/multi_choice_quiz/models.py"],
+      "test_count": 15
+    },
+    {
+      "file_name": "test_templates.py",
+      "path": "src/pages/tests/test_templates.py",
+      "purpose": "E2E tests for basic loading, title verification, and navigation link behavior (anonymous and authenticated) of various page templates in the 'pages' app using Playwright.",
+      "related_files": [
+        "src/pages/templates/pages/base.html",
+        "src/pages/templates/pages/home.html",
+        "src/pages/templates/pages/quizzes.html",
+        "src/pages/templates/pages/about.html",
+        "src/templates/registration/login.html",
+        "src/templates/registration/logged_out.html",
+        "src/pages/templates/pages/signup.html",
+        "src/pages/templates/pages/profile.html",
+        "src/pages/views.py",
+        "src/core/urls.py",
+        "src/conftest.py"
+      ],
+      "test_count": 9
+    },
+    {
+      "file_name": "test_quiz_e2e.py",
+      "path": "src/multi_choice_quiz/tests/test_quiz_e2e.py",
+      "purpose": "E2E test for the quiz taking functionality within the 'multi_choice_quiz' app. Verifies quiz loading from DB, question progression, and basic interaction using Playwright.",
+      "related_files": [
+        "src/multi_choice_quiz/views.py",
+        "src/multi_choice_quiz/templates/multi_choice_quiz/index.html",
+        "src/multi_choice_quiz/static/multi_choice_quiz/app.js",
+        "src/multi_choice_quiz/models.py",
+        "src/conftest.py"
+      ],
+      "test_count": 1
+    },
+    {
+      "file_name": "test_responsive.py",
+      "path": "src/pages/tests/test_responsive.py",
+      "purpose": "E2E tests for the responsive layout of standard 'pages' app pages (home, quizzes, about, login, signup) and the user profile page across various breakpoints using Playwright. Checks element visibility, width, navigation, and overflow.",
+      "related_files": [
+        "src/pages/templates/pages/base.html",
+        "src/pages/templates/pages/home.html",
+        "src/pages/templates/pages/quizzes.html",
+        "src/pages/templates/pages/about.html",
+        "src/templates/registration/login.html",
+        "src/pages/templates/pages/signup.html",
+        "src/pages/templates/pages/profile.html",
+        "src/pages/views.py",
+        "src/conftest.py"
+      ],
+      "test_count": 2
+    },
+    {
+      "file_name": "test_database_quiz.py",
+      "path": "src/multi_choice_quiz/tests/test_database_quiz.py",
+      "purpose": "E2E test for the quiz functionality when data is sourced from the database. Verifies data transformation for frontend, quiz flow, and results screen using Playwright.",
+      "related_files": [
+        "src/multi_choice_quiz/views.py",
+        "src/multi_choice_quiz/templates/multi_choice_quiz/index.html",
+        "src/multi_choice_quiz/static/multi_choice_quiz/app.js",
+        "src/multi_choice_quiz/models.py",
+        "src/conftest.py"
+      ],
+      "test_count": 1
+    },
+    {
+      "file_name": "test_responsive.py",
+      "path": "src/multi_choice_quiz/tests/test_responsive.py",
+      "purpose": "E2E tests for the responsive layout of the quiz results view in the 'multi_choice_quiz' app across different breakpoints using Playwright. Ensures proper display of stats, buttons, and mistake review.",
+      "related_files": [
+        "src/multi_choice_quiz/templates/multi_choice_quiz/index.html",
+        "src/multi_choice_quiz/static/multi_choice_quiz/app.js",
+        "src/multi_choice_quiz/static/multi_choice_quiz/style.css",
+        "src/multi_choice_quiz/models.py",
+        "src/conftest.py"
+      ],
+      "test_count": 1
+    },
+    {
+      "file_name": "test_models.py",
+      "path": "src/multi_choice_quiz/tests/test_models.py",
+      "purpose": "Unit tests for the models (Topic, Quiz, Question, Option, QuizAttempt) and data transformation functions (`quiz_bank_to_models`, `models_to_frontend`, `frontend_to_models`) in the 'multi_choice_quiz' app.",
+      "related_files": ["src/multi_choice_quiz/models.py", "src/multi_choice_quiz/transform.py"],
+      "test_count": 12
+    },
+    {
+      "file_name": "test_import_quiz_bank.py",
+      "path": "src/multi_choice_quiz/tests/test_import_quiz_bank.py",
+      "purpose": "Tests the `import_quiz_bank` Django management command for importing quiz data from CSV, Excel, and Pickle files, including options for topics, max questions, and splitting by topic.",
+      "related_files": [
+        "src/multi_choice_quiz/management/commands/import_quiz_bank.py",
+        "src/multi_choice_quiz/models.py",
+        "src/multi_choice_quiz/utils.py"
+      ],
+      "test_count": 8
+    },
+    {
+      "file_name": "test_views.py",
+      "path": "src/multi_choice_quiz/tests/test_views.py",
+      "purpose": "Tests the views of the 'multi_choice_quiz' app, including the quiz home/listing (database and demo fallback), quiz detail page, and the `submit_quiz_attempt` API endpoint.",
+      "related_files": [
+        "src/multi_choice_quiz/views.py",
+        "src/multi_choice_quiz/models.py",
+        "src/multi_choice_quiz/templates/multi_choice_quiz/index.html",
+        "src/multi_choice_quiz/transform.py"
+      ],
+      "test_count": 11
+    },
+    {
+      "file_name": "test_views.py",
+      "path": "src/pages/tests/test_views.py",
+      "purpose": "Tests the views of the 'pages' app, including static pages (home, quizzes, about), signup functionality, and profile page access control and data display (quiz history).",
+      "related_files": [
+        "src/pages/views.py",
+        "src/pages/forms.py",
+        "src/pages/templates/pages/home.html",
+        "src/pages/templates/pages/quizzes.html",
+        "src/pages/templates/pages/about.html",
+        "src/pages/templates/pages/signup.html",
+        "src/pages/templates/pages/profile.html",
+        "src/multi_choice_quiz/models.py"
+      ],
+      "test_count": 8
+    },
+    {
+      "file_name": "test_dir_import_chapter_quizzes.py",
+      "path": "src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py",
+      "purpose": "Tests the `dir_import_chapter_quizzes.py` script for importing quiz data from a directory of .pkl files, including test mode, file discovery, and error handling. Mocks path operations to target temporary directories.",
+      "related_files": ["src/dir_import_chapter_quizzes.py", "src/multi_choice_quiz/models.py"],
+      "test_count": 8
+    }
+  ],
+  "configuration_files": [
+    {
+      "file_name": "conftest.py",
+      "path": "src/conftest.py",
+      "purpose": "Provides shared Pytest fixtures and configuration for the entire project, including Django setup, Playwright page management, an admin login fixture (`admin_logged_in_page`), and a console error capturing fixture (`capture_console_errors`).",
+      "fixtures": ["admin_logged_in_page", "capture_console_errors"]
+    },
+    {
+      "file_name": "conftest.py",
+      "path": "src/multi_choice_quiz/tests/conftest.py",
+      "purpose": "Pytest configuration specific to the 'multi_choice_quiz' app. Currently empty, intended for app-level fixtures if needed in the future.",
+      "fixtures": []
+    },
+    {
+      "file_name": "test_logging.py",
+      "path": "src/multi_choice_quiz/tests/test_logging.py",
+      "purpose": "Provides a standardized utility function `setup_test_logging` for configuring file and console logging within test modules, organizing logs by application.",
+      "functions_provided": ["setup_test_logging"]
+    },
+    {
+      "file_name": "pytest.ini",
+      "path": "src/pytest.ini",
+      "purpose": "Configures Pytest behavior for the project, including specifying the Django settings module, Python test file discovery patterns, directories to ignore during discovery, and custom markers.",
+      "settings_overview": [
+        "DJANGO_SETTINGS_MODULE",
+        "python_files discovery patterns",
+        "norecursedirs patterns",
+        "django_db marker definition"
+      ]
+    }
+  ]
+}
