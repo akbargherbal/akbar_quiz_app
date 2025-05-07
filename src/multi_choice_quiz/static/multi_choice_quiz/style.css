@@ -4,10 +4,6 @@
   display: none !important;
 }
 
-
-
-
-
 /* Add this class */
 .option-hidden-immediately {
   display: none !important; /* Hide completely and instantly. !important helps override other display utilities if needed. */
@@ -22,16 +18,49 @@
   border-radius: 4px !important;
   font-size: 22px; /* <<< MOBILE SIZE (Correct) */
   transition: all 0.3s ease;
+
+  /* For general text directly in the button to wrap and break */
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .option-button code {
-  font-size: 1em !important;
+  /* Styles for <code> tags directly within .option-button */
+  font-size: 1em !important; /* Base for code relative to button font */
   background-color: navy !important;
   color: whitesmoke !important;
   font-family: 'Roboto Mono', 'Courier New', monospace !important;
   padding: 1px 3px !important;
   border-radius: 4px;
+
+  /* Ensure text within these code tags wraps and breaks */
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  white-space: normal !important; /* Default, but good to ensure it's not 'nowrap' */
 }
+
+.option-button pre {
+  /* Styles for <pre> tags within .option-button */
+  font-size: 0.85em !important; /* Relative to .option-button font-size */
+
+  /* Key properties for wrapping preformatted text */
+  white-space: pre-wrap !important;    /* Allows wrapping while preserving whitespace */
+  overflow-wrap: break-word !important;/* Breaks long unbreakable strings */
+  word-break: break-all !important;    /* Breaks any word if necessary to prevent overflow */
+}
+
+.option-button pre code {
+  /* Code inside pre inherits wrapping from pre if white-space: pre-wrap is set on pre. */
+  /* font-size: 1em !important; /* This would make it 1em of the pre's 0.85em */
+  /* Ensure font family matches general code tags if not specified otherwise */
+  font-family: 'Roboto Mono', 'Courier New', monospace !important; /* Added for consistency if not inheriting as expected */
+  overflow-wrap: break-word !important;
+  word-break: normal !important; /* Let the pre's break-all and pre-wrap do heavy lifting */
+  background-color: transparent !important;
+  padding: 0 !important;
+  /* color: whitesmoke !important; /* Inherits from .option-button code, or set if different for pre code */
+}
+
 
 /* --- Styles for pre blocks within the Mistakes Review list (Horizontal Scroll) --- */
 /* --- START FIX --- */
@@ -94,32 +123,17 @@
      /* NOTE: Do NOT add display: block or overflow-x: auto here */
 }
 
-
-.option-button pre {
-  word-break: break-all !important;
-  font-size: 0.85em !important;
-}
-
-.option-button code,
-.option-button pre code {
-  /* Old: word-break: break-all !important; */
-  word-break: normal !important;
-  overflow-wrap: break-word !important;
-  font-size: 0.85em !important;
-}
-
-
-
 #status-bar {
   font-size: 16px; /* <<< MOBILE SIZE (Correct) */
 }
 
 #question-text {
   font-size: 24px; /* <<< MOBILE SIZE (Correct) */
+  /* Ensure question text wraps and breaks correctly */
+  overflow-wrap: break-word;
+  word-wrap: break-word; /* Older browsers */
+  word-break: break-word;
 }
-
-
-
 
 /* Tablet styles */
 @media screen and (min-width: 768px) and (max-width: 1023px) {
@@ -131,12 +145,16 @@
   }
 
   .option-button code {
-    font-size: 0.85em !important;
+    /* font-size adjustment for tablet, if needed, can be inherited or specified */
+    /* e.g., font-size: 0.85em !important; */
     padding: 2px 4px !important;
   }
 
+  /* .option-button pre, .option-button pre code will inherit base and adjust font-size based on .option-button's new font-size */
+
   #question-text {
     font-size: 28px; /* <<< TABLET SIZE (Correct - removed !important) */
+    /* Word break properties from base #question-text will apply */
   }
 
   /* No #status-bar rule needed, inherits 16px from base (Correct) */
@@ -153,9 +171,12 @@
   }
 
   .option-button code {
-    font-size: 0.85em !important;
+    /* font-size adjustment for desktop, if needed */
+    /* e.g., font-size: 0.85em !important; */
     padding: 3px 6px !important;
   }
+
+  /* .option-button pre, .option-button pre code will inherit base and adjust font-size based on .option-button's new font-size */
 
   /* Add hover effects for desktop */
   .option-button:hover {
@@ -169,6 +190,7 @@
 
   #question-text {
     font-size: 32px; /* <<< DESKTOP SIZE (Correct) */
+    /* Word break properties from base #question-text will apply */
   }
 
   /* --- ADDED RULE FOR DESKTOP --- */

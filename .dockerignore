@@ -14,6 +14,7 @@ Dockerfile
 # Documentation (not needed for runtime)
 *.md
 README.md # Covered by *.md if at root, but explicit for clarity
+**/docs/
 
 # Python Virtual Environments (never include these in the image)
 **/venv/
