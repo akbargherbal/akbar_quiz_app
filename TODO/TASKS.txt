@@ -1,4 +1,0 @@
-TASK 1:
-Code questions/options render according to theme color scheme.
-===
-TASK 2:

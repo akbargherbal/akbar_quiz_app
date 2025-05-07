@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Layout 1: Stats Above</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { /* Add your existing color config here */
+            theme: { extend: { colors: { 'bg-primary': '#0F172A', 'bg-secondary': '#1E293B', 'surface': '#1E293B', 'text-primary': '#D1D5DB', 'text-secondary': '#E5E7EB', 'text-muted': '#9CA3AF', 'accent-heading': '#A78BFA', 'accent-primary': '#7C3AED', 'accent-hover': '#6D28D9', 'border': '#475569', 'tag-bg': '#334155', 'tag-teal': '#5EEAD4' } } }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>[x-cloak] { display: none !important; }</style>
+</head>
+<body class="bg-bg-primary text-text-primary min-h-screen flex flex-col font-sans">
+    <!-- Simulated Header -->
+    <header class="bg-bg-secondary/80 backdrop-blur-md sticky top-0 z-50 shadow-md">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <a href="#" class="flex items-center"><span class="text-2xl mr-2">🎯</span><span class="text-accent-heading font-bold text-xl">QuizMaster</span></a>
+            <span class="text-text-muted text-sm">User: testuser</span>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+        <!-- Mockup 1 Specific Layout -->
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+            <!-- Profile Header -->
+            <div class="bg-surface rounded-xl p-6 shadow-lg border border-border mb-8 lg:mb-10">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-24 h-24 lg:w-28 lg:h-28 bg-accent-primary rounded-full flex items-center justify-center text-white text-3xl lg:text-4xl font-bold">T</div>
+                    </div>
+                    <div class="flex-grow text-center md:text-left">
+                        <h1 class="text-2xl lg:text-3xl font-bold text-text-secondary">testuser</h1>
+                        <p class="text-text-muted mb-1">test@example.com</p>
+                        <p class="text-text-muted text-sm">Member since: May 2024</p>
+                    </div>
+                    <div class="flex-shrink-0 mt-4 md:mt-0">
+                        <a href="#" class="px-4 py-2 border border-border rounded-lg text-sm font-medium text-text-secondary hover:bg-tag-bg transition-colors">Edit Profile</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 lg:mb-10">
+                <div class="bg-surface rounded-xl p-4 md:p-6 border border-border shadow-md text-center">
+                    <h3 class="text-text-muted text-xs sm:text-sm mb-2 uppercase tracking-wider">Quizzes Taken</h3>
+                    <div class="text-3xl lg:text-4xl font-bold text-accent-heading">35</div> <!-- Example Data -->
+                </div>
+                <div class="bg-surface rounded-xl p-4 md:p-6 border border-border shadow-md text-center">
+                    <h3 class="text-text-muted text-xs sm:text-sm mb-2 uppercase tracking-wider">Average Score</h3>
+                    <div class="text-3xl lg:text-4xl font-bold text-accent-heading">82%</div> <!-- Example Data -->
+                </div>
+                <div class="bg-surface rounded-xl p-4 md:p-6 border border-border shadow-md text-center">
+                    <h3 class="text-text-muted text-xs sm:text-sm mb-2 uppercase tracking-wider">Strongest Topic</h3>
+                    <div class="text-lg lg:text-xl font-bold text-tag-teal truncate" title="Python Basics">Python Basics</div> <!-- Example Data -->
+                </div>
+                <div class="bg-surface rounded-xl p-4 md:p-6 border border-border shadow-md text-center">
+                    <h3 class="text-text-muted text-xs sm:text-sm mb-2 uppercase tracking-wider">Needs Review</h3>
+                     <div class="text-lg lg:text-xl font-bold text-yellow-500 truncate" title="Advanced Algorithms">Adv. Algorithms</div> <!-- Example Data -->
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div x-data="{ activeTab: 'history' }" class="bg-surface rounded-xl border border-border shadow-lg overflow-hidden">
+                <!-- Tab Navigation -->
+                <nav class="flex border-b border-border overflow-x-auto">
+                    <button @click="activeTab = 'history'" :class="{ 'border-accent-primary text-accent-heading bg-tag-bg/30': activeTab === 'history', 'border-transparent text-text-muted hover:text-text-secondary hover:border-border': activeTab !== 'history' }" class="flex-1 whitespace-nowrap py-3 px-4 sm:px-6 text-center font-medium text-sm sm:text-base border-b-2 transition-colors">
+                        Quiz History
+                    </button>
+                    <button @click="activeTab = 'collections'" :class="{ 'border-accent-primary text-accent-heading bg-tag-bg/30': activeTab === 'collections', 'border-transparent text-text-muted hover:text-text-secondary hover:border-border': activeTab !== 'collections' }" class="flex-1 whitespace-nowrap py-3 px-4 sm:px-6 text-center font-medium text-sm sm:text-base border-b-2 transition-colors">
+                        Collections
+                    </button>
+                    <!-- Removed Favorites Tab -->
+                </nav>
+
+                <!-- Tab Content -->
+                <div class="p-4 md:p-6 min-h-[300px]">
+                    <!-- History Tab -->
+                    <div x-show="activeTab === 'history'" x-cloak class="space-y-4 md:space-y-6">
+                        <h2 class="text-xl lg:text-2xl font-bold text-text-secondary mb-4">Your Quiz History</h2>
+                        <!-- History Item 1 -->
+                        <div class="border border-border rounded-lg p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div class="flex-grow">
+                                <h3 class="font-bold text-text-secondary mb-1">Python Basics Quiz 1</h3>
+                                <p class="text-sm text-text-muted">Completed: May 4, 2024, 2:30 PM</p>
+                            </div>
+                            <div class="flex-shrink-0 w-full md:w-auto flex items-center justify-between md:justify-start gap-4 mt-3 md:mt-0">
+                                <div class="w-16 h-16 rounded-full bg-tag-bg flex items-center justify-center border-4 border-tag-teal text-text-secondary font-bold flex-shrink-0">90%</div>
+                                <div class="flex gap-2 sm:gap-3 flex-shrink-0">
+                                    <a href="#" class="px-3 py-1.5 sm:px-4 sm:py-2 border border-border rounded-lg text-xs sm:text-sm font-medium text-text-secondary hover:bg-tag-bg transition-colors">Review Mistakes</a>
+                                    <a href="#" class="px-3 py-1.5 sm:px-4 sm:py-2 border border-border rounded-lg text-xs sm:text-sm font-medium text-text-secondary hover:bg-tag-bg transition-colors">Take Again</a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- History Item 2 -->
+                        <div class="border border-border rounded-lg p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                           <div class="flex-grow">
+                                <h3 class="font-bold text-text-secondary mb-1">Advanced Algorithms Quiz</h3>
+                                <p class="text-sm text-text-muted">Completed: May 3, 2024, 10:15 AM</p>
+                            </div>
+                            <div class="flex-shrink-0 w-full md:w-auto flex items-center justify-between md:justify-start gap-4 mt-3 md:mt-0">
+                                <div class="w-16 h-16 rounded-full bg-tag-bg flex items-center justify-center border-4 border-yellow-500 text-text-secondary font-bold flex-shrink-0">65%</div>
+                                <div class="flex gap-2 sm:gap-3 flex-shrink-0">
+                                     <a href="#" class="px-3 py-1.5 sm:px-4 sm:py-2 border border-border rounded-lg text-xs sm:text-sm font-medium text-text-secondary hover:bg-tag-bg transition-colors">Review Mistakes</a>
+                                     <a href="#" class="px-3 py-1.5 sm:px-4 sm:py-2 border border-border rounded-lg text-xs sm:text-sm font-medium text-text-secondary hover:bg-tag-bg transition-colors">Take Again</a>
+                                </div>
+                            </div>
+                        </div>
+                         <!-- Add more history items or empty state -->
+                    </div>
+
+                    <!-- Collections Tab -->
+                    <div x-show="activeTab === 'collections'" x-cloak class="space-y-6">
+                         <div class="flex justify-between items-center mb-4">
+                             <h2 class="text-xl lg:text-2xl font-bold text-text-secondary">Your Collections</h2>
+                             <button class="px-4 py-2 bg-accent-primary hover:bg-accent-hover text-white rounded-lg text-sm font-bold transition-colors">Create New</button>
+                         </div>
+                         <!-- Collection 1 -->
+                         <div>
+                             <h3 class="text-lg font-semibold text-accent-heading mb-3 border-b border-border pb-1">Python Study Set</h3>
+                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                 <div class="border border-border rounded-lg p-3">
+                                     <h4 class="font-medium text-text-secondary truncate">Python Basics Quiz 1</h4>
+                                     <p class="text-xs text-text-muted mb-2">10 Questions</p>
+                                     <a href="#" class="text-accent-heading hover:text-accent-primary text-xs font-medium">Start Quiz &raquo;</a>
+                                 </div>
+                                  <div class="border border-border rounded-lg p-3">
+                                     <h4 class="font-medium text-text-secondary truncate">Python Intermediate</h4>
+                                     <p class="text-xs text-text-muted mb-2">15 Questions</p>
+                                     <a href="#" class="text-accent-heading hover:text-accent-primary text-xs font-medium">Start Quiz &raquo;</a>
+                                 </div>
+                             </div>
+                         </div>
+                         <!-- Collection 2 -->
+                          <div>
+                             <h3 class="text-lg font-semibold text-accent-heading mb-3 border-b border-border pb-1">Algorithm Practice</h3>
+                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                 <div class="border border-border rounded-lg p-3">
+                                     <h4 class="font-medium text-text-secondary truncate">Advanced Algorithms Quiz</h4>
+                                     <p class="text-xs text-text-muted mb-2">20 Questions</p>
+                                     <a href="#" class="text-accent-heading hover:text-accent-primary text-xs font-medium">Start Quiz &raquo;</a>
+                                 </div>
+                             </div>
+                         </div>
+                         <!-- Uncategorized -->
+                         <div>
+                             <h3 class="text-lg font-semibold text-text-muted mb-3 border-b border-border pb-1">Uncategorized</h3>
+                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                 <div class="border border-border rounded-lg p-3">
+                                     <h4 class="font-medium text-text-secondary truncate">General Knowledge Fun</h4>
+                                     <p class="text-xs text-text-muted mb-2">25 Questions</p>
+                                     <a href="#" class="text-accent-heading hover:text-accent-primary text-xs font-medium">Start Quiz &raquo;</a>
+                                 </div>
+                                 <!-- Empty state if no uncategorized -->
+                                 <!-- <p class="text-sm text-text-muted italic sm:col-span-2">All quizzes are in collections.</p> -->
+                             </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Simulated Footer -->
+    <footer class="bg-bg-secondary/80 mt-auto py-8"><div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center"><p class="text-text-muted">© 2024 QuizMaster</p></div></footer>
+</body>
+</html>
