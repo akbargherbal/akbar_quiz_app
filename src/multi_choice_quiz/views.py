@@ -1,16 +1,19 @@
 # src/multi_choice_quiz/views.py
 
 from django.shortcuts import render, get_object_or_404
+
+# <<< START IMPORTS >>>
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import (
-    csrf_exempt,
-)  # For simplicity now, handle CSRF properly later if needed
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.views.decorators.csrf import csrf_exempt  # For simplicity now
+from django.core.exceptions import ObjectDoesNotExist
 import json
 import logging
-from django.utils.safestring import mark_safe
 from datetime import datetime  # Keep this import
+
+# <<< END IMPORTS >>>
+from django.utils.safestring import mark_safe
+
 
 from .models import Quiz, Question, QuizAttempt  # Keep these imports
 from .transform import models_to_frontend
@@ -217,6 +220,101 @@ def submit_quiz_attempt(request):
             {"status": "error", "message": "An internal server error occurred."},
             status=500,
         )
+
+
+# <<< START NEW VIEW >>>
+@csrf_exempt  # Temporarily disable CSRF for API endpoint simplicity
+@require_POST  # Ensure only POST requests are accepted
+def submit_quiz_attempt(request):
+    """
+    API endpoint to receive and save basic quiz attempt results from the frontend.
+    Initially ignores attempt_details.
+    """
+    try:
+        # Check if request body is valid JSON
+        try:
+            data = json.loads(request.body)
+            logger.debug(f"Received attempt data: {data}")
+        except json.JSONDecodeError:
+            logger.warning("Received invalid JSON in submit_quiz_attempt.")
+            return HttpResponseBadRequest("Invalid JSON data.")
+
+        # Validate required fields are present
+        required_fields = [
+            "quiz_id",
+            "score",
+            "total_questions",
+            "percentage",
+            "end_time",
+        ]
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            logger.warning(
+                f"Missing fields in submit_quiz_attempt data: {missing_fields}"
+            )
+            return HttpResponseBadRequest(
+                f"Missing required fields: {', '.join(missing_fields)}"
+            )
+
+        # Validate data types and format early
+        try:
+            quiz_id = int(data["quiz_id"])
+            score = int(data["score"])
+            total_questions = int(data["total_questions"])
+            percentage = float(data["percentage"])
+            end_time_str = str(data["end_time"])  # Ensure it's a string first
+            # Validate end_time format and convert
+            # Handle potential 'Z' for UTC timezone indication
+            end_time_dt = datetime.fromisoformat(end_time_str.replace("Z", "+00:00"))
+        except (ValueError, TypeError) as e:
+            logger.warning(
+                f"Invalid data type or format received in submit_quiz_attempt: {e}. Data: {data}"
+            )
+            return HttpResponseBadRequest(f"Invalid data type or format for field: {e}")
+
+        # Get the quiz object
+        try:
+            quiz = Quiz.objects.get(id=quiz_id)
+        except ObjectDoesNotExist:
+            logger.warning(
+                f"Quiz with ID {quiz_id} not found during attempt submission."
+            )
+            return HttpResponseBadRequest("Quiz not found.")
+
+        # Determine the user (anonymous or logged in)
+        attempt_user = request.user if request.user.is_authenticated else None
+        user_log_str = (
+            f"User ID: {attempt_user.id}" if attempt_user else "Anonymous User"
+        )
+
+        # Create and save the QuizAttempt (attempt_details will be null by default)
+        attempt = QuizAttempt.objects.create(
+            quiz=quiz,
+            user=attempt_user,
+            score=score,
+            total_questions=total_questions,
+            percentage=percentage,
+            # start_time is set automatically by auto_now_add
+            end_time=end_time_dt,
+            # attempt_details=None # No need to explicitly set null if model allows it
+        )
+
+        logger.info(
+            f"Saved QuizAttempt ID: {attempt.id} for Quiz ID: {quiz_id} by {user_log_str}. Score: {score}/{total_questions}"
+        )
+        # Return success response with the new attempt ID
+        return JsonResponse({"status": "success", "attempt_id": attempt.id})
+
+    except Exception as e:
+        # Catch any other unexpected errors
+        logger.error(f"Unexpected error in submit_quiz_attempt: {e}", exc_info=True)
+        return JsonResponse(
+            {"status": "error", "message": "An internal server error occurred."},
+            status=500,  # Use 500 for internal errors
+        )
+
+
+# <<< END NEW VIEW >>>
 
 
 def get_demo_questions():

@@ -299,7 +299,10 @@ class SubmitQuizAttemptViewTests(TestCase):
             self.submit_url, data=json.dumps(payload), content_type="application/json"
         )
         self.assertEqual(response.status_code, 400)
-        self.assertIn("Invalid end_time format", response.content.decode())
+        self.assertIn(
+            "Invalid data type or format for field", response.content.decode()
+        )
+
         self.assertEqual(QuizAttempt.objects.count(), 0)
 
     def test_submit_non_existent_quiz(self):
