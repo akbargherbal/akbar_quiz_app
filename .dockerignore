@@ -48,8 +48,8 @@ desktop.ini
 ################################################################################
 
 # Test-specific requirements files
-test_requirements.txt
-requirements_test.txt # Or similar names
+**/test_requirements.txt
+**/requirements_test.txt # Or similar names
 
 # Test Caches & Reports
 **/pytest_cache/
@@ -79,7 +79,7 @@ requirements_test.txt # Or similar names
 **/logs/
 
 # Local Databases (use Cloud SQL or other managed DBs in production)
-*.sqlite3
+**/*.sqlite3
 *.sqlite3-* # Catches journal files, write-ahead logs, etc.
 db.sqlite3   # If you use this specific name
 
@@ -115,7 +115,7 @@ db.sqlite3   # If you use this specific name
 
 # Local static files directory
 # (If `collectstatic` is run INSIDE the container, local staticfiles are not needed)
-staticfiles/
+**/staticfiles/
 
 # Local media files
 # (User-uploaded content should go to Google Cloud Storage or similar for Cloud Run)
