@@ -1,74 +1,126 @@
-# .dockerignore
+################################################################################
+# GENERAL DEVELOPMENT & SYSTEM ARTIFACTS
+################################################################################
 
-# Version control
-.git
+# Version Control System (history not needed in image)
+.git/
 .gitignore
 
-# Docker specific
+
 .dockerignore
 Dockerfile
 
-# Documentation / Readme
-README.md
+
+# Documentation (not needed for runtime)
 *.md
+README.md # Covered by *.md if at root, but explicit for clarity
 
-# Python virtual environment
-venv/
-env/
-.venv/
+# Python Virtual Environments (never include these in the image)
+**/venv/
+**/env/
+**/.venv/
 
-# Environment files
+# Environment Configuration Files (Cloud Run uses its own env variable system)
 .env*
-*.env
 
-# Python cache / bytecode
+# Python Bytecode and Caches
 *.pyc
-__pycache__/
+**/__pycache__/
 
-# Log files
-*.log
-logs/
+# IDE & Editor Configuration (developer-specific, not for production)
+**/.vscode/
+**/.idea/
+*.sublime-project
+*.sublime-workspace
 
-# Local databases (let Cloud SQL handle prod DB)
-db.sqlite3*
-*.sqlite3*
+# OS-generated files (common on macOS, Windows)
+.DS_Store
+Thumbs.db
+desktop.ini
 
-# Static files directory (let collectstatic handle this INSIDE the container)
-staticfiles/
-
-# Media files (if any - usually stored separately like GCS in prod)
-media/
-
-# IDE / Editor config
-.vscode/
-.idea/
-
-# Backup files
+# Backup & Swap Files (editor temporary files)
 *.bak
+*.swp
+*.swo
 
-# Project specific files/dirs to ignore
-BUGS
-GUIDES
-TODO
-TUTORIALS
+################################################################################
+# TESTING, LINTING & COVERAGE ARTIFACTS (not for production runtime)
+################################################################################
+
+# Test-specific requirements files
 test_requirements.txt
+requirements_test.txt # Or similar names
+
+# Test Caches & Reports
+**/pytest_cache/
+**/.pytest_cache/ # Some tools might create it with a leading dot
+**/nosetests.xml
+**/coverage.xml
+**/.coverage* # Coverage data files
+**/htmlcov/ # HTML coverage reports
+
+# Linting Caches
+**/ruff_cache/
+**/.ruff_cache/ # Some tools might create it with a leading dot
+**/.mypy_cache/
+
+# Test Directories
+# If your tests are not part of the distributable package or run in prod.
+# Ensure no essential runtime code is inadvertently placed here.
+**/tests/
+**/test/
+
+################################################################################
+# LOGS & LOCAL DATABASES (use cloud services for these in production)
+################################################################################
+
+# Log files and directories (Cloud Run typically streams logs)
 *.log
+**/logs/
 
+# Local Databases (use Cloud SQL or other managed DBs in production)
+*.sqlite3
+*.sqlite3-* # Catches journal files, write-ahead logs, etc.
+db.sqlite3   # If you use this specific name
 
-# Local Settings for Development
-core/local_settings.py
-local_settings.py
+################################################################################
+# FRONTEND / NODE.JS RELATED
+# (If frontend assets are built during Docker build & source not needed in final image)
+################################################################################
 
+**/node_modules/
+# Consider adding other frontend build source folders if they are not part of the final image,
+# e.g., a `frontend/src/` if assets are compiled into a `static/dist/` directory.
 
-# screenshots
-screenshots/
-playwright_screenshots/
+################################################################################
+# PROJECT-SPECIFIC DEVELOPMENT / NON-DEPLOYABLE ASSETS
+# (Based on your project structure from previous interactions and image)
+################################################################################
+
+**/BUGS/
+**/GUIDES/
+**/TODO/ # Assuming this is mostly a directory; if it can be a file too, this still works
+**/TUTORIALS/
+**/QUIZ_COLLECTIONS/
+**/sanity_check_scripts/
 **/screenshots/
 **/playwright_screenshots/
 
-node_modules
-**/node_modules
+################################################################################
+# LOCAL SETTINGS & DATA (if handled differently in production)
+################################################################################
 
-.vscode
+# Local Python/Django settings files
+**/local_settings.py
 
-sanity_check_scripts
+# Local static files directory
+# (If `collectstatic` is run INSIDE the container, local staticfiles are not needed)
+staticfiles/
+
+# Local media files
+# (User-uploaded content should go to Google Cloud Storage or similar for Cloud Run)
+**/media/
+
+# Example: Any large data files used only for local development/testing
+# **/data_dumps/
+# **/large_test_datasets/
