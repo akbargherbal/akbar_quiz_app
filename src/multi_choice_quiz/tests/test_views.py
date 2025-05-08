@@ -7,6 +7,8 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.utils.safestring import mark_safe
+from django.contrib.messages import get_messages  # <<< ADDED for checking messages
+from django.contrib import messages  # <<< ADD THIS LINE
 
 from multi_choice_quiz.models import (
     Quiz,
@@ -321,3 +323,167 @@ class SubmitQuizAttemptViewTests(TestCase):
         response = self.client.get(self.submit_url)
         self.assertEqual(response.status_code, 405)
         self.assertEqual(QuizAttempt.objects.count(), 0)
+
+
+# === Tests for attempt_mistake_review view ===
+class AttemptMistakeReviewViewTests(TestCase):
+    """Tests for the attempt_mistake_review view."""
+
+    @classmethod
+    def setUpTestData(cls):
+        """Set up data for mistake review tests."""
+        cls.user1 = User.objects.create_user(username="reviewer1", password="password")
+        cls.user2 = User.objects.create_user(username="reviewer2", password="password")
+        cls.quiz = Quiz.objects.create(title="Mistake Review Test Quiz")
+
+        # Question 1: Correct=A(idx 0), User chose B(idx 1) -> MISTAKE
+        cls.q1 = Question.objects.create(quiz=cls.quiz, text="Q1 Text", position=1)
+        Option.objects.create(
+            question=cls.q1, text="Q1 Opt A (Correct)", position=1, is_correct=True
+        )
+        Option.objects.create(question=cls.q1, text="Q1 Opt B", position=2)
+
+        # Question 2: Correct=Y(idx 1), User chose Y(idx 1) -> CORRECT
+        cls.q2 = Question.objects.create(quiz=cls.quiz, text="Q2 Text", position=2)
+        Option.objects.create(question=cls.q2, text="Q2 Opt X", position=1)
+        Option.objects.create(
+            question=cls.q2, text="Q2 Opt Y (Correct)", position=2, is_correct=True
+        )
+
+        # Question 3: Correct=3(idx 2), User chose 1(idx 0) -> MISTAKE
+        cls.q3 = Question.objects.create(quiz=cls.quiz, text="Q3 Text", position=3)
+        Option.objects.create(question=cls.q3, text="Q3 Opt 1", position=1)
+        Option.objects.create(question=cls.q3, text="Q3 Opt 2", position=2)
+        Option.objects.create(
+            question=cls.q3, text="Q3 Opt 3 (Correct)", position=3, is_correct=True
+        )
+
+        # Attempt WITH mistakes for user1
+        cls.attempt_with_mistakes = QuizAttempt.objects.create(
+            user=cls.user1,
+            quiz=cls.quiz,
+            score=1,  # Only Q2 correct
+            total_questions=3,
+            percentage=33.33,
+            attempt_details={
+                str(cls.q1.id): {
+                    "user_answer_idx": 1,
+                    "correct_answer_idx": 0,
+                },  # Mistake
+                str(cls.q3.id): {
+                    "user_answer_idx": 0,
+                    "correct_answer_idx": 2,
+                },  # Mistake
+            },
+        )
+
+        # Attempt with NO mistakes (perfect score, details=None) for user1
+        cls.attempt_no_mistakes = QuizAttempt.objects.create(
+            user=cls.user1,
+            quiz=cls.quiz,
+            score=3,
+            total_questions=3,
+            percentage=100.0,
+            attempt_details=None,  # Or {} - view should handle both
+        )
+
+        # Attempt belonging to user2 (for permission testing)
+        cls.attempt_other_user = QuizAttempt.objects.create(
+            user=cls.user2,
+            quiz=cls.quiz,
+            score=2,
+            total_questions=3,
+            percentage=66.67,
+            attempt_details={
+                str(cls.q1.id): {"user_answer_idx": 1, "correct_answer_idx": 0}
+            },
+        )
+
+        cls.review_url_valid = reverse(
+            "multi_choice_quiz:attempt_mistake_review",
+            args=[cls.attempt_with_mistakes.id],
+        )
+        cls.review_url_no_mistakes = reverse(
+            "multi_choice_quiz:attempt_mistake_review",
+            args=[cls.attempt_no_mistakes.id],
+        )
+        cls.review_url_other_user = reverse(
+            "multi_choice_quiz:attempt_mistake_review", args=[cls.attempt_other_user.id]
+        )
+        cls.review_url_non_existent = reverse(
+            "multi_choice_quiz:attempt_mistake_review", args=[9999]
+        )
+
+    def test_anonymous_user_redirected_to_login(self):
+        """Verify anonymous users are redirected from the review page."""
+        response = self.client.get(self.review_url_valid)
+        self.assertEqual(response.status_code, 302)
+        expected_redirect = f"{reverse('login')}?next={self.review_url_valid}"
+        self.assertRedirects(response, expected_redirect, fetch_redirect_response=False)
+
+    def test_user_cannot_review_other_user_attempt(self):
+        """Verify a logged-in user gets 404 trying to access another user's review."""
+        self.client.login(username="reviewer1", password="password")
+        response = self.client.get(self.review_url_other_user)
+        self.assertEqual(response.status_code, 404)  # View raises Http404
+
+    def test_non_existent_attempt_returns_404(self):
+        """Verify accessing a non-existent attempt ID returns 404."""
+        self.client.login(username="reviewer1", password="password")
+        response = self.client.get(self.review_url_non_existent)
+        self.assertEqual(response.status_code, 404)
+
+    def test_attempt_with_no_mistakes_redirects_to_profile(self):
+        """Verify accessing review for an attempt with no mistake details redirects."""
+        self.client.login(username="reviewer1", password="password")
+        response = self.client.get(self.review_url_no_mistakes)
+        self.assertEqual(response.status_code, 302)  # Should redirect
+        self.assertRedirects(
+            response, reverse("pages:profile"), fetch_redirect_response=False
+        )
+
+        # Check for optional message
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(
+            str(messages[0]), "There are no mistakes to review for this attempt."
+        )
+
+    def test_successful_review_page_load_and_context(self):
+        """Verify the review page loads correctly with expected context data."""
+        self.client.login(username="reviewer1", password="password")
+        response = self.client.get(self.review_url_valid)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "multi_choice_quiz/mistake_review.html")
+
+        # Check main context objects
+        self.assertEqual(response.context["attempt"], self.attempt_with_mistakes)
+        self.assertEqual(response.context["quiz"], self.quiz)
+
+        # Check mistakes context data
+        mistakes_context = response.context["mistakes"]
+        self.assertIsInstance(mistakes_context, list)
+        self.assertEqual(len(mistakes_context), 2)  # q1 and q3 were mistakes
+
+        # Verify details for the first mistake (Q1)
+        mistake1 = next(
+            (m for m in mistakes_context if m["question_id"] == self.q1.id), None
+        )
+        self.assertIsNotNone(mistake1)
+        self.assertEqual(mistake1["question_text"], "Q1 Text")
+        self.assertEqual(mistake1["user_answer"], "Q1 Opt B")  # User chose index 1
+        self.assertEqual(
+            mistake1["correct_answer"], "Q1 Opt A (Correct)"
+        )  # Correct is index 0
+
+        # Verify details for the second mistake (Q3)
+        mistake3 = next(
+            (m for m in mistakes_context if m["question_id"] == self.q3.id), None
+        )
+        self.assertIsNotNone(mistake3)
+        self.assertEqual(mistake3["question_text"], "Q3 Text")
+        self.assertEqual(mistake3["user_answer"], "Q3 Opt 1")  # User chose index 0
+        self.assertEqual(
+            mistake3["correct_answer"], "Q3 Opt 3 (Correct)"
+        )  # Correct is index 2

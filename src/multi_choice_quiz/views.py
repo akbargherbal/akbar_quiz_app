@@ -1,15 +1,26 @@
 # src/multi_choice_quiz/views.py (Modified for Step 6.3)
 
 from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.contrib import messages  # <<< THIS LINE MUST BE PRESENT
+from django.shortcuts import redirect
+
+from django.http import (
+    JsonResponse,
+    HttpResponseBadRequest,
+    Http404,
+    HttpResponseForbidden,
+)  # Added Http404, HttpResponseForbidden
+
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.decorators import login_required  # Added login_required
+from django.utils.safestring import mark_safe
+
 import json
 import logging
 from datetime import datetime
 
-from django.utils.safestring import mark_safe
 from .models import Quiz, Question, QuizAttempt  # Added Question
 from .transform import models_to_frontend
 
@@ -235,6 +246,123 @@ def submit_quiz_attempt(request):
             {"status": "error", "message": "An internal server error occurred."},
             status=500,
         )
+
+
+# <<< START NEW VIEW FUNCTION (Step 7.1) >>>
+@login_required
+def attempt_mistake_review(request, attempt_id):
+    """
+    Displays the mistakes made in a specific quiz attempt for the logged-in user.
+    """
+    logger.info(f"User {request.user.id} requesting review for attempt ID {attempt_id}")
+    try:
+        attempt = get_object_or_404(QuizAttempt, id=attempt_id)
+
+        # --- Security Check: Ensure the user owns this attempt ---
+        if attempt.user != request.user:
+            logger.warning(
+                f"User {request.user.id} attempted to access attempt {attempt_id} owned by user {attempt.user_id}."
+            )
+            # Option 1: Return 404 (as if it doesn't exist for them)
+            raise Http404("Quiz attempt not found.")
+            # Option 2: Return 403 Forbidden (clearer, but reveals attempt exists)
+            # return HttpResponseForbidden("You do not have permission to view this attempt.")
+
+        # --- Check if there are mistakes to review ---
+        if not attempt.attempt_details or not isinstance(attempt.attempt_details, dict):
+            logger.info(
+                f"Attempt {attempt_id} has no mistake details to review. Redirecting user {request.user.id} to profile."
+            )
+            messages.info(
+                request, "There are no mistakes to review for this attempt."
+            )  # Optional message
+            return redirect("pages:profile")  # Redirect to profile page
+
+        mistake_details = attempt.attempt_details
+        question_ids = [int(qid) for qid in mistake_details.keys()]
+
+        # Fetch all relevant questions and their options in bulk to optimize DB access
+        questions = (
+            Question.objects.filter(id__in=question_ids)
+            .prefetch_related("options")
+            .order_by("position")
+        )
+
+        # Prepare context for the template
+        mistakes_context = []
+        for question in questions:
+            q_id_str = str(question.id)
+            if q_id_str in mistake_details:
+                detail = mistake_details[q_id_str]
+                user_idx = detail.get("user_answer_idx")
+                correct_idx = detail.get("correct_answer_idx")
+
+                options_list = list(question.options.order_by("position"))
+                user_answer_text = "N/A"
+                correct_answer_text = "N/A"
+
+                # Get user answer text (0-based index from JSON -> 1-based position)
+                if user_idx is not None and 0 <= user_idx < len(options_list):
+                    user_answer_text = options_list[user_idx].text
+                elif user_idx is not None:
+                    logger.warning(
+                        f"User answer index {user_idx} out of bounds for QID {question.id} options."
+                    )
+
+                # Get correct answer text (0-based index from JSON -> 1-based position)
+                if correct_idx is not None and 0 <= correct_idx < len(options_list):
+                    correct_answer_text = options_list[correct_idx].text
+                elif correct_idx is not None:
+                    logger.warning(
+                        f"Correct answer index {correct_idx} out of bounds for QID {question.id} options."
+                    )
+                elif (
+                    question.correct_option()
+                ):  # Fallback if index missing but model has it
+                    correct_answer_text = question.correct_option().text
+                    logger.warning(
+                        f"Used fallback correct option text for QID {question.id}."
+                    )
+
+                mistakes_context.append(
+                    {
+                        "question_id": question.id,
+                        "question_text": question.text,
+                        "user_answer": user_answer_text,
+                        "correct_answer": correct_answer_text,
+                        "question_tag": question.tag,  # Include tag if needed
+                    }
+                )
+            else:
+                logger.warning(
+                    f"Question ID {question.id} was fetched but not found in mistake_details keys for attempt {attempt_id}."
+                )
+
+        context = {
+            "attempt": attempt,
+            "quiz": attempt.quiz,
+            "mistakes": mistakes_context,
+        }
+        return render(request, "multi_choice_quiz/mistake_review.html", context)
+
+    except Http404 as e:
+        # Log the 404 explicitly if needed, then re-raise or handle
+        logger.warning(f"Caught Http404 in attempt_mistake_review: {e}")
+        raise  # Let Django handle the 404 page rendering
+
+    except Exception as e:
+        logger.error(
+            f"Error generating mistake review for attempt {attempt_id} for user {request.user.id}: {e}",
+            exc_info=True,
+        )
+        # Consider redirecting to an error page or profile page with a message
+        messages.error(
+            request, "An error occurred while trying to load the mistake review."
+        )
+        return redirect("pages:profile")
+
+
+# <<< END NEW VIEW FUNCTION >>>
 
 
 # --- get_demo_questions remains unchanged ---

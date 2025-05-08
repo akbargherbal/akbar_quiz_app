@@ -5,6 +5,7 @@ from django.contrib.auth import login  # Added login
 from django.contrib import messages  # Added messages
 from django.views.generic import TemplateView, ListView
 from django.contrib.auth.decorators import login_required  # <<< Already imported
+
 from multi_choice_quiz.models import (
     Quiz,
     Topic,
