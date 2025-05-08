@@ -1,0 +1,6 @@
+This is our 4th session in a series of sessions to come; I'd like first to let you familiarize yourself with the whole thing we are trying to achieve...
+Please review the codebase of Django Quiz App; pay special attention to the following:
+The user profile template
+The src/docs directory [Testing Guide / LGID Paper V3_Research_Paper.md]
+Confirm reading the LGID Paper, the Testing Guide and Reviewing the user profile page
+Later I will share with you the context you wrote for yourself at the end of last session ... each session we'll updating that context with what've achieved what we're going to do in the next session.

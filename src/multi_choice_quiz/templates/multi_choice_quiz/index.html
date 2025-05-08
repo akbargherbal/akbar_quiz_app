@@ -21,7 +21,7 @@
     x-data="quizApp()"
     x-init="init()"
     x-cloak
-    {% if quiz_id %}data-quiz-id="{{ quiz_id }}"{% endif %}
+    {% if quiz_id %}data-quiz-id="{{ quiz_id }}"{% endif %} {# <<< MODIFIED LINE: Added data-quiz-id if quiz_id exists #}
 >
 
   <!-- Quiz Question Section -->

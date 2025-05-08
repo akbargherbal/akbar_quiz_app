@@ -1,4 +1,4 @@
-// src/multi_choice_quiz/static/multi_choice_quiz/app.js
+// src/multi_choice_quiz/static/multi_choice_quiz/app.js (MODIFIED)
 
 window.quizApp = function () {
   let initialized = false;
@@ -87,17 +87,17 @@ window.quizApp = function () {
     // --- Methods ---
     emitQuizEvent(eventName, data = {}) {
       // ... (no change)
-      console.log(
-        "DEBUG: emitQuizEvent called for:",
-        eventName,
-        "TESTING_MODE:",
-        window.TESTING_MODE
-      );
+      // console.log( // Keep this commented unless debugging events specifically
+      //   "DEBUG: emitQuizEvent called for:",
+      //   eventName,
+      //   "TESTING_MODE:",
+      //   window.TESTING_MODE
+      // );
       const event = new CustomEvent(`quiz:${eventName}`, {
         detail: { ...data, timestamp: Date.now() },
       });
       document.dispatchEvent(event);
-      console.log(`DEBUG: Emitted event quiz:${eventName}`, data);
+      // console.log(`DEBUG: Emitted event quiz:${eventName}`, data); // Keep this commented unless debugging events
     },
 
     init() {
@@ -112,8 +112,8 @@ window.quizApp = function () {
         "DEBUG: quizApp component init() running for the first time."
       );
 
-      window.TESTING_MODE = true; // Keep for now if tests rely on it
-      console.log("DEBUG: window.TESTING_MODE set to true at start of init.");
+      // window.TESTING_MODE = true; // Keep for now if tests rely on it
+      // console.log("DEBUG: window.TESTING_MODE set to true at start of init.");
 
       const dataElement = document.getElementById("quiz-data");
       if (dataElement) {
@@ -132,16 +132,17 @@ window.quizApp = function () {
         this.userAnswers = [];
       }
 
-      // <<< Get Quiz ID from data attribute >>>
+      // <<< START: Get Quiz ID from data attribute >>>
       const container = document.getElementById("quiz-app-container");
       this.quizId = container ? container.dataset.quizId : null;
       if (!this.quizId) {
         console.warn(
-          "Could not find quiz ID (data-quiz-id attribute on container). Submission might fail."
+          "Could not find quiz ID (data-quiz-id attribute on container). Results submission might fail."
         );
       } else {
         console.log("DEBUG: Quiz ID loaded:", this.quizId);
       }
+      // <<< END: Get Quiz ID >>>
 
       this.currentQuestionIndex = 0;
       this.selectedOptionIndex = null;
@@ -184,7 +185,7 @@ window.quizApp = function () {
 
     selectOption(index) {
       // ... (no change)
-      console.log(`DEBUG: selectOption(${index}) called.`);
+      // console.log(`DEBUG: selectOption(${index}) called.`);
       if (this.isAnswered || !this.currentQuestion) {
         console.log(
           "DEBUG: Selection ignored - already answered or no current question"
@@ -210,13 +211,13 @@ window.quizApp = function () {
       const wasCorrect = this.isCorrect;
       if (wasCorrect) {
         this.score++;
-        console.log("DEBUG: Correct Answer! Score:", this.score);
+        // console.log("DEBUG: Correct Answer! Score:", this.score);
       } else {
         this.wrongAnswers++;
-        console.log(
-          "DEBUG: Incorrect Answer! Wrong answers:",
-          this.wrongAnswers
-        );
+        // console.log(
+        //   "DEBUG: Incorrect Answer! Wrong answers:",
+        //   this.wrongAnswers
+        // );
       }
 
       this.emitQuizEvent("answer-selected", {
@@ -227,53 +228,53 @@ window.quizApp = function () {
 
       if (this.feedbackTimer) {
         clearTimeout(this.feedbackTimer);
-        console.log(
-          "DEBUG: Cleared existing feedback timer before setting new one."
-        );
+        // console.log( // Keep commented unless debugging timers
+        //   "DEBUG: Cleared existing feedback timer before setting new one."
+        // );
       }
 
       const feedbackDuration = wasCorrect
         ? this.correctFeedbackDuration
         : this.incorrectFeedbackDuration;
 
-      console.log(
-        `DEBUG: Using feedback duration: ${feedbackDuration}ms (${
-          wasCorrect ? "correct" : "incorrect"
-        } answer)`
-      );
-      console.log(
-        `DEBUG: Next question will appear in ${feedbackDuration / 1000} seconds.`
-      );
+      // console.log( // Keep commented unless debugging timers
+      //   `DEBUG: Using feedback duration: ${feedbackDuration}ms (${
+      //     wasCorrect ? "correct" : "incorrect"
+      //   } answer)`
+      // );
+      // console.log( // Keep commented unless debugging timers
+      //   `DEBUG: Next question will appear in ${feedbackDuration / 1000} seconds.`
+      // );
 
-      console.log("DEBUG: Setting timer for nextQuestion...");
+      // console.log("DEBUG: Setting timer for nextQuestion..."); // Keep commented unless debugging timers
       this.feedbackTimer = setTimeout(() => {
-        console.log(
-          "DEBUG: setTimeout callback executing, calling nextQuestion..."
-        );
+        // console.log( // Keep commented unless debugging timers
+        //   "DEBUG: setTimeout callback executing, calling nextQuestion..."
+        // );
         this.nextQuestion();
       }, feedbackDuration);
     },
 
     nextQuestion() {
-      console.log(
-        "DEBUG: nextQuestion entered. Current index:",
-        this.currentQuestionIndex
-      );
+      // console.log( // Keep commented unless debugging nextQuestion
+      //   "DEBUG: nextQuestion entered. Current index:",
+      //   this.currentQuestionIndex
+      // );
       if (this.feedbackTimer) {
         clearTimeout(this.feedbackTimer);
         this.feedbackTimer = null;
-        console.log("DEBUG: Cleared feedback timer at start of nextQuestion.");
+        // console.log("DEBUG: Cleared feedback timer at start of nextQuestion."); // Keep commented unless debugging timers
       }
 
       if (this.currentQuestionIndex < this.questions.length - 1) {
         this.currentQuestionIndex++;
-        console.log(
-          `DEBUG: Advanced to question ${this.currentQuestionIndex + 1}`
-        );
+        // console.log( // Keep commented unless debugging nextQuestion
+        //   `DEBUG: Advanced to question ${this.currentQuestionIndex + 1}`
+        // );
         this.isAnswered = false;
         this.selectedOptionIndex = null;
 
-        console.log("DEBUG: About to emit quiz:question-changed...");
+        // console.log("DEBUG: About to emit quiz:question-changed..."); // Keep commented unless debugging events
         this.emitQuizEvent("question-changed", {
           questionIndex: this.currentQuestionIndex,
         });
@@ -283,7 +284,7 @@ window.quizApp = function () {
         this.calculateQuizTime();
         console.log("DEBUG: Quiz completed. Final score:", this.score);
 
-        console.log("DEBUG: About to emit quiz:quiz-completed...");
+        // console.log("DEBUG: About to emit quiz:quiz-completed..."); // Keep commented unless debugging events
         this.emitQuizEvent("quiz-completed", {
           score: this.score,
           wrongAnswers: this.wrongAnswers,
@@ -294,7 +295,7 @@ window.quizApp = function () {
         // <<< CALL SUBMIT RESULTS HERE >>>
         this.submitResults();
       }
-      console.log("DEBUG: nextQuestion finished.");
+      // console.log("DEBUG: nextQuestion finished."); // Keep commented unless debugging nextQuestion
     },
 
     // <<< START NEW METHOD >>>
@@ -308,8 +309,8 @@ window.quizApp = function () {
         return;
       }
 
-      const data = {
-        quiz_id: this.quizId,
+      const payload = {
+        quiz_id: parseInt(this.quizId, 10), // Ensure quiz_id is an integer
         score: this.score,
         total_questions: this.questions.length,
         percentage: this.calculatePercentage(),
@@ -317,20 +318,20 @@ window.quizApp = function () {
         end_time: this.endTime
           ? this.endTime.toISOString()
           : new Date().toISOString(),
-        // We could potentially send detailed answers here too if needed
-        // userAnswers: this.userAnswers
+        // Add attempt_details later (Phase 6)
+        // attempt_details: { /* structure based on Req 6.c */ }
       };
 
-      console.log("DEBUG: Submitting quiz results:", data);
+      console.log("DEBUG: Submitting quiz results:", payload);
 
-      fetch("/quiz/submit_attempt/", {
-        // Use the correct URL defined in urls.py
+      fetch("/quiz/submit_attempt/", { // Use the correct URL defined in urls.py
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // 'X-CSRFToken': getCookie('csrftoken') // IMPORTANT: Add CSRF token handling if not using @csrf_exempt
+          // IMPORTANT: CSRF token handling needed if not using @csrf_exempt
+          // 'X-CSRFToken': getCookie('csrftoken') // Add this later if required
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       })
         .then((response) => {
           if (!response.ok) {
@@ -364,7 +365,7 @@ window.quizApp = function () {
       console.log("DEBUG: Restarting quiz...");
       initialized = false; // Reset initialization flag
       this.init(); // Re-initialize the component
-      console.log("DEBUG: About to emit quiz:quiz-restarted...");
+      // console.log("DEBUG: About to emit quiz:quiz-restarted..."); // Keep commented unless debugging events
       this.emitQuizEvent("quiz-restarted", {});
     },
 
@@ -473,28 +474,29 @@ window.quizApp = function () {
   }; // End of returned object
 }; // End of quizApp function
 
+// Helper function to get CSRF token (Keep commented for now, uncomment if needed)
+/*
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+*/
+
 // Original registration logic
 console.log(
   "quizApp component function defined. Registered globally via window.quizApp."
 );
-
-// Helper function to get CSRF token (Add this if not using @csrf_exempt)
-/*
-  function getCookie(name) {
-      let cookieValue = null;
-      if (document.cookie && document.cookie !== '') {
-          const cookies = document.cookie.split(';');
-          for (let i = 0; i < cookies.length; i++) {
-              const cookie = cookies[i].trim();
-              if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                  break;
-              }
-          }
-      }
-      return cookieValue;
-  }
-  */
 
 // --- Define global correctFeedbackEffect (ensure it's defined before use) ---
 const glowSize = 2;
