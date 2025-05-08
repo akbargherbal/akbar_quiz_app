@@ -1,14 +1,14 @@
-# src/pages/views.py
+# src/pages/views.py (Existing - Confirmed for Step 5.4)
 
 from django.shortcuts import render, redirect  # Added redirect
 from django.contrib.auth import login  # Added login
 from django.contrib import messages  # Added messages
 from django.views.generic import TemplateView, ListView
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required  # <<< Already imported
 from multi_choice_quiz.models import (
     Quiz,
     Topic,
-    QuizAttempt,
+    QuizAttempt,  # <<< Already imported
 )
 
 # --- Add form import ---
@@ -16,13 +16,9 @@ from .forms import SignUpForm
 
 
 def home(request):
-    """Home page view with featured quizzes."""
-    # Get some featured quizzes to display
+    # ... (home view code - unchanged) ...
     featured_quizzes = Quiz.objects.filter(is_active=True).order_by("-created_at")[:3]
-
-    # Get some popular topics
     topics = Topic.objects.all()[:5]
-
     context = {
         "featured_quizzes": featured_quizzes,
         "topics": topics,
@@ -31,14 +27,9 @@ def home(request):
 
 
 def quizzes(request):
-    """View for browsing all quizzes."""
-    # Get all active quizzes
+    # ... (quizzes view code - unchanged) ...
     all_quizzes = Quiz.objects.filter(is_active=True).order_by("-created_at")
-
-    # Get all topics for filtering
     topics = Topic.objects.all()
-
-    # Filter by topic if specified
     topic_id = request.GET.get("topic")
     if topic_id:
         try:
@@ -49,7 +40,6 @@ def quizzes(request):
             selected_topic = None
     else:
         selected_topic = None
-
     context = {
         "quizzes": all_quizzes,
         "topics": topics,
@@ -59,42 +49,37 @@ def quizzes(request):
 
 
 def about(request):
-    """About page view."""
+    # ... (about view code - unchanged) ...
     return render(request, "pages/about.html")
 
 
 # --- Corrected signup_view ---
 def signup_view(request):
-    """Handles user registration."""
+    # ... (signup_view code - unchanged) ...
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)  # Log the user in automatically
             messages.success(request, "Registration successful! Welcome.")
-            # Redirect to profile page after successful signup
             return redirect("pages:profile")
         else:
-            # Form is invalid, add error message (optional, form displays field errors)
             messages.error(request, "Please correct the errors below.")
     else:
-        # GET request, display blank form
         form = SignUpForm()
-
-    # Ensure it renders signup.html and passes the form
     return render(request, "pages/signup.html", {"form": form})
 
 
-# --- End corrected signup_view ---
-
-
-@login_required
+# --- Profile View (Verification for Step 5.4) ---
+@login_required  # <<< Decorator exists
 def profile_view(request):
     """User profile page, showing quiz attempt history."""
     # Get quiz attempts for the logged-in user
     # Order by the end time, most recent first
-    user_attempts = QuizAttempt.objects.filter(user=request.user).order_by("-end_time")
+    user_attempts = QuizAttempt.objects.filter(user=request.user).order_by(
+        "-end_time"
+    )  # <<< Fetches attempts for user, orders correctly
 
     # Pass the attempts to the template context
-    context = {"quiz_attempts": user_attempts}
+    context = {"quiz_attempts": user_attempts}  # <<< Passes with correct key
     return render(request, "pages/profile.html", context)
