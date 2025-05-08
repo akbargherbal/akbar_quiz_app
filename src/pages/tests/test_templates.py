@@ -1,4 +1,4 @@
-# src/pages/tests/test_templates.py (Using admin_logged_in_page fixture)
+# src/pages/tests/test_templates.py (Corrected for Profile Structure Changes)
 
 import pytest
 import re
@@ -187,7 +187,12 @@ def test_profile_page_structure_when_authenticated(admin_logged_in_page, live_se
     expect(page).to_have_title(re.compile(f"{admin_user}'s Profile | QuizMaster"))
     expect(page.locator(f'h1:has-text("{admin_user}")')).to_be_visible()
     expect(page.get_by_role("button", name="Quiz History")).to_be_visible()
-    expect(page.get_by_role("button", name="Favorites")).to_be_visible()
+    # --- START MODIFICATION ---
+    # Check for "Collections" button instead of "Favorites"
+    expect(page.get_by_role("button", name="Collections")).to_be_visible()
+    # Optionally, assert "Favorites" is NOT visible
+    expect(page.get_by_role("button", name="Favorites")).not_to_be_visible()
+    # --- END MODIFICATION ---
     expect(
         page.locator(f'div:has-text("{admin_user[0].upper()}")').first
     ).to_be_visible()
@@ -207,10 +212,10 @@ def test_profile_page_shows_empty_history(admin_logged_in_page, live_server):
     page.wait_for_load_state("networkidle")
 
     history_tab_content = page.locator("div[x-show=\"activeTab === 'history'\"]")
+    # Check within the history tab content
     expect(
         history_tab_content.locator("text=You haven't completed any quizzes yet.")
     ).to_be_visible()
-    expect(
-        page.locator("text=History Quiz")  # Check for example attempt text
-    ).not_to_be_visible()
+    # Ensure example attempt text is not visible
+    expect(history_tab_content.locator("text=History Quiz")).not_to_be_visible()
     print("Empty history message check passed.")
