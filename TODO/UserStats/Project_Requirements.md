@@ -1,7 +1,7 @@
 # Project Requirements: QuizMaster
 
-**Version:** 2.4
-**Date:** 2025-05-06 (Revised NFRs for Verification & Testing approach)
+**Version:** 2.5
+**Date:** 2025-05-09 (Reflects Two-Model Collection Approach)
 
 ## 1. Vision & Scope
 
@@ -11,7 +11,11 @@ QuizMaster is a personalized learning tool designed primarily for efficient self
 2.  **Targeted Learning Feedback:** Allowing the user (initially, the developer) to take these imported quizzes and, most importantly, **tracking specific mistakes** made during attempts.
 3.  **Personalized Review:** Utilizing the mistake data to identify weak areas (by question, topic, or chapter) and potentially suggest targeted quizzes or review sessions.
 
-Organization of quizzes into **Collections** is a key supporting feature. General user features (complex profiles, social aspects, quiz creation UI) are secondary unless they directly support the core learning feedback loop or are easily implemented "quick wins". Functionality enabling the mistake analysis loop takes precedence over aesthetics.
+Organization of quizzes is crucial, facilitated through two mechanisms:
+    *   **Public Categories (`SystemCategory`):** Admin-managed categories (e.g., "History", "Science") for general browsing and discovery.
+    *   **Private Collections (`UserCollection`):** User-created groupings for personal organization (e.g., "Study Set", "Weak Areas").
+
+General user features (complex profiles, social aspects, quiz creation UI) are secondary unless they directly support the core learning feedback loop or are easily implemented "quick wins". Functionality enabling the mistake analysis loop takes precedence over aesthetics.
 
 ## 2. Core Architecture
 
@@ -82,9 +86,9 @@ _(Phases 1-4: Existing Foundational Components)_
   - `5.c`: Ensure frontend (`app.js`) sends basic results to `submit_quiz_attempt`.
   - `5.d`: Implement `profile_view` (`@login_required`).
   - `5.e`: `profile_view` fetches user's `QuizAttempt` records (most recent first).
-  - `5.f`: **(Revised)** Create `pages/profile.html` template extending `base.html`. **Implement the HTML structure, Tailwind classes, and Alpine.js tab setup matching Mockup 1 (Stats Above Tabs).** Include sections for Stats (using static placeholders initially) and Tabs for "History" and "Collections". **Ensure the "Favorites" tab is omitted entirely.**
-  - `5.g`: **(Revised)** Populate the "History" tab within the new structure (`5.f`) using the fetched `QuizAttempt` records from `5.e`.
-  - `5.h`: **(New - Verification)** Verify the profile page structure (`5.f`) is reasonably responsive across defined breakpoints.
+  - `5.f`: Create `pages/profile.html` template extending `base.html`. Implement the HTML structure, Tailwind classes, and Alpine.js tab setup matching Mockup 1 (Stats Above Tabs). Include sections for Stats (using static placeholders initially) and Tabs for "History" and "Collections". Ensure the "Favorites" tab is omitted entirely.
+  - `5.g`: Populate the "History" tab within the new structure (`5.f`) using the fetched `QuizAttempt` records from `5.e`.
+  - `5.h`: Verify the profile page structure (`5.f`) is reasonably responsive across defined breakpoints.
 
 ### Phase 6: Detailed Mistake Data Capture (NEW CORE - High Priority)
 
@@ -112,30 +116,33 @@ _(Phases 1-4: Existing Foundational Components)_
   - `8.c`: Create `registration/password_reset_email.html` template.
   - `8.d`: Configure `EMAIL_BACKEND` (e.g., console for development).
 
-### Phase 9: Profile Enhancement - Dynamic Data & Quick Wins (Medium Priority - Revised)
+---
 
-- **Objective:** Populate the existing profile structure with dynamic collections and stats, and add basic profile editing.
+## _(Collections, Profile Population & Management)_
+
+### Phase 9: Collection Models, Profile Population & Public Browsing (Revised)
+
+- **Objective:** Implement models for both public categories (`SystemCategory`) and private user collections (`UserCollection`). Populate the profile page with dynamic stats and private collections. Update public quiz browsing to use categories.
 - **Requirements:**
-  - `9.a`: **Model:** Define `QuizCollection` model (`pages/models.py`) with `user` (FK), `name`, `description` (opt), timestamps. Add M2M `quizzes` to `QuizCollection`. Apply migrations.
-  - `9.b`: **Admin:** Implement basic Django Admin for `QuizCollection`.
-  - `9.c`: **Profile View Logic (`pages/views.py`):** Fetch user's `QuizCollection` objects (ordered, prefetch quizzes), fetch uncategorized `Quiz` objects, calculate simple stats (Total Taken, Avg Score), pass all to context.
-  - `9.d`: **(Removed)** _This requirement is now integrated into Phase 5.f._
-  - `9.e`: **(Revised)** **Profile Template Population (`profile.html`):** Populate the **existing** profile template structure (from Phase 5.f):
-    - Display the calculated simple stats (Total Taken, Avg Score) in the designated areas (replacing static placeholders).
-    - Under the "Collections" tab, display the fetched collections and their associated quizzes, plus the "Uncategorized" quizzes list (replacing static placeholders). Ensure quizzes link to their detail pages.
-  - `9.f`: **Basic Edit Profile (Quick Win):** Implement `EditProfileForm` (email only), `edit_profile_view` (GET/POST), URL pattern in `pages/urls.py`, and `pages/edit_profile.html` template.
-  - `9.g`: **Update Edit Link:** Update the "Edit Profile" link/button in the `profile.html` template to point to the new `edit_profile_view`.
-  - `9.h`: **(Removed/Covered)** _Responsiveness check moved to Phase 5.h._
-  - `9.i`: **UX Evaluation:** During implementation of collection display (Req 9.e), **evaluate the feasibility and benefit of using HTMX or AJAX** to dynamically load the content of the "Collections" tab only when it becomes active, especially if collection lists become large. Document the decision.
+  - `9.a`: **Models:** Define `SystemCategory` model for public categories (name, slug, description, M2M->Quiz). Define `UserCollection` model for private collections (user FK, name, description, M2M->Quiz, timestamps). Apply migrations.
+  - `9.b`: **Admin:** Implement basic Django Admin interfaces for `SystemCategory` and `UserCollection`.
+  - `9.c`: **Profile View Logic (`pages/views.py::profile_view`):** Fetch user's `UserCollection`s, uncategorized quizzes, calculate simple stats (Total Taken, Avg Score), pass all to context.
+  - `9.d`: **Profile Template Population (`profile.html`):** Populate template: display stats; display `UserCollection`s & uncategorized quizzes under "Collections" tab.
+  - `9.e`: **Public Browsing View (`pages/views.py::quizzes`):** Update view to use `SystemCategory` for filtering. Pass categories to context.
+  - `9.f`: **Public Browsing Template (`pages/quizzes.html`):** Update template to display `SystemCategory` filters.
+  - `9.g`: **Homepage View (`pages/views.py::home`):** Optionally, update view to display featured `SystemCategory` instances.
+  - `9.h`: **Basic Edit Profile (Quick Win):** Implement `EditProfileForm` (email only), `edit_profile_view` (GET/POST), URL pattern, and template.
+  - `9.i`: **Update Edit Link:** Update profile template's "Edit Profile" link.
+  - `9.j`: **UX Evaluation:** Evaluate HTMX/AJAX for loading "Collections" tab content; document decision.
 
-### Phase 10: Collection Management & Import Integration (Medium Priority)
+### Phase 10: User Collection Management & Import Integration (Revised)
 
-- **Objective:** Allow users to create/manage collections and optionally integrate the import script.
+- **Objective:** Allow users to create/manage their private `UserCollection`s. Optionally integrate the import script with public `SystemCategory`.
 - **Requirements:**
-  - `10.a`: Implement view/form to _create_ new collections from the profile page. **Evaluate using HTMX/AJAX** for form submission and list update.
-  - `10.b`: Implement view/logic to _move_ quizzes between collections. **Evaluate using HTMX/AJAX** for dynamic actions on the profile page. Add UI controls.
-  - `10.c`: (Optional Enhancement) Modify `dir_import_chapter_quizzes.py` to optionally create/assign quizzes to a collection for the specified user during import.
-  - `10.d`: Add controls (e.g., button/modal) to `pages/quizzes.html` and `multi_choice_quiz/index.html` allowing adding a quiz to an _existing_ collection. **Evaluate using HTMX/AJAX**.
+  - `10.a`: **Create `UserCollection`:** Implement view/form/UI to create new `UserCollection`s from profile. Evaluate HTMX/AJAX.
+  - `10.b`: **Manage `UserCollection` Quizzes:** Implement view/logic/UI to add/remove quizzes from `UserCollection`s. Evaluate HTMX/AJAX.
+  - `10.c`: **Import Script Integration (Optional Enhancement):** Modify `dir_import_chapter_quizzes.py` to optionally assign imported quizzes to existing **`SystemCategory`** instances.
+  - `10.d`: **Add Quiz Control:** Add UI controls to public quiz pages to add a quiz to a user's existing `UserCollection`. Evaluate HTMX/AJAX.
 
 ---
 
@@ -145,10 +152,10 @@ _(Phases 1-4: Existing Foundational Components)_
 
 *   **Objective:** Analyze aggregated mistake patterns and suggest relevant quizzes/topics for review.
 *   **Requirements:**
-    *   `11.a`: Develop backend logic to query `QuizAttempt.attempt_details` across multiple attempts.
-    *   `11.b`: Identify patterns (frequently missed questions, weak topics/chapters/tags).
-    *   `11.c`: Implement logic to suggest Quizzes or Topics based on analysis.
-    *   `11.d`: Design and implement UI on the profile page (or dedicated dashboard) to present personalized suggestions.
+    *   `11.a`: Develop backend logic to query `QuizAttempt.attempt_details`.
+    *   `11.b`: Identify patterns (frequently missed questions, weak topics/`SystemCategory`/tags).
+    *   `11.c`: Implement logic to suggest Quizzes or `SystemCategory` instances.
+    *   `11.d`: Design and implement UI for suggestions.
 
 ---
 *(Lowest Priority / Future)*
@@ -156,11 +163,11 @@ _(Phases 1-4: Existing Foundational Components)_
 
 ### Phase 12: Favorites (Future - Low Priority)
 
-*   **Objective:** Allow users to mark quizzes as favorites.
+*   **Objective:** Allow users to mark quizzes as favorites (alternative or supplementary to `UserCollection`).
 *   **Requirements:**
     *   `12.a`: Add M2M `favorited_by` field to `Quiz` model.
     *   `12.b`: Implement toggle logic (view/AJAX/HTMX).
-    *   `12.c`: Implement "Favorites" display (potentially re-adding the tab to `profile.html` if desired).
+    *   `12.c`: Implement "Favorites" display.
     *   `12.d`: Add toggle controls to quiz lists/detail pages.
 
 ---

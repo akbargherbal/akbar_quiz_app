@@ -1,176 +1,43 @@
-# Iteration Guide: Profile & Core Learning Features
+# Iteration Guide: Profile & Core Features (Phases 5-11)
 
-**Scope:** Tracking implementation for user profile enhancements, mistake tracking/review, and quiz collections (Phases 5-11, as defined in Project Requirements v2.4).
-**Template:** Standard Iteration Guide (LGID v3)
-**Current Date:** 2025-05-06
-**Overall Status:** Phase 5 Planned
+**Project:** QuizMaster
+**Date Updated:** 2025-05-09
+**Corresponding Requirements Doc:** `Project_Requirements.md` v2.5
 
----
----
+## Overview
 
-## Phase 5: Foundational Attempt Tracking & Profile Page Structure (Revised)
+This guide outlines the development steps for enhancing the user profile and implementing core features like mistake tracking, review, and collection management, corresponding to Phases 5 through 11 of the project requirements.
 
-**Version:** 1.0
-**Date:** 2025-05-06
-**Phase Objective:** Store overall quiz attempt results, establish the final responsive profile page structure (Mockup 1: Stats Above Tabs), display initial history, and add the `attempt_details` field for future use.
-**Related Requirements:** 5.a, 5.b, 5.c, 5.d, 5.e, 5.f (Revised), 5.g (Revised), 5.h (New)
-**Phase Status:** Planned 📝
+## Completed Phases
 
----
+### Phase 5: Foundational Attempt Tracking & Profile Page Structure (Revised) - COMPLETE
 
-### Implementation Steps
+*   **Objective:** Store overall quiz attempt results and establish the final, responsive profile page structure based on Mockup 1 (Stats Above Tabs), including the initial display of quiz history.
+*   **Status:** Completed in Session 4. Verification script: `src/pages/tests/user_profile/test_phase5_verification.py`. Branch `feature/phase5-profile-foundation` merged to main.
+*   **Key Outcomes:**
+    *   `QuizAttempt` model includes `attempt_details` JSONField.
+    *   `submit_quiz_attempt` endpoint saves basic attempt data.
+    *   Frontend sends basic results.
+    *   `profile_view` requires login and fetches attempt history.
+    *   `profile.html` structure matches Mockup 1 (Stats above Tabs for History/Collections). History tab displays attempts.
+    *   Profile page is responsive and verified.
 
-#### Step 5.1: Add `attempt_details` JSONField to `QuizAttempt` Model
+### Phase 6: Detailed Mistake Data Capture - COMPLETE
 
-*   **Objective:** Add the database field for storing detailed mistake data (Req 5.a).
-*   **Key Tasks:**
-    1.  Modify `QuizAttempt` model in `multi_choice_quiz/models.py` to include a `JSONField` named `attempt_details` (nullable, blankable).
-    2.  Generate and apply database migrations.
-*   **Deliverables:**
-    *   Updated `multi_choice_quiz/models.py`.
-    *   New migration file(s) in `multi_choice_quiz/migrations/`.
-*   **Verification Checklist:**
-    *   `[ ]` `python manage.py check` passes.
-    *   `[ ]` `python manage.py migrate` applies successfully.
-    *   `[ ]` **Unit Test:** Add/run test in `test_models.py` confirming `attempt_details` field exists and accepts null/JSON.
-*   **Status:** To Do ⏳
+*   **Objective:** Capture _exactly_ which questions were answered incorrectly during a quiz attempt and store this detailed data.
+*   **Status:** Completed in Session 5. Verification script: `src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py`. Branch `feature/phase6-mistake-capture` ready for merge.
+*   **Key Outcomes:**
+    *   Frontend (`app.js`) collects detailed answer map (`{questionId: selectedOptionIndex}`).
+    *   Frontend sends this map as `attempt_details` in the submission payload.
+    *   Backend (`submit_quiz_attempt`) processes received details, compares with correct answers, and stores only the mistakes in the `QuizAttempt.attempt_details` JSONField.
+    *   Verification tests confirm correct storage and handling of edge cases (perfect score, missing details).
 
-#### Step 5.2: Implement Basic `submit_quiz_attempt` API Endpoint
+## Planned Phases
 
-*   **Objective:** Create backend endpoint to save basic `QuizAttempt` data (Req 5.b).
-*   **Key Tasks:**
-    1.  Implement `submit_quiz_attempt` view in `multi_choice_quiz/views.py` (handle POST, parse JSON, validate basic payload, determine user, save `QuizAttempt` ignoring `attempt_details`, return JSON response).
-    2.  Map URL in `multi_choice_quiz/urls.py`.
-*   **Deliverables:**
-    *   Updated `multi_choice_quiz/views.py`.
-    *   Updated `multi_choice_quiz/urls.py`.
-*   **Verification Checklist:**
-    *   `[ ]` **Unit Tests:** Run relevant tests in `multi_choice_quiz/tests/test_views.py` verifying successful/failed submissions for anonymous and authenticated users.
-*   **Status:** To Do ⏳
-
-#### Step 5.3: Ensure Frontend Sends Basic Results
-
-*   **Objective:** Update quiz player JS to POST basic results on completion (Req 5.c).
-*   **Key Tasks:**
-    1.  Modify `app.js` to gather required data (`quiz_id`, score, total, %, end_time) and POST to the `submit_quiz_attempt` endpoint using `fetch`.
-    2.  Ensure `quiz_id` is passed from the template to the JS context.
-*   **Deliverables:**
-    *   Updated `multi_choice_quiz/static/multi_choice_quiz/app.js`.
-    *   Updated `multi_choice_quiz/templates/multi_choice_quiz/index.html`.
-*   **Verification Checklist:**
-    *   `[ ]` **Manual E2E Check:** Take quiz (logged out/in), verify POST request in network tab & basic `QuizAttempt` saved in DB (with `user` correctly set/null).
-*   **Status:** To Do ⏳
-
-#### Step 5.4: Implement `profile_view` Logic
-
-*   **Objective:** Create view to fetch user's quiz attempt history (Req 5.d, 5.e).
-*   **Key Tasks:**
-    1.  Implement `profile_view` in `pages/views.py`, decorated with `@login_required`.
-    2.  Fetch user's `QuizAttempt` records (ordered).
-    3.  Pass attempts to template context.
-    4.  Map URL in `pages/urls.py`.
-*   **Deliverables:**
-    *   Updated `pages/views.py`.
-    *   Updated `pages/urls.py`.
-*   **Verification Checklist:**
-    *   `[ ]` **Unit Tests:** Run relevant tests in `pages/tests/test_views.py` verifying login requirement and context data.
-*   **Status:** To Do ⏳
-
-#### Step 5.5: Restructure `profile.html` (Mockup 1 Layout) & Populate History
-
-*   **Objective:** Implement Mockup 1 structure; display history (Req 5.f Rev, 5.g Rev).
-*   **Key Tasks:**
-    1.  Modify `pages/templates/pages/profile.html` to match Mockup 1 structure (Stats section above Alpine.js tabs for "History" & "Collections").
-    2.  Remove "Favorites" tab elements.
-    3.  Place existing history loop within the "History" tab content.
-    4.  Use static placeholders for Stats and Collections content areas.
-*   **Deliverables:**
-    *   Updated `pages/templates/pages/profile.html`.
-*   **Verification Checklist:**
-    *   `[ ]` **Manual E2E Check:** Log in, view profile, check structure (Stats above tabs), check tab presence ("History", "Collections" only), check tab switching, confirm history list renders in correct tab.
-*   **Status:** To Do ⏳
-
-#### Step 5.6: Verify Profile Page Responsiveness
-
-*   **Objective:** Ensure Mockup 1 structure is reasonably responsive (Req 5.h New).
-*   **Key Tasks:**
-    1.  Manually check profile page layout across breakpoints using browser dev tools.
-    2.  **Update** `pages/tests/test_responsive.py::test_profile_responsive_layout` to assert key elements of the *new* structure are visible/positioned correctly at different breakpoints.
-*   **Deliverables:**
-    *   Updated `pages/tests/test_responsive.py`.
-*   **Verification Checklist:**
-    *   `[ ]` Manual inspection passes.
-    *   `[ ]` **E2E Test:** `pytest src/pages/tests/test_responsive.py::test_profile_responsive_layout` passes with updated assertions.
-*   **Status:** To Do ⏳
-
-#### Step 5.7: Phase 5 Verification
-
-*   **Objective:** Ensure all Phase 5 objectives are met integratively.
-*   **Key Tasks:**
-    1.  Create verification script `src/pages/tests/user_profile/test_phase5_verification.py`.
-    2.  Add tests verifying: `attempt_details` field exists, `profile_view` requires login, basic Mockup 1 structure (stats section, correct tabs) renders.
-*   **Deliverables:**
-    *   New `src/pages/tests/user_profile/test_phase5_verification.py`.
-*   **Verification Checklist:**
-    *   `[ ]` All relevant unit tests pass (`pytest src/multi_choice_quiz/tests/`, `pytest src/pages/tests/ --ignore=src/pages/tests/user_profile/`).
-    *   `[ ]` All relevant E2E tests pass (`pytest src/pages/tests/test_responsive.py src/pages/tests/test_templates.py`).
-    *   `[ ]` **Phase Verification Script Passes:** `pytest src/pages/tests/user_profile/test_phase5_verification.py`.
-*   **Status:** To Do ⏳
-
----
----
-
-## Phase 6: Detailed Mistake Data Capture (High Priority)
+### Phase 7: Basic Mistake Review Interface (High Priority)
 
 **Version:** 1.0
-**Date:** 2025-05-06
-**Phase Objective:** Capture _exactly_ which questions were answered incorrectly during a quiz attempt and store this data.
-**Related Requirements:** 6.a, 6.b, 6.c
-**Phase Status:** Planned 📝
-
----
-
-### Implementation Steps
-
-#### Step 6.1: Frontend Data Collection (`app.js`)
-
-*   **Objective:** Collect detailed answer data during the quiz (Req 6.a).
-*   **Key Tasks:** Modify `app.js` to store user's selected answer index for each question ID during the quiz.
-*   **Deliverables:** Updated `multi_choice_quiz/static/multi_choice_quiz/app.js`.
-*   **Verification Checklist:** `[ ]` Manual check (e.g., `console.log`) or JS unit test confirms data structure is populated correctly.
-*   **Status:** To Do ⏳
-
-#### Step 6.2: Frontend Payload Update (`app.js`)
-
-*   **Objective:** Include collected answer details in the results payload (Req 6.b).
-*   **Key Tasks:** Modify `app.js` `submitResults` function to add the collected detailed answers to the JSON payload sent via `fetch`.
-*   **Deliverables:** Updated `multi_choice_quiz/static/multi_choice_quiz/app.js`.
-*   **Verification Checklist:** `[ ]` Manual check (network tab) confirms detailed answer data is included in POST request.
-*   **Status:** To Do ⏳
-
-#### Step 6.3: Backend Processing & Storage (`submit_quiz_attempt`)
-
-*   **Objective:** Process detailed answers and store mistake data in `attempt_details` (Req 6.c).
-*   **Key Tasks:** Modify `submit_quiz_attempt` view in `multi_choice_quiz/views.py` to: extract detailed answers, compare with correct answers, generate mistake data JSON, save JSON to `QuizAttempt.attempt_details`.
-*   **Deliverables:** Updated `multi_choice_quiz/views.py`.
-*   **Verification Checklist:** `[ ]` **Unit Tests:** Add/run tests in `test_views.py` verifying `attempt_details` field is correctly populated based on submitted answers.
-*   **Status:** To Do ⏳
-
-#### Step 6.4: Phase 6 Verification
-
-*   **Objective:** Ensure detailed mistake data is correctly captured and stored end-to-end.
-*   **Key Tasks:** Create `src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py`. Add integration tests verifying DB state after submission.
-*   **Deliverables:** New verification script `test_phase6_verification.py`.
-*   **Verification Checklist:** `[ ]` Phase Verification Script Passes. `[ ]` All relevant unit/E2E tests pass.
-*   **Status:** To Do ⏳
-
----
----
-
-## Phase 7: Basic Mistake Review Interface (High Priority)
-
-**Version:** 1.0
-**Date:** 2025-05-06
+**Date:** 2025-05-09
 **Phase Objective:** Allow the user to review the specific mistakes made in a past attempt.
 **Related Requirements:** 7.a, 7.b, 7.c, 7.d
 **Phase Status:** Planned 📝
@@ -217,7 +84,7 @@
 ## Phase 8: Password Management
 
 **Version:** 1.0
-**Date:** 2025-05-06
+**Date:** 2025-05-09
 **Phase Objective:** Implement standard Django password change and reset functionality.
 **Related Requirements:** 8.a, 8.b, 8.c, 8.d
 **Phase Status:** Planned 📝
@@ -231,7 +98,7 @@
 *   **Objective:** Ensure necessary templates exist and email backend is configured (Req 8.a-d).
 *   **Key Tasks:** Create/verify templates (`password_*.html`, `password_reset_email.html`) extending base. Configure `EMAIL_BACKEND`.
 *   **Deliverables:** Templates in `templates/registration/`, updated `settings.py`.
-*   **Verification Checklist:** `[ ]` Run `core/tests/test_phase5_verification.py` (verifies templates/config). `[ ]` Manual E2E test of password reset flow using console email.
+*   **Verification Checklist:** `[ ]` Run relevant verification tests (e.g., template rendering tests if created, potentially from a `test_phase8_verification.py`). `[ ]` Manual E2E test of password reset flow using console email.
 *   **Status:** To Do ⏳
 
 #### Step 8.2: Phase 8 Verification
@@ -245,62 +112,78 @@
 ---
 ---
 
-## Phase 9: Profile Enhancement - Dynamic Data & Quick Wins (Revised)
+## Phase 9: Collection Models, Profile Population & Public Browsing (Revised)
 
 **Version:** 1.0
-**Date:** 2025-05-06
-**Phase Objective:** Populate profile with dynamic collections/stats, add basic profile editing.
-**Related Requirements:** 9.a, 9.b, 9.c, 9.e (Revised), 9.f, 9.g, 9.i
+**Date:** 2025-05-09
+**Phase Objective:** Implement models for both **public `SystemCategory`** (admin-managed, for browsing) and **private `UserCollection`** (user-managed). Populate the profile page dynamically with user stats and `UserCollection` data. Update public quiz browsing to use `SystemCategory`. Implement basic profile editing.
+**Related Requirements:** 9.a, 9.b, 9.c, 9.d, 9.e, 9.f, 9.g, 9.h, 9.i, 9.j
 **Phase Status:** Planned 📝
 
 ---
 
 ### Implementation Steps
 
-#### Step 9.1: Define & Migrate `QuizCollection` Model
+#### Step 9.1: Define & Migrate Collection Models
 
-*   **Objective:** Create DB model for quiz collections (Req 9.a).
-*   **Key Tasks:** Define `QuizCollection` in `pages/models.py` (User FK, name, M2M quizzes). Generate/apply migrations.
-*   **Deliverables:** Updated `pages/models.py`, migration file(s).
-*   **Verification Checklist:** `[ ]` `check`, `migrate` pass. `[ ]` **Unit Test:** Add/run tests in `pages/tests/test_models.py`.
+*   **Objective:** Create DB models for `SystemCategory` and `UserCollection` (Req 9.a).
+*   **Key Tasks:** Define models in `pages/models.py` (or dedicated app). Generate/apply migrations.
+*   **Deliverables:** Updated `models.py`, migration file(s).
+*   **Verification Checklist:** `[ ]` `check`, `migrate` pass. `[ ]` **Unit Test:** Add/run tests for new models.
 *   **Status:** To Do ⏳
 
-#### Step 9.2: Implement `QuizCollection` Admin
+#### Step 9.2: Implement Collection Admin Interfaces
 
-*   **Objective:** Create basic Django Admin interface (Req 9.b).
-*   **Key Tasks:** Register `QuizCollection` in `pages/admin.py`. Customize display/filtering if needed.
-*   **Deliverables:** Updated `pages/admin.py`.
-*   **Verification Checklist:** `[ ]` **Manual Check:** Access admin site, verify model is present and functional.
+*   **Objective:** Create Django Admin interfaces for both models (Req 9.b).
+*   **Key Tasks:** Register models in `admin.py`. Customize if needed.
+*   **Deliverables:** Updated `admin.py`.
+*   **Verification Checklist:** `[ ]` **Manual Check:** Access admin site, verify models are present and functional.
 *   **Status:** To Do ⏳
 
-#### Step 9.3: Update `profile_view` Logic (Stats & Collections)
+#### Step 9.3: Update `profile_view` Logic (Stats & `UserCollection`)
 
-*   **Objective:** Fetch collections data and calculate basic stats (Req 9.c).
-*   **Key Tasks:** Modify `profile_view` in `pages/views.py` to fetch user's collections (prefetch quizzes), uncategorized quizzes, calculate stats (total attempts, avg score), add to context.
+*   **Objective:** Fetch `UserCollection` data and calculate stats for profile (Req 9.c).
+*   **Key Tasks:** Modify `profile_view` to fetch user's `UserCollection`s (prefetch quizzes), uncategorized quizzes, calculate stats (total attempts, avg score), add to context.
 *   **Deliverables:** Updated `pages/views.py`.
-*   **Verification Checklist:** `[ ]` **Unit Tests:** Add/run tests in `test_views.py` verifying correct data (collections, stats) in context.
+*   **Verification Checklist:** `[ ]` **Unit Tests:** Add/run tests verifying correct data in context.
 *   **Status:** To Do ⏳
 
-#### Step 9.4: Populate Profile Template (Stats & Collections)
+#### Step 9.4: Populate Profile Template (Stats & `UserCollection`)
 
-*   **Objective:** Display dynamic stats and collections list (Req 9.e Rev). Evaluate HTMX/AJAX (Req 9.i).
-*   **Key Tasks:** Modify `profile.html`. Replace placeholder stats with context variables. Implement collections display (looping through collections, quizzes) under "Collections" tab. Document HTMX/AJAX evaluation decision for tab loading.
+*   **Objective:** Display dynamic stats and `UserCollection` list (Req 9.d). Evaluate HTMX/AJAX (Req 9.j).
+*   **Key Tasks:** Modify `profile.html`. Replace placeholder stats. Implement `UserCollection` display under "Collections" tab. Document HTMX/AJAX evaluation decision for tab loading.
 *   **Deliverables:** Updated `pages/templates/pages/profile.html`.
-*   **Verification Checklist:** `[ ]` **Manual E2E Check:** View profile, confirm dynamic stats and collections list render correctly. Check Collections tab loading behavior based on evaluation decision.
+*   **Verification Checklist:** `[ ]` **Manual E2E Check:** View profile, confirm dynamic stats and collections list render correctly. Check Collections tab loading behavior.
 *   **Status:** To Do ⏳
 
-#### Step 9.5: Implement Basic Edit Profile
+#### Step 9.5: Update Public Browsing (`quizzes` View & Template)
 
-*   **Objective:** Add simple profile editing (email) (Req 9.f, 9.g).
+*   **Objective:** Use `SystemCategory` for public quiz filtering (Req 9.e, 9.f).
+*   **Key Tasks:** Update `quizzes` view to fetch/filter by `SystemCategory`. Update template to show `SystemCategory` filters.
+*   **Deliverables:** Updated `pages/views.py`, `pages/templates/pages/quizzes.html`.
+*   **Verification Checklist:** `[ ]` **Unit/E2E Tests:** Add/run tests verifying category filtering works.
+*   **Status:** To Do ⏳
+
+#### Step 9.6: Update Homepage View (Optional)
+
+*   **Objective:** Optionally display featured `SystemCategory` instances (Req 9.g).
+*   **Key Tasks:** Modify `home` view and template if implementing this feature.
+*   **Deliverables:** Updated `pages/views.py`, `pages/templates/pages/home.html` (if changed).
+*   **Verification Checklist:** `[ ]` **Manual/E2E Check:** Verify homepage displays categories correctly (if implemented).
+*   **Status:** To Do ⏳
+
+#### Step 9.7: Implement Basic Edit Profile
+
+*   **Objective:** Add simple profile editing (email) (Req 9.h, 9.i).
 *   **Key Tasks:** Create form, view, URL, template for editing email. Update "Edit Profile" link on `profile.html`.
 *   **Deliverables:** New `EditProfileForm`, `edit_profile_view`, URL pattern, `edit_profile.html`. Updated `profile.html`.
-*   **Verification Checklist:** `[ ]` **Unit/E2E Tests:** Add/run tests for edit profile form, view, and E2E flow.
+*   **Verification Checklist:** `[ ]` **Unit/E2E Tests:** Add/run tests for edit profile flow.
 *   **Status:** To Do ⏳
 
-#### Step 9.6: Phase 9 Verification
+#### Step 9.8: Phase 9 Verification
 
-*   **Objective:** Verify dynamic data display and editing work.
-*   **Key Tasks:** Create `src/pages/tests/user_profile/test_phase9_verification.py`. Add tests verifying dynamic stats/collections display and profile editing.
+*   **Objective:** Verify dynamic data display, category filtering, and editing work.
+*   **Key Tasks:** Create `src/pages/tests/user_profile/test_phase9_verification.py`. Add tests verifying dynamic stats/collections display, category filtering, and profile editing.
 *   **Deliverables:** New verification script `test_phase9_verification.py`.
 *   **Verification Checklist:** `[ ]` Phase Verification Script Passes. `[ ]` All relevant unit/E2E tests pass.
 *   **Status:** To Do ⏳
@@ -308,11 +191,11 @@
 ---
 ---
 
-## Phase 10: Collection Management & Import Integration
+## Phase 10: User Collection Management & Import Integration (Revised)
 
 **Version:** 1.0
-**Date:** 2025-05-06
-**Phase Objective:** Allow users to create/manage collections; optionally enhance import script.
+**Date:** 2025-05-09
+**Phase Objective:** Allow users to create and manage their private `UserCollection`s. Optionally integrate the import script with public `SystemCategory`. Provide UI for adding global quizzes to private collections.
 **Related Requirements:** 10.a, 10.b, 10.c, 10.d
 **Phase Status:** Planned 📝
 
@@ -320,36 +203,36 @@
 
 ### Implementation Steps
 
-#### Step 10.1: Implement Collection Creation
+#### Step 10.1: Implement `UserCollection` Creation
 
-*   **Objective:** Add ability to create collections from profile (Req 10.a). Evaluate HTMX/AJAX.
-*   **Key Tasks:** Implement form, view, URL for creating collections. Add UI trigger (button/form) to profile. Document HTMX/AJAX decision.
+*   **Objective:** Add ability to create `UserCollection`s from profile (Req 10.a). Evaluate HTMX/AJAX.
+*   **Key Tasks:** Implement form, view, URL for creating collections. Add UI trigger to profile. Document HTMX/AJAX decision.
 *   **Deliverables:** Updated views, new form, updated templates.
 *   **Verification Checklist:** `[ ]` **Unit/E2E Tests:** Add/run tests verifying creation flow.
 *   **Status:** To Do ⏳
 
-#### Step 10.2: Implement Moving Quizzes Between Collections
+#### Step 10.2: Implement Managing Quizzes in `UserCollection`s
 
-*   **Objective:** Add ability to move quizzes (Req 10.b). Evaluate HTMX/AJAX.
-*   **Key Tasks:** Implement backend logic and UI controls (e.g., dropdown/modal) on profile page for moving quizzes. Document HTMX/AJAX decision.
+*   **Objective:** Add ability to add/remove quizzes from `UserCollection`s (Req 10.b). Evaluate HTMX/AJAX.
+*   **Key Tasks:** Implement backend logic and UI controls on profile page. Document HTMX/AJAX decision.
 *   **Deliverables:** Updated views, templates, possibly JS/HTMX snippets.
-*   **Verification Checklist:** `[ ]` **Unit/E2E Tests:** Add/run tests verifying move functionality.
+*   **Verification Checklist:** `[ ]` **Unit/E2E Tests:** Add/run tests verifying add/remove functionality.
 *   **Status:** To Do ⏳
 
-#### Step 10.3: Implement Adding to Collection from Quiz Lists
+#### Step 10.3: Implement Adding to `UserCollection` from Quiz Lists
 
-*   **Objective:** Add controls to add quiz to existing collection (Req 10.d). Evaluate HTMX/AJAX.
-*   **Key Tasks:** Add UI controls (e.g., button/modal) to `pages/quizzes.html` and `multi_choice_quiz/index.html`. Implement backend view/logic. Document HTMX/AJAX decision.
+*   **Objective:** Add controls on public pages to add quiz to existing `UserCollection` (Req 10.d). Evaluate HTMX/AJAX.
+*   **Key Tasks:** Add UI controls to `pages/quizzes.html` and `multi_choice_quiz/index.html`. Implement backend view/logic. Document HTMX/AJAX decision.
 *   **Deliverables:** Updated templates, views, possibly JS/HTMX.
-*   **Verification Checklist:** `[ ]` **Unit/E2E Tests:** Add/run tests verifying add-to-collection flow.
+*   **Verification Checklist:** `[ ]` **Unit/E2E Tests:** Add/run tests verifying add-to-collection flow from public pages.
 *   **Status:** To Do ⏳
 
-#### Step 10.4: (Optional) Enhance Import Script
+#### Step 10.4: (Optional) Enhance Import Script for `SystemCategory`
 
-*   **Objective:** Allow assigning imported quizzes to a collection (Req 10.c).
-*   **Key Tasks:** Modify `dir_import_chapter_quizzes.py` to accept optional user/collection args and assign imported quizzes.
+*   **Objective:** Allow assigning imported quizzes to `SystemCategory` (Req 10.c).
+*   **Key Tasks:** Modify `dir_import_chapter_quizzes.py` to accept optional category args and assign imported quizzes to `SystemCategory`.
 *   **Deliverables:** Updated `dir_import_chapter_quizzes.py`.
-*   **Verification Checklist:** `[ ]` **Script Tests:** Add/run tests for the import script verifying collection assignment.
+*   **Verification Checklist:** `[ ]` **Script Tests:** Add/run tests for the import script verifying category assignment.
 *   **Status:** To Do ⏳
 
 #### Step 10.5: Phase 10 Verification
@@ -366,7 +249,7 @@
 ## Phase 11: Advanced Mistake Analysis & Quiz Suggestion (Future)
 
 **Version:** 1.0
-**Date:** 2025-05-06
+**Date:** 2025-05-09
 **Phase Objective:** Analyze mistakes and suggest quizzes/topics for review.
 **Related Requirements:** 11.a, 11.b, 11.c, 11.d
 **Phase Status:** Planned 📝
@@ -378,15 +261,15 @@
 #### Step 11.1: Backend Analysis Logic
 
 *   **Objective:** Develop logic to query and analyze `attempt_details` (Req 11.a, 11.b).
-*   **Key Tasks:** Implement functions/methods to aggregate mistake data across attempts.
+*   **Key Tasks:** Implement functions/methods to aggregate mistake data.
 *   **Deliverables:** New analysis utilities/methods.
 *   **Verification Checklist:** `[ ]` Unit tests for analysis logic.
 *   **Status:** To Do ⏳
 
 #### Step 11.2: Suggestion Generation Logic
 
-*   **Objective:** Implement logic to suggest quizzes/topics based on analysis (Req 11.c).
-*   **Key Tasks:** Implement functions/methods to identify relevant quizzes/topics based on identified weaknesses.
+*   **Objective:** Implement logic to suggest quizzes/categories based on analysis (Req 11.c).
+*   **Key Tasks:** Implement functions/methods to identify relevant quizzes/`SystemCategory` instances.
 *   **Deliverables:** New suggestion utilities/methods.
 *   **Verification Checklist:** `[ ]` Unit tests for suggestion logic.
 *   **Status:** To Do ⏳
@@ -394,7 +277,7 @@
 #### Step 11.3: Frontend Presentation
 
 *   **Objective:** Design and implement UI for suggestions (Req 11.d).
-*   **Key Tasks:** Update profile view/template or create new dashboard to display suggestions.
+*   **Key Tasks:** Update profile view/template or create new dashboard.
 *   **Deliverables:** Updated views/templates.
 *   **Verification Checklist:** `[ ]` E2E tests / Manual check of suggestions display.
 *   **Status:** To Do ⏳
@@ -406,8 +289,3 @@
 *   **Deliverables:** New verification script.
 *   **Verification Checklist:** `[ ]` Phase Verification Script Passes. `[ ]` All relevant unit/E2E tests pass.
 *   **Status:** To Do ⏳
-
----
----
-
-PS: Profile_and_CoreFeatures_Iteration_Guide.md often you'll be hearing me calling it the Iteration Guide.
