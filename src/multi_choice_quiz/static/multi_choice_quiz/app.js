@@ -1,4 +1,4 @@
-// src/multi_choice_quiz/static/multi_choice_quiz/app.js (MODIFIED)
+// src/multi_choice_quiz/static/multi_choice_quiz/app.js (MODIFIED for Step 6.1 & 6.2)
 
 window.quizApp = function () {
   let initialized = false;
@@ -21,29 +21,28 @@ window.quizApp = function () {
     // --- State ---
     questions: [],
     currentQuestionIndex: 0,
-    userAnswers: [],
+    userAnswers: [], // Tracks basic correct/incorrect - may be less relevant now
     selectedOptionIndex: null,
     isAnswered: false,
     quizCompleted: false,
     score: 0,
-    wrongAnswers: 0,
+    wrongAnswers: 0, // Tracks count of wrong answers
     feedbackTimer: null,
     correctFeedbackDuration: 400,
     incorrectFeedbackDuration: 600,
     startTime: null,
     endTime: null,
     quizTime: 0,
-    quizId: null, // <<< Add state for quiz ID
+    detailedAnswers: {}, // <<< STEP 6.1: Object to store {questionId: selectedOptionIndex}
+    quizId: null,
 
     // --- Computed Properties (Getters) ---
     get currentQuestion() {
-      // ... (no change)
       return this.questions && this.questions.length > this.currentQuestionIndex
         ? this.questions[this.currentQuestionIndex]
         : null;
     },
     get isCorrect() {
-      // ... (no change)
       return this.currentQuestion && this.selectedOptionIndex !== null
         ? this.selectedOptionIndex === this.currentQuestion.answerIndex
         : null;
@@ -51,7 +50,7 @@ window.quizApp = function () {
     get starRatingDisplay() {
       // ... (no change)
       const totalQuestions = this.questions.length;
-      if (totalQuestions === 0) return "☆☆☆☆☆"; // Default empty stars if no questions
+      if (totalQuestions === 0) return "☆☆☆☆☆";
 
       const maxPossibleScore = totalQuestions;
       const currentScore = maxPossibleScore - this.wrongAnswers;
@@ -87,21 +86,13 @@ window.quizApp = function () {
     // --- Methods ---
     emitQuizEvent(eventName, data = {}) {
       // ... (no change)
-      // console.log( // Keep this commented unless debugging events specifically
-      //   "DEBUG: emitQuizEvent called for:",
-      //   eventName,
-      //   "TESTING_MODE:",
-      //   window.TESTING_MODE
-      // );
       const event = new CustomEvent(`quiz:${eventName}`, {
         detail: { ...data, timestamp: Date.now() },
       });
       document.dispatchEvent(event);
-      // console.log(`DEBUG: Emitted event quiz:${eventName}`, data); // Keep this commented unless debugging events
     },
 
     init() {
-      // ... (previous init logic)
       console.log("DEBUG: quizApp component init() entered.");
       if (initialized) {
         console.log("DEBUG: init() skipped - already initialized.");
@@ -112,8 +103,7 @@ window.quizApp = function () {
         "DEBUG: quizApp component init() running for the first time."
       );
 
-      // window.TESTING_MODE = true; // Keep for now if tests rely on it
-      // console.log("DEBUG: window.TESTING_MODE set to true at start of init.");
+      this.detailedAnswers = {}; // <<< STEP 6.1: Reset on init
 
       const dataElement = document.getElementById("quiz-data");
       if (dataElement) {
@@ -132,7 +122,6 @@ window.quizApp = function () {
         this.userAnswers = [];
       }
 
-      // <<< START: Get Quiz ID from data attribute >>>
       const container = document.getElementById("quiz-app-container");
       this.quizId = container ? container.dataset.quizId : null;
       if (!this.quizId) {
@@ -142,7 +131,6 @@ window.quizApp = function () {
       } else {
         console.log("DEBUG: Quiz ID loaded:", this.quizId);
       }
-      // <<< END: Get Quiz ID >>>
 
       this.currentQuestionIndex = 0;
       this.selectedOptionIndex = null;
@@ -160,7 +148,7 @@ window.quizApp = function () {
         console.log("DEBUG: Cleared existing feedback timer in init.");
       }
 
-      window.quizAppInstance = this;
+      window.quizAppInstance = this; // For testing/debugging
       console.log(
         "DEBUG: Alpine instance assigned to window.quizAppInstance for testing."
       );
@@ -177,15 +165,13 @@ window.quizApp = function () {
 
       this.emitQuizEvent("quiz-initialized", {
         questionsCount: this.questions.length,
-        quizId: this.quizId, // Include quizId in event
+        quizId: this.quizId,
       });
 
       console.log("DEBUG: quizApp component init() finished.");
     },
 
     selectOption(index) {
-      // ... (no change)
-      // console.log(`DEBUG: selectOption(${index}) called.`);
       if (this.isAnswered || !this.currentQuestion) {
         console.log(
           "DEBUG: Selection ignored - already answered or no current question"
@@ -196,6 +182,18 @@ window.quizApp = function () {
       this.selectedOptionIndex = index;
       this.isAnswered = true;
 
+      // --- START STEP 6.1 LOGIC ---
+      if (this.currentQuestion && this.currentQuestion.id) {
+          const questionId = this.currentQuestion.id;
+          // Store user's selected index (0-based) against the question ID
+          this.detailedAnswers[questionId] = index;
+          console.log(`DEBUG: Recorded answer for QID ${questionId}: Selected Index ${index}`);
+      } else {
+           console.error("DEBUG: Could not record detailed answer - currentQuestion or ID missing.");
+      }
+      // --- END STEP 6.1 LOGIC ---
+
+      // Update basic answer tracking array (less important now?)
       if (
         this.userAnswers &&
         this.userAnswers.length > this.currentQuestionIndex
@@ -208,16 +206,12 @@ window.quizApp = function () {
         );
       }
 
+      // Update score/wrong answer count
       const wasCorrect = this.isCorrect;
       if (wasCorrect) {
         this.score++;
-        // console.log("DEBUG: Correct Answer! Score:", this.score);
       } else {
         this.wrongAnswers++;
-        // console.log(
-        //   "DEBUG: Incorrect Answer! Wrong answers:",
-        //   this.wrongAnswers
-        // );
       }
 
       this.emitQuizEvent("answer-selected", {
@@ -226,55 +220,28 @@ window.quizApp = function () {
         isCorrect: wasCorrect,
       });
 
+      // Handle feedback timer
       if (this.feedbackTimer) {
         clearTimeout(this.feedbackTimer);
-        // console.log( // Keep commented unless debugging timers
-        //   "DEBUG: Cleared existing feedback timer before setting new one."
-        // );
       }
-
       const feedbackDuration = wasCorrect
         ? this.correctFeedbackDuration
         : this.incorrectFeedbackDuration;
-
-      // console.log( // Keep commented unless debugging timers
-      //   `DEBUG: Using feedback duration: ${feedbackDuration}ms (${
-      //     wasCorrect ? "correct" : "incorrect"
-      //   } answer)`
-      // );
-      // console.log( // Keep commented unless debugging timers
-      //   `DEBUG: Next question will appear in ${feedbackDuration / 1000} seconds.`
-      // );
-
-      // console.log("DEBUG: Setting timer for nextQuestion..."); // Keep commented unless debugging timers
       this.feedbackTimer = setTimeout(() => {
-        // console.log( // Keep commented unless debugging timers
-        //   "DEBUG: setTimeout callback executing, calling nextQuestion..."
-        // );
         this.nextQuestion();
       }, feedbackDuration);
     },
 
     nextQuestion() {
-      // console.log( // Keep commented unless debugging nextQuestion
-      //   "DEBUG: nextQuestion entered. Current index:",
-      //   this.currentQuestionIndex
-      // );
       if (this.feedbackTimer) {
         clearTimeout(this.feedbackTimer);
         this.feedbackTimer = null;
-        // console.log("DEBUG: Cleared feedback timer at start of nextQuestion."); // Keep commented unless debugging timers
       }
 
       if (this.currentQuestionIndex < this.questions.length - 1) {
         this.currentQuestionIndex++;
-        // console.log( // Keep commented unless debugging nextQuestion
-        //   `DEBUG: Advanced to question ${this.currentQuestionIndex + 1}`
-        // );
         this.isAnswered = false;
         this.selectedOptionIndex = null;
-
-        // console.log("DEBUG: About to emit quiz:question-changed..."); // Keep commented unless debugging events
         this.emitQuizEvent("question-changed", {
           questionIndex: this.currentQuestionIndex,
         });
@@ -283,22 +250,16 @@ window.quizApp = function () {
         this.endTime = new Date();
         this.calculateQuizTime();
         console.log("DEBUG: Quiz completed. Final score:", this.score);
-
-        // console.log("DEBUG: About to emit quiz:quiz-completed..."); // Keep commented unless debugging events
         this.emitQuizEvent("quiz-completed", {
           score: this.score,
           wrongAnswers: this.wrongAnswers,
           timeSeconds: this.quizTime,
           quizId: this.quizId,
         });
-
-        // <<< CALL SUBMIT RESULTS HERE >>>
-        this.submitResults();
+        this.submitResults(); // Submit results automatically
       }
-      // console.log("DEBUG: nextQuestion finished."); // Keep commented unless debugging nextQuestion
     },
 
-    // <<< START NEW METHOD >>>
     submitResults() {
       if (!this.quizId) {
         console.error("Cannot submit results: Quiz ID is missing.");
@@ -310,32 +271,30 @@ window.quizApp = function () {
       }
 
       const payload = {
-        quiz_id: parseInt(this.quizId, 10), // Ensure quiz_id is an integer
+        quiz_id: parseInt(this.quizId, 10),
         score: this.score,
         total_questions: this.questions.length,
         percentage: this.calculatePercentage(),
-        // Send end time in ISO format (UTC)
         end_time: this.endTime
           ? this.endTime.toISOString()
           : new Date().toISOString(),
-        // Add attempt_details later (Phase 6)
-        // attempt_details: { /* structure based on Req 6.c */ }
+        // --- START STEP 6.2 CHANGE ---
+        attempt_details: this.detailedAnswers // Add the collected detailed answers
+        // --- END STEP 6.2 CHANGE ---
       };
 
-      console.log("DEBUG: Submitting quiz results:", payload);
+      console.log("DEBUG: Submitting quiz results (with details):", payload); // Updated log message
 
       fetch("/quiz/submit_attempt/", { // Use the correct URL defined in urls.py
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // IMPORTANT: CSRF token handling needed if not using @csrf_exempt
-          // 'X-CSRFToken': getCookie('csrftoken') // Add this later if required
+          // 'X-CSRFToken': getCookie('csrftoken') // Add later if required
         },
         body: JSON.stringify(payload),
       })
         .then((response) => {
           if (!response.ok) {
-            // Attempt to read error details if possible
             return response.text().then((text) => {
               throw new Error(
                 `HTTP error ${response.status}: ${text || response.statusText}`
@@ -358,36 +317,30 @@ window.quizApp = function () {
           // Optionally show a user-facing error message here
         });
     },
-    // <<< END NEW METHOD >>>
 
     restartQuiz() {
-      // ... (no change)
       console.log("DEBUG: Restarting quiz...");
+      this.detailedAnswers = {}; // <<< STEP 6.1: Reset on restart
       initialized = false; // Reset initialization flag
       this.init(); // Re-initialize the component
-      // console.log("DEBUG: About to emit quiz:quiz-restarted..."); // Keep commented unless debugging events
       this.emitQuizEvent("quiz-restarted", {});
     },
 
-    // --- Helper Methods for Results (unchanged) ---
+    // --- Helper Methods for Results ---
     calculatePercentage() {
-      // ... (no change)
       if (this.questions.length === 0) return 0;
       return Math.round((this.score / this.questions.length) * 100);
     },
 
     calculateQuizTime() {
-      // ... (no change)
       if (!this.startTime || !this.endTime) return 0;
       this.quizTime = Math.floor((this.endTime - this.startTime) / 1000);
       return this.quizTime;
     },
 
     formatTime(seconds) {
-      // ... (no change)
       if (!seconds && seconds !== 0) return "--:--";
       if (seconds === 0) return "00:00";
-
       const minutes = Math.floor(seconds / 60);
       const remainingSeconds = seconds % 60;
       return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
@@ -395,38 +348,21 @@ window.quizApp = function () {
         .padStart(2, "0")}`;
     },
 
-    // --- Dynamic Class Logic (Unchanged from previous state) ---
+    // --- Dynamic Class Logic (Unchanged) ---
     getOptionClass(index) {
       // ... (Keep the existing complex logic for feedback styles) ...
       if (!this.currentQuestion) {
-        // Default classes if no question - Use original default return
         return "option-button p-4 rounded-xl font-semibold text-lg md:text-lg sm:text-base text-center transition-all duration-200 ease-in-out border-none cursor-pointer relative overflow-hidden shadow-md flex flex-col items-center justify-center bg-slate-700 text-gray-200";
       }
 
-      // Original base classes including original transition
       let baseClasses = [
-        "option-button",
-        "p-4",
-        "rounded-xl",
-        "font-semibold",
-        "text-base",
-        "text-center",
-        "transition-all",
-        "duration-200",
-        "ease-in-out", // ORIGINAL transition
-        "border-none",
-        "cursor-pointer",
-        "relative",
-        "overflow-hidden", //"shadow-md",
-        "flex",
-        "flex-col",
-        "items-center",
-        "justify-center",
-        "disabled:opacity-100",
-        "disabled:cursor-not-allowed",
+        "option-button", "p-4", "rounded-xl", "font-semibold", "text-base",
+        "text-center", "transition-all", "duration-200", "ease-in-out",
+        "border-none", "cursor-pointer", "relative", "overflow-hidden",
+        "flex", "flex-col", "items-center", "justify-center",
+        "disabled:opacity-100", "disabled:cursor-not-allowed",
       ];
 
-      // State 1: Question NOT Answered Yet (Original Logic)
       if (!this.isAnswered) {
         const colorClasses = [
           "bg-teal-300 text-slate-800 hover:translate-y-[-2px] hover:shadow-lg active:translate-y-0 active:shadow-md",
@@ -436,83 +372,47 @@ window.quizApp = function () {
           "bg-pink-400 text-slate-800 hover:translate-y-[-2px] hover:shadow-lg active:translate-y-0 active:shadow-md",
         ];
         baseClasses.push(colorClasses[index % colorClasses.length]);
-        baseClasses.push("visible"); // Ensure visibility
+        baseClasses.push("visible");
         return baseClasses.join(" ");
-      }
-      // State 2: Question HAS Been Answered (Feedback Time!)
-      else {
+      } else {
         const actualAnswerIndex = this.currentQuestion.answerIndex;
         const userChoiceIndex = this.selectedOptionIndex;
-        let feedbackClasses = ""; // Used for correct/incorrect cases
+        let feedbackClasses = "";
 
         if (index === actualAnswerIndex) {
-          // Correct answer - Original logic: combine filtered base + effect
-          feedbackClasses = correctFeedbackEffect; // Defined globally
-          const filteredBase = baseClasses.filter(
-            (cls) =>
-              !cls.startsWith("hover:") &&
-              !cls.startsWith("active:") &&
-              cls !== "visible"
-          );
-          return filteredBase.join(" ") + " " + feedbackClasses; // Apply transition
+          feedbackClasses = correctFeedbackEffect;
+          const filteredBase = baseClasses.filter(cls => !cls.startsWith("hover:") && !cls.startsWith("active:") && cls !== "visible");
+          return filteredBase.join(" ") + " " + feedbackClasses;
         } else if (index === userChoiceIndex) {
-          // User's incorrect choice - Original logic: combine filtered base + specific red style
-          feedbackClasses = "visible !bg-red-500 !text-white shadow-lg"; // Explicitly visible, red background
-          const filteredBase = baseClasses.filter(
-            (cls) =>
-              !cls.startsWith("hover:") &&
-              !cls.startsWith("active:") &&
-              cls !== "visible"
-          );
-          return filteredBase.join(" ") + " " + feedbackClasses; // Apply transition
+          feedbackClasses = "visible !bg-red-500 !text-white shadow-lg";
+          const filteredBase = baseClasses.filter(cls => !cls.startsWith("hover:") && !cls.startsWith("active:") && cls !== "visible");
+          return filteredBase.join(" ") + " " + feedbackClasses;
         } else {
-          // Other options disappear instantly using CSS class.
-          return "option-hidden-immediately"; // NO transition will apply here
+          return "option-hidden-immediately";
         }
       }
     }, // End of getOptionClass
   }; // End of returned object
 }; // End of quizApp function
 
-// Helper function to get CSRF token (Keep commented for now, uncomment if needed)
+// --- CSRF Helper (Keep commented) ---
 /*
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
+function getCookie(name) { ... }
 */
 
-// Original registration logic
 console.log(
   "quizApp component function defined. Registered globally via window.quizApp."
 );
 
-// --- Define global correctFeedbackEffect (ensure it's defined before use) ---
+// --- Define global correctFeedbackEffect ---
 const glowSize = 2;
 const glowBlur = glowSize * 4;
 const glowOpacity = 0.8;
 const scaleFactor = 105;
-const pulseDuration = 1.5; // seconds
+const pulseDuration = 1.5;
 
-// Base effect class string
 const correctFeedbackEffect = `
-    visible
-    !bg-green-500
-    !text-black
-    scale-[${scaleFactor}%]
+    visible !bg-green-500 !text-black scale-[${scaleFactor}%]
     shadow-[0_0_${glowBlur}px_${glowSize}px_rgba(255,255,255,${glowOpacity})]
     animate-[pulse-glow-scale_${pulseDuration}s_ease-in-out_infinite]
-  `
-  .trim()
-  .replace(/\s+/g, " ");
+  `.trim().replace(/\s+/g, " ");
