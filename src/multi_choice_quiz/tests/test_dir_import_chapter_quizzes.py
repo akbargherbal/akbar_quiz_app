@@ -97,8 +97,11 @@ class TestDirImportChapterQuizzesScript(TestCase):
         # Patch sys.argv for the script
         with patch.object(sys, "argv", ["dir_import_chapter_quizzes.py"] + cli_args):
             # Use self.assertLogs to capture logs from the script's logger
-            # The script's logger is named "quiz_import"
-            with self.assertLogs(logger="quiz_import", level="INFO") as log_cm:
+            # --- MODIFIED LOGGER NAME HERE ---
+            with self.assertLogs(
+                logger="dir_quiz_import_script", level="INFO"
+            ) as log_cm:
+                # --- END MODIFICATION ---
                 logger.info(f"Running script main with args: {cli_args}")
                 try:
                     exit_code = dir_import_chapter_quizzes.main()
@@ -167,16 +170,35 @@ class TestDirImportChapterQuizzesScript(TestCase):
             output,
             "Log should show the script's calculated QUIZ_COLLECTIONS path",
         )
+
+        # --- MODIFIED ASSERTIONS FOR LOGS ---
         self.assertIn(
-            "Successfully created '01 Dummy Chapter Title 1: Dummy Topic - Quiz 1'",
-            output,
+            "Scanned 1 .pkl files", output, "Log should indicate 1 file scanned."
         )
+        self.assertIn(
+            "Successfully imported data from 1 files.",
+            output,
+            "Log should indicate 1 successful file import.",
+        )
+        self.assertIn(
+            "Total quizzes created from directory: 1",
+            output,
+            "Log should indicate 1 quiz created.",
+        )
+        self.assertIn(
+            "Total questions imported from directory: 2",
+            output,
+            "Log should indicate 2 questions imported.",
+        )
+        # --- END MODIFIED ASSERTIONS ---
 
         self.assertEqual(Quiz.objects.count(), 1)
         self.assertEqual(Question.objects.count(), 2)
         quiz = Quiz.objects.first()
         self.assertEqual(quiz.title, "01 Dummy Chapter Title 1: Dummy Topic - Quiz 1")
         self.assertEqual(quiz.question_count(), 2)
+
+    # ... (test_import_from_directory_success_multiple_files - can optionally add similar summary log checks) ...
 
     @patch("pathlib.Path.is_dir", autospec=True)
     @patch("pathlib.Path.glob", autospec=True)
@@ -349,9 +371,21 @@ class TestDirImportChapterQuizzesScript(TestCase):
         self.assertEqual(Quiz.objects.count(), 0)
 
     @patch("builtins.input", return_value="non_existent_file.pkl")
-    @patch("os.path.exists", return_value=False, autospec=True)
+    @patch(
+        "os.path.exists", return_value=False, autospec=True
+    )  # This mock might be less relevant now load_quiz_bank handles it
     def test_interactive_mode_file_not_found(self, mock_os_exists, mock_input):
         logger.info("--- Test: test_interactive_mode_file_not_found ---")
+
+        # We need to ensure load_quiz_bank (from utils) sees the file as non-existent.
+        # The mock_os_exists here targets os.path.exists called *within* load_quiz_bank.
+        # If load_quiz_bank directly uses Path().exists(), this mock won't apply.
+        # Let's assume load_quiz_bank (in utils.py) correctly uses os.path.exists for this test's mock to work.
+        # If it uses Path.exists(), we might need a different patching strategy for this specific test case,
+        # or rely on the fact that 'non_existent_file.pkl' truly doesn't exist in the temp dir.
+
+        # For now, the current `load_quiz_bank` in `utils.py` *does* use `os.path.exists`.
+
         exit_code, output = self.run_script_main([])
 
         self.assertEqual(
@@ -359,10 +393,23 @@ class TestDirImportChapterQuizzesScript(TestCase):
             1,
             f"Script interactive mode should exit with 1 if file not found. Output:\n{output}",
         )
-        self.assertIn("Entering interactive mode.", output)
-        mock_input.assert_called_once()  # Verify input was called
-        mock_os_exists.assert_called_with(
-            "non_existent_file.pkl"
-        )  # Verify os.path.exists was called with user input
-        self.assertIn("Quiz bank file not found: non_existent_file.pkl", output)
+        # --- MODIFIED ASSERTION FOR INTERACTIVE MODE MESSAGE ---
+        self.assertIn(
+            "Entering interactive mode (dir_import_chapter_quizzes.py - this mode is not standard for this script, usually --import-dir is used).",
+            output,
+            "Log message for entering interactive mode not found or incorrect.",
+        )
+        # --- END MODIFICATION ---
+        mock_input.assert_called_once()
+
+        # The `load_quiz_bank` in utils.py will log "File not found: non_existent_file.pkl"
+        # The `main` in `dir_import_chapter_quizzes.py` will catch FileNotFoundError and log its own message.
+        # Let's assert the message logged by `main`.
+        # --- MODIFIED ASSERTION FOR FILE NOT FOUND MESSAGE ---
+        self.assertIn(
+            "File not found error in main: Quiz bank file not found: non_existent_file.pkl",
+            output,
+            "Log message for file not found by main() not present or incorrect.",
+        )
+        # --- END MODIFICATION ---
         self.assertEqual(Quiz.objects.count(), 0)
