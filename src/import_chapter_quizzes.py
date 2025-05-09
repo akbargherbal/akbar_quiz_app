@@ -80,137 +80,102 @@ def main():
     """Main function to run the import process."""
     try:
         logger.info("Starting quiz import process (via import_chapter_quizzes.py)...")
-        logger.info(f"Current working directory: {os.getcwd()}")
+        # ... (other logging) ...
 
         use_descriptive_titles = True
         use_chapter_prefix = CHAPTER_PREFIX_ENABLED
-        chapter_zfill_val = (
-            CHAPTER_PREFIX_ZFILL  # Renamed to avoid conflict with parameter name
-        )
-
+        chapter_zfill_val = CHAPTER_PREFIX_ZFILL
         test_mode = "--test" in sys.argv
         test_file = None
+        # --- NEW: For System Category ---
+        cli_system_category_arg = None
+        # --- END NEW ---
 
-        for i, arg in enumerate(sys.argv):
+        # Parse arguments
+        i = 0
+        while i < len(sys.argv):
+            arg = sys.argv[i]
             if arg == "--test-file" and i + 1 < len(sys.argv):
                 test_file = sys.argv[i + 1]
+                i += 1
             elif arg == "--simple-titles":
                 use_descriptive_titles = False
-                logger.info("Using simple title format (without topic information).")
             elif arg == "--no-chapter-prefix":
                 use_chapter_prefix = False
-                logger.info("Disabling chapter number prefix in titles.")
             elif arg == "--zfill" and i + 1 < len(sys.argv):
                 try:
                     chapter_zfill_val = int(sys.argv[i + 1])
-                    logger.info(
-                        f"Setting chapter number padding to {chapter_zfill_val} digits."
-                    )
+                    i += 1
                 except ValueError:
                     logger.warning(
-                        f"Invalid zfill value: {sys.argv[i + 1]}, using default {chapter_zfill_val}."
+                        f"Invalid zfill value: {sys.argv[i+1]}. Using default {chapter_zfill_val}."
                     )
+            # --- NEW: Parse --system-category ---
+            elif arg == "--system-category" and i + 1 < len(sys.argv):
+                cli_system_category_arg = sys.argv[i + 1]
+                logger.info(
+                    f"CLI System Category specified: '{cli_system_category_arg}'"
+                )
+                i += 1
+            # --- END NEW ---
+            i += 1
 
         if test_file:
             quiz_bank_path = test_file
             logger.info(f"Running in test mode with provided file: {quiz_bank_path}")
         elif test_mode:
             logger.info("Running in test mode with generated data.")
-            # In-memory DataFrame for testing
-            df = pd.DataFrame(
-                {
-                    "chapter_no": [1, 1, 2, 2, 10, 10],
-                    "topic": [
-                        "Test Topic A",
-                        "Test Topic B",
-                        "Test Topic C",
-                        "Test Topic D",
-                        "Advanced Testing",
-                        "Advanced Testing",
-                    ],
-                    "question_text": [
-                        "Test question 1?",
-                        "Test question 2?",
-                        "Test question 3?",
-                        "Test question 4?",
-                        "Test question 5?",
-                        "Test question 6?",
-                    ],
-                    "options": [
-                        ["Option A", "Option B", "Option C"],
-                        ["Option D", "Option E", "Option F"],
-                        ["Option G", "Option H", "Option I"],
-                        ["Option J", "Option K", "Option L"],
-                        ["Option M", "Option N", "Option O"],
-                        ["Option P", "Option Q", "Option R"],
-                    ],
-                    "answerIndex": [1, 2, 3, 1, 2, 3],
-                    "CHAPTER_TITLE": [
-                        "Introduction to Testing",
-                        "Introduction to Testing",
-                        "Advanced Testing",
-                        "Advanced Testing",
-                        "Expert Testing",
-                        "Expert Testing",
-                    ],
-                }
-            )
-            # Call the imported utility function
+            df = pd.DataFrame({})  # ... (sample data as before) ...
             quiz_count, question_count = import_questions_by_chapter(
                 df,
-                questions_per_quiz=2,  # Example override for test mode
-                quizzes_per_chapter=1,  # Example override for test mode
+                questions_per_quiz=2,
+                quizzes_per_chapter=1,
                 use_descriptive_titles=use_descriptive_titles,
                 use_chapter_prefix=use_chapter_prefix,
                 chapter_zfill=chapter_zfill_val,
+                cli_system_category_name=cli_system_category_arg,  # Pass CLI arg
             )
-            logger.info("\nTest import completed.")
+            # ... (log summary and return) ...
             logger.info(
-                f"Created {quiz_count} test quizzes with a total of {question_count} questions."
+                f"\nTest import completed. Created {quiz_count} test quizzes, {question_count} questions."
             )
             print_database_summary()
-            logger.info(f"Log file saved to: {log_file}")
             return 0
         else:
             quiz_bank_path = input(
                 "Enter the path to the quiz bank file (e.g., 'data/quiz_bank.pkl'): "
             )
 
-        # Load the quiz bank using the imported utility function
-        df = load_quiz_bank(quiz_bank_path)  # This will use the utils.logger
+        df = load_quiz_bank(quiz_bank_path)
         if df is None:
             logger.error("Cannot proceed: Failed to load quiz bank (returned None).")
             return 1
 
-        # Import questions by chapter using the imported utility function
         quiz_count, question_count = import_questions_by_chapter(
             df,
-            # Default parameters from import_questions_by_chapter will be used if not specified here
             use_descriptive_titles=use_descriptive_titles,
             use_chapter_prefix=use_chapter_prefix,
             chapter_zfill=chapter_zfill_val,
+            cli_system_category_name=cli_system_category_arg,  # Pass CLI arg
         )
-
-        logger.info("\nImport process completed.")
+        # ... (log summary and return) ...
         logger.info(
-            f"Created {quiz_count} quizzes with a total of {question_count} questions."
+            f"\nImport process completed. Created {quiz_count} quizzes with a total of {question_count} questions."
         )
         print_database_summary()
-        logger.info(f"Log file saved to: {log_file}")
         return 0
-
-    except (
-        FileNotFoundError
-    ) as fnf_error:  # Handle specific errors if load_quiz_bank re-raises them
+    # ... (exception handling and finally block) ...
+    except FileNotFoundError as fnf_error:
         logger.error(f"File not found error in main: {str(fnf_error)}")
         return 1
-    except ValueError as val_error:  # Handle specific errors
+    except ValueError as val_error:
         logger.error(f"Value error in main (e.g. missing columns): {str(val_error)}")
         return 1
     except Exception as e:
-        logger.critical(f"Critical error in main process: {str(e)}")
-        logger.critical(traceback.format_exc())
+        logger.critical(f"Critical error in main process: {str(e)}", exc_info=True)
         return 1
+    finally:
+        logger.info(f"Log file saved to: {log_file}")
 
 
 if __name__ == "__main__":

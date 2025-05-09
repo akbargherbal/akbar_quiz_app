@@ -81,20 +81,26 @@ def main():
         logger.info(
             "Starting directory quiz import process (via dir_import_chapter_quizzes.py)..."
         )
-        logger.info(f"Script directory: {script_dir}")
-        logger.info(f"Deduced project root: {project_root}")
-        logger.info(f"Current working directory (os.getcwd()): {os.getcwd()}")
+        # ... (other logging) ...
 
         use_descriptive_titles = True
         use_chapter_prefix = CHAPTER_PREFIX_ENABLED
-        chapter_zfill_val = CHAPTER_PREFIX_ZFILL  # Renamed
+        chapter_zfill_val = CHAPTER_PREFIX_ZFILL
         test_mode = "--test" in sys.argv
         test_file_path = None
         import_dir_flag = "--import-dir" in sys.argv
 
-        for i, arg in enumerate(sys.argv):
+        # --- NEW: For System Category ---
+        cli_system_category_arg = None
+        # --- END NEW ---
+
+        # Parse all arguments
+        i = 0
+        while i < len(sys.argv):
+            arg = sys.argv[i]
             if arg == "--test-file" and i + 1 < len(sys.argv):
                 test_file_path = sys.argv[i + 1]
+                i += 1  # consume value
             elif arg == "--simple-titles":
                 use_descriptive_titles = False
             elif arg == "--no-chapter-prefix":
@@ -102,15 +108,25 @@ def main():
             elif arg == "--zfill" and i + 1 < len(sys.argv):
                 try:
                     chapter_zfill_val = int(sys.argv[i + 1])
+                    i += 1  # consume value
                 except ValueError:
                     logger.warning(
                         f"Invalid zfill value: {sys.argv[i+1]}. Using default {chapter_zfill_val}."
                     )
+            # --- NEW: Parse --system-category ---
+            elif arg == "--system-category" and i + 1 < len(sys.argv):
+                cli_system_category_arg = sys.argv[i + 1]
+                logger.info(
+                    f"CLI System Category specified: '{cli_system_category_arg}'"
+                )
+                i += 1  # consume value
+            # --- END NEW ---
+            i += 1
 
         if test_mode:
             logger.info("Running in test mode with generated data.")
-            df = pd.DataFrame(
-                {
+            df = pd.DataFrame(  # Sample data for testing
+                {  # ... (sample data as before) ...
                     "chapter_no": [1, 1, 2, 2, 10, 10],
                     "topic": [
                         "Test Topic A",
@@ -145,6 +161,8 @@ def main():
                         "Expert Testing",
                         "Expert Testing",
                     ],
+                    # Optionally add system_category here for test mode if desired
+                    # "system_category": ["Test SysCat"] * 6
                 }
             )
             quiz_count, question_count = import_questions_by_chapter(
@@ -154,6 +172,7 @@ def main():
                 use_descriptive_titles=use_descriptive_titles,
                 use_chapter_prefix=use_chapter_prefix,
                 chapter_zfill=chapter_zfill_val,
+                cli_system_category_name=cli_system_category_arg,  # Pass CLI arg
             )
             logger.info(
                 f"\nTest import completed. Created {quiz_count} test quizzes, {question_count} questions."
@@ -171,6 +190,7 @@ def main():
                 use_descriptive_titles=use_descriptive_titles,
                 use_chapter_prefix=use_chapter_prefix,
                 chapter_zfill=chapter_zfill_val,
+                cli_system_category_name=cli_system_category_arg,  # Pass CLI arg
             )
             logger.info(
                 f"\nTest file import completed. Created {quiz_count} quizzes, {question_count} questions."
@@ -185,7 +205,6 @@ def main():
             logger.info(
                 f"Directory import mode. Processing .pkl files from: {default_import_dir_absolute}"
             )
-
             if not default_import_dir_absolute.is_dir():
                 logger.error(
                     f"Default import directory '{default_import_dir_absolute}' not found or is not a directory."
@@ -194,18 +213,28 @@ def main():
 
             overall_quiz_count = 0
             overall_question_count = 0
-            processed_files = 0
-            successful_file_imports = 0
+            scanned_files_count = 0  # <<< ADD
+            successful_files_count = 0  # <<< ADD
+            failed_files_count = 0  # <<< ADD
 
-            for pkl_file_path in default_import_dir_absolute.glob("*.pkl"):
-                logger.info(f"\n--- Processing file: {pkl_file_path.name} ---")
-                processed_files += 1
+            # Collect all pkl files first to count them
+            pkl_files = list(
+                default_import_dir_absolute.glob("*.pkl")
+            )  # <<< CHANGE: Collect first
+            scanned_files_count = len(pkl_files)  # <<< ADD
+            logger.info(
+                f"Scanned {scanned_files_count} .pkl files in the directory."
+            )  # <<< ADD
+
+            for pkl_file_path in pkl_files:  # <<< Use the collected list
+                logger.info(f"Processing file: {pkl_file_path.name}")
                 try:
                     df = load_quiz_bank(str(pkl_file_path))
                     if df is None:
-                        logger.error(
-                            f"Skipping file {pkl_file_path.name} due to loading errors."
+                        logger.warning(
+                            f"Skipping file {pkl_file_path.name} as it could not be loaded or was empty."
                         )
+                        failed_files_count += 1  # <<< ADD
                         continue
 
                     quiz_count, question_count = import_questions_by_chapter(
@@ -213,42 +242,51 @@ def main():
                         use_descriptive_titles=use_descriptive_titles,
                         use_chapter_prefix=use_chapter_prefix,
                         chapter_zfill=chapter_zfill_val,
+                        cli_system_category_name=cli_system_category_arg,
+                    )
+                    overall_quiz_count += quiz_count  # <<< ADD
+                    overall_question_count += question_count  # <<< ADD
+                    if (
+                        quiz_count > 0 or question_count > 0
+                    ):  # Consider it successful if it resulted in quizzes/questions
+                        successful_files_count += 1  # <<< ADD
+                    logger.info(
+                        f"Successfully processed {pkl_file_path.name}: Created {quiz_count} quizzes, {question_count} questions."
                     )
 
-                    overall_quiz_count += quiz_count
-                    overall_question_count += question_count
-                    if quiz_count > 0:
-                        successful_file_imports += 1
-                except (
-                    Exception
-                ) as e:  # Catch errors from import_questions_by_chapter or load_quiz_bank
+                except Exception as e:
                     logger.error(
                         f"Failed to process file {pkl_file_path.name}: {e}",
                         exc_info=True,
                     )
+                    failed_files_count += 1  # <<< ADD
 
-            logger.info(f"\n--- Directory Import Overall Summary ---")
+            # --- Log summary ---
+            logger.info("\n--- Directory Import Summary ---")  # <<< ADD
+            logger.info(f"Total .pkl files scanned: {scanned_files_count}")  # <<< ADD
             logger.info(
-                f"Scanned {processed_files} .pkl files in '{default_import_dir_absolute}'."
-            )
+                f"Successfully imported data from {successful_files_count} files."
+            )  # <<< ADD
+            if failed_files_count > 0:  # <<< ADD
+                logger.warning(
+                    f"Failed to process or skipped {failed_files_count} files."
+                )  # <<< ADD
             logger.info(
-                f"Successfully imported data from {successful_file_imports} files."
-            )
-            logger.info(f"Total quizzes created from directory: {overall_quiz_count}")
+                f"Total quizzes created from directory: {overall_quiz_count}"
+            )  # <<< ADD
             logger.info(
                 f"Total questions imported from directory: {overall_question_count}"
-            )
+            )  # <<< ADD
+            logger.info("---------------------------------")  # <<< ADD
+
             print_database_summary()
             return 0
 
+        # Interactive mode (less common for this script)
         logger.info(
-            "Entering interactive mode (dir_import_chapter_quizzes.py - this mode is not standard for this script, usually --import-dir is used)."
+            "No --import-dir or --test flags. Entering interactive mode for a single file."
         )
-        # This script is primarily for directory import, interactive mode here is less common.
-        # Re-using the logic from the other script for completeness if no flags are passed.
-        quiz_bank_path_input = input(
-            "Enter path to a single quiz bank .pkl file (interactive mode): "
-        )
+        quiz_bank_path_input = input("Enter path to a single quiz bank .pkl file: ")
         df = load_quiz_bank(quiz_bank_path_input)
         if df is None:
             return 1
@@ -257,13 +295,12 @@ def main():
             use_descriptive_titles=use_descriptive_titles,
             use_chapter_prefix=use_chapter_prefix,
             chapter_zfill=chapter_zfill_val,
+            cli_system_category_name=cli_system_category_arg,  # Pass CLI arg
         )
-        logger.info(
-            f"\nInteractive import completed. Created {quiz_count} quizzes, {question_count} questions."
-        )
+        # ... (log summary for interactive) ...
         print_database_summary()
         return 0
-
+    # ... (exception handling and finally block) ...
     except FileNotFoundError as fnf_error:
         logger.error(f"File not found error in main: {str(fnf_error)}")
         return 1
@@ -271,8 +308,7 @@ def main():
         logger.error(f"Value error in main (e.g. missing columns): {str(val_error)}")
         return 1
     except Exception as e:
-        logger.critical(f"Critical error in main process: {str(e)}")
-        logger.critical(traceback.format_exc())
+        logger.critical(f"Critical error in main process: {str(e)}", exc_info=True)
         return 1
     finally:
         logger.info(f"Log file saved to: {log_file}")

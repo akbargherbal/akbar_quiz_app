@@ -4,7 +4,6 @@ import pandas as pd
 from django.test import TestCase
 from django.core.management import call_command  # Needed to ensure models are ready
 
-# --- MODIFIED IMPORT ---
 # Import the function directly from the utils module now
 try:
     from multi_choice_quiz.utils import import_questions_by_chapter
@@ -14,9 +13,13 @@ except ImportError as e:
         "Ensure the utils.py file is correct and accessible. "
         f"Original error: {e}"
     )
-# --- END MODIFIED IMPORT ---
 
+# --- ADD SystemCategory import ---
 from multi_choice_quiz.models import Quiz, Question, Topic
+from pages.models import SystemCategory  # <<< CORRECTED IMPORT for SystemCategory
+
+
+# --- END SystemCategory import ---
 
 # Import our standardized test logging
 from multi_choice_quiz.tests.test_logging import setup_test_logging
@@ -47,13 +50,21 @@ class ImportQuestionsByChapterTests(TestCase):
         super().setUpClass()
         call_command("migrate", verbosity=0)
 
+    def setUp(self):
+        # Clean up relevant models before each test to ensure isolation
+        Quiz.objects.all().delete()
+        Question.objects.all().delete()
+        Topic.objects.all().delete()
+        SystemCategory.objects.all().delete()  # Clear SystemCategory as well
+
     def _create_test_dataframe(
         self,
         chapter_no,
         num_questions,
         topic="Test Topic",
         chapter_title="Test Chapter",
-    ):
+        system_category=None,
+    ):  # Added system_category
         """Helper to create a sample DataFrame for testing."""
         data = {
             "chapter_no": [chapter_no] * num_questions,
@@ -65,6 +76,8 @@ class ImportQuestionsByChapterTests(TestCase):
             "topic": [topic] * num_questions,
             "CHAPTER_TITLE": [f"{chapter_title} {chapter_no}"] * num_questions,
         }
+        if system_category:  # Add system_category column if provided
+            data["system_category"] = [system_category] * num_questions
         return pd.DataFrame(data)
 
     def test_very_few_questions_creates_single_quiz(self):
@@ -90,7 +103,6 @@ class ImportQuestionsByChapterTests(TestCase):
             use_chapter_prefix=False,
         )
 
-        # Assertions
         self.assertEqual(quiz_count, 1, "Should create only 1 quiz")
         self.assertEqual(
             question_count, num_questions, "Should use all available questions"
@@ -99,6 +111,9 @@ class ImportQuestionsByChapterTests(TestCase):
         quiz = Quiz.objects.first()
         self.assertEqual(quiz.question_count(), num_questions)
         self.assertEqual(quiz.title, "Test Chapter 1 - Quiz 1")
+        self.assertEqual(
+            quiz.system_categories.count(), 0
+        )  # Assert no category assigned
 
     def test_standard_question_count_creates_default_quizzes(self):
         """
@@ -116,14 +131,13 @@ class ImportQuestionsByChapterTests(TestCase):
             df,
             questions_per_quiz=q_per_quiz,
             quizzes_per_chapter=quizzes_per_chapter,
-            single_quiz_threshold=1.5,  # Should not be triggered
-            min_coverage_percentage=40,  # Should not be triggered
+            single_quiz_threshold=1.5,
+            min_coverage_percentage=40,
             max_quizzes_per_chapter=5,
             use_descriptive_titles=False,
             use_chapter_prefix=False,
         )
 
-        # Assertions
         self.assertEqual(
             quiz_count,
             quizzes_per_chapter,
@@ -133,6 +147,10 @@ class ImportQuestionsByChapterTests(TestCase):
         self.assertEqual(Quiz.objects.count(), quizzes_per_chapter)
         self.assertTrue(Quiz.objects.filter(title="Test Chapter 2 - Quiz 1").exists())
         self.assertTrue(Quiz.objects.filter(title="Test Chapter 2 - Quiz 2").exists())
+        for quiz in Quiz.objects.all():
+            self.assertEqual(
+                quiz.system_categories.count(), 0
+            )  # Assert no category assigned
 
     def test_many_questions_triggers_coverage_calculation(self):
         """
@@ -141,11 +159,10 @@ class ImportQuestionsByChapterTests(TestCase):
         """
         logger.info("Testing scenario: Many questions -> coverage calculation")
         q_per_quiz = 10
-        quizzes_per_chapter = 2  # Default, should be overridden
-        num_questions = 80  # Plenty of questions
-        min_coverage = 50  # Require 50% coverage = 40 questions
+        quizzes_per_chapter = 2
+        num_questions = 80
+        min_coverage = 50
         max_quizzes = 5
-
         expected_quiz_count = 4
 
         df = self._create_test_dataframe(chapter_no=3, num_questions=num_questions)
@@ -169,9 +186,10 @@ class ImportQuestionsByChapterTests(TestCase):
         self.assertEqual(question_count, expected_quiz_count * q_per_quiz)
         self.assertEqual(Quiz.objects.count(), expected_quiz_count)
         for i in range(1, expected_quiz_count + 1):
-            self.assertTrue(
-                Quiz.objects.filter(title=f"Test Chapter 3 - Quiz {i}").exists()
-            )
+            quiz = Quiz.objects.get(title=f"Test Chapter 3 - Quiz {i}")
+            self.assertEqual(
+                quiz.system_categories.count(), 0
+            )  # Assert no category assigned
 
     def test_many_questions_hits_max_quiz_cap(self):
         """
@@ -184,7 +202,6 @@ class ImportQuestionsByChapterTests(TestCase):
         num_questions = 150
         min_coverage = 50
         max_quizzes = 5
-
         expected_quiz_count = max_quizzes
 
         df = self._create_test_dataframe(chapter_no=4, num_questions=num_questions)
@@ -208,9 +225,10 @@ class ImportQuestionsByChapterTests(TestCase):
         self.assertEqual(question_count, expected_quiz_count * q_per_quiz)
         self.assertEqual(Quiz.objects.count(), expected_quiz_count)
         for i in range(1, expected_quiz_count + 1):
-            self.assertTrue(
-                Quiz.objects.filter(title=f"Test Chapter 4 - Quiz {i}").exists()
-            )
+            quiz = Quiz.objects.get(title=f"Test Chapter 4 - Quiz {i}")
+            self.assertEqual(
+                quiz.system_categories.count(), 0
+            )  # Assert no category assigned
 
     def test_zero_questions_skips_chapter(self):
         """
@@ -232,7 +250,9 @@ class ImportQuestionsByChapterTests(TestCase):
         logger.info("Testing scenario: Chapter prefix and zfill")
         df = self._create_test_dataframe(chapter_no=7, num_questions=5)
 
+        # Test with prefix enabled (default zfill=2)
         Quiz.objects.all().delete()
+        SystemCategory.objects.all().delete()
         import_questions_by_chapter(
             df,
             questions_per_quiz=10,
@@ -241,11 +261,13 @@ class ImportQuestionsByChapterTests(TestCase):
             use_chapter_prefix=True,
             chapter_zfill=2,
         )
-        self.assertTrue(Quiz.objects.filter(title__startswith="07 ").exists())
         quiz1 = Quiz.objects.get(title__startswith="07 ")
         self.assertEqual(quiz1.title, "07 Test Chapter 7 - Quiz 1")
-        Quiz.objects.all().delete()
+        self.assertEqual(quiz1.system_categories.count(), 0)
 
+        # Test with prefix enabled (zfill=3)
+        Quiz.objects.all().delete()
+        SystemCategory.objects.all().delete()
         import_questions_by_chapter(
             df,
             questions_per_quiz=10,
@@ -254,11 +276,13 @@ class ImportQuestionsByChapterTests(TestCase):
             use_chapter_prefix=True,
             chapter_zfill=3,
         )
-        self.assertTrue(Quiz.objects.filter(title__startswith="007 ").exists())
         quiz2 = Quiz.objects.get(title__startswith="007 ")
         self.assertEqual(quiz2.title, "007 Test Chapter 7 - Quiz 1")
-        Quiz.objects.all().delete()
+        self.assertEqual(quiz2.system_categories.count(), 0)
 
+        # Test with prefix disabled
+        Quiz.objects.all().delete()
+        SystemCategory.objects.all().delete()
         import_questions_by_chapter(
             df,
             questions_per_quiz=10,
@@ -266,13 +290,9 @@ class ImportQuestionsByChapterTests(TestCase):
             use_descriptive_titles=False,
             use_chapter_prefix=False,
         )
-        self.assertFalse(
-            Quiz.objects.filter(title__startswith="07 ").exists()
-        )  # Check it doesn't start with prefix
         quiz3 = Quiz.objects.first()
-        self.assertEqual(
-            quiz3.title, "Test Chapter 7 - Quiz 1"
-        )  # Check it's the non-prefixed title
+        self.assertEqual(quiz3.title, "Test Chapter 7 - Quiz 1")
+        self.assertEqual(quiz3.system_categories.count(), 0)
 
     def test_descriptive_titles(self):
         """
@@ -285,7 +305,6 @@ class ImportQuestionsByChapterTests(TestCase):
             topic="Specific Topic",
             chapter_title="Specific Chapter",
         )
-
         import_questions_by_chapter(
             df,
             questions_per_quiz=10,
@@ -299,6 +318,9 @@ class ImportQuestionsByChapterTests(TestCase):
         self.assertTrue(Topic.objects.filter(name="Specific Topic").exists())
         self.assertEqual(quiz.topics.first().name, "Specific Topic")
         self.assertEqual(quiz.questions.first().topic.name, "Specific Topic")
+        self.assertEqual(
+            quiz.system_categories.count(), 0
+        )  # Assert no category assigned
 
     def test_non_numeric_chapter_handling(self):
         """
@@ -307,7 +329,6 @@ class ImportQuestionsByChapterTests(TestCase):
         logger.info("Testing scenario: Non-numeric chapter_no")
         chapter_id = "Appendix A"
         df = self._create_test_dataframe(chapter_no=chapter_id, num_questions=5)
-
         import_questions_by_chapter(
             df,
             questions_per_quiz=10,
@@ -320,3 +341,127 @@ class ImportQuestionsByChapterTests(TestCase):
         quiz = Quiz.objects.first()
         self.assertTrue(quiz.title.startswith(f"{chapter_id} "))
         self.assertEqual(quiz.title, f"{chapter_id} Test Chapter {chapter_id} - Quiz 1")
+        self.assertEqual(
+            quiz.system_categories.count(), 0
+        )  # Assert no category assigned
+
+    # --- NEW TEST CASES for SystemCategory ---
+
+    def test_system_category_assignment_via_cli_parameter(self):
+        """Test assigning a SystemCategory via the cli_system_category_name parameter."""
+        logger.info("Testing SystemCategory assignment via CLI parameter")
+        category_name = "CLI Biology Category"
+        df = self._create_test_dataframe(
+            chapter_no=1, num_questions=3
+        )  # No 'system_category' column
+
+        import_questions_by_chapter(
+            df, questions_per_quiz=5, cli_system_category_name=category_name
+        )
+
+        self.assertEqual(Quiz.objects.count(), 1)
+        quiz = Quiz.objects.first()
+        self.assertIsNotNone(quiz)
+
+        self.assertTrue(SystemCategory.objects.filter(name=category_name).exists())
+        category_obj = SystemCategory.objects.get(name=category_name)
+
+        self.assertIn(category_obj, quiz.system_categories.all())
+        self.assertEqual(quiz.system_categories.count(), 1)
+
+    def test_system_category_assignment_from_dataframe_column(self):
+        """Test assigning a SystemCategory based on a column in the DataFrame."""
+        logger.info("Testing SystemCategory assignment from DataFrame column")
+        category_name_df = "DataFrame Physics Category"
+        df = self._create_test_dataframe(
+            chapter_no=2, num_questions=4, system_category=category_name_df
+        )
+
+        import_questions_by_chapter(
+            df, questions_per_quiz=5, cli_system_category_name=None
+        )
+
+        self.assertEqual(Quiz.objects.count(), 1)
+        quiz = Quiz.objects.first()
+        self.assertIsNotNone(quiz)
+
+        self.assertTrue(SystemCategory.objects.filter(name=category_name_df).exists())
+        category_obj = SystemCategory.objects.get(name=category_name_df)
+
+        self.assertIn(category_obj, quiz.system_categories.all())
+        self.assertEqual(quiz.system_categories.count(), 1)
+
+    def test_cli_system_category_overrides_dataframe_column(self):
+        """Test that cli_system_category_name overrides the DataFrame's system_category column."""
+        logger.info("Testing CLI SystemCategory override of DataFrame column")
+        category_name_df = "DF Internal Category"
+        category_name_cli = "CLI Override Main Category"
+
+        df = self._create_test_dataframe(
+            chapter_no=3, num_questions=2, system_category=category_name_df
+        )
+
+        import_questions_by_chapter(
+            df, questions_per_quiz=5, cli_system_category_name=category_name_cli
+        )
+
+        self.assertEqual(Quiz.objects.count(), 1)
+        quiz = Quiz.objects.first()
+        self.assertIsNotNone(quiz)
+
+        self.assertTrue(SystemCategory.objects.filter(name=category_name_cli).exists())
+        cli_category_obj = SystemCategory.objects.get(name=category_name_cli)
+        self.assertIn(cli_category_obj, quiz.system_categories.all())
+
+        if SystemCategory.objects.filter(name=category_name_df).exists():
+            df_category_obj = SystemCategory.objects.get(name=category_name_df)
+            self.assertNotIn(df_category_obj, quiz.system_categories.all())
+
+        self.assertEqual(
+            quiz.system_categories.count(), 1
+        )  # Should only have the CLI one
+        self.assertEqual(quiz.system_categories.first().name, category_name_cli)
+
+    def test_no_system_category_assigned_when_none_provided(self):
+        """Test no SystemCategory is assigned if not in DF and not in CLI param."""
+        logger.info("Testing no SystemCategory assignment")
+        df = self._create_test_dataframe(chapter_no=4, num_questions=1)
+
+        import_questions_by_chapter(
+            df, questions_per_quiz=5, cli_system_category_name=None
+        )
+
+        self.assertEqual(Quiz.objects.count(), 1)
+        quiz = Quiz.objects.first()
+        self.assertIsNotNone(quiz)
+        self.assertEqual(quiz.system_categories.count(), 0)
+
+    def test_system_category_from_df_most_common_value(self):
+        """Test that the most common system_category from chapter_df is used."""
+        logger.info("Testing most common system_category from DataFrame for a chapter")
+        data = {
+            "chapter_no": [1, 1, 1, 1, 1],  # All same chapter
+            "question_text": [f"Q{i}" for i in range(5)],
+            "options": [["A", "B"]] * 5,
+            "answerIndex": [1] * 5,
+            "topic": ["Mixed"] * 5,
+            "CHAPTER_TITLE": ["Mixed Chapter"] * 5,
+            "system_category": [
+                "Alpha",
+                "Beta",
+                "Alpha",
+                "Gamma",
+                "Alpha",
+            ],  # Alpha is most common
+        }
+        df = pd.DataFrame(data)
+
+        import_questions_by_chapter(
+            df, questions_per_quiz=5, cli_system_category_name=None
+        )
+
+        self.assertEqual(Quiz.objects.count(), 1)  # One quiz for the chapter
+        quiz = Quiz.objects.first()
+        self.assertIsNotNone(quiz)
+        self.assertEqual(quiz.system_categories.count(), 1)
+        self.assertEqual(quiz.system_categories.first().name, "Alpha")

@@ -16,6 +16,7 @@ import dir_import_chapter_quizzes  # Import the module
 
 from multi_choice_quiz.models import Quiz, Question, Topic
 from multi_choice_quiz.tests.test_logging import setup_test_logging
+from pages.models import SystemCategory
 
 logger = setup_test_logging(__name__, "multi_choice_quiz_dir_import_script")
 
@@ -393,13 +394,15 @@ class TestDirImportChapterQuizzesScript(TestCase):
             1,
             f"Script interactive mode should exit with 1 if file not found. Output:\n{output}",
         )
+
         # --- MODIFIED ASSERTION FOR INTERACTIVE MODE MESSAGE ---
         self.assertIn(
-            "Entering interactive mode (dir_import_chapter_quizzes.py - this mode is not standard for this script, usually --import-dir is used).",
+            "No --import-dir or --test flags. Entering interactive mode for a single file.",  # <<< UPDATED EXPECTED MESSAGE
             output,
             "Log message for entering interactive mode not found or incorrect.",
         )
         # --- END MODIFICATION ---
+
         mock_input.assert_called_once()
 
         # The `load_quiz_bank` in utils.py will log "File not found: non_existent_file.pkl"
@@ -413,3 +416,41 @@ class TestDirImportChapterQuizzesScript(TestCase):
         )
         # --- END MODIFICATION ---
         self.assertEqual(Quiz.objects.count(), 0)
+
+    @patch("pathlib.Path.is_dir", autospec=True)
+    @patch("pathlib.Path.glob", autospec=True)
+    def test_import_from_directory_with_cli_system_category(
+        self, mock_glob, mock_is_dir
+    ):
+        logger.info("--- Test: test_import_from_directory_with_cli_system_category ---")
+        category_name = "DirImportCLI Category"
+        self._create_dummy_pkl_file(
+            "test_cat_quiz_01", num_questions=2, chapter_no=1, topic="CLI Cat Topic"
+        )
+
+        mock_is_dir.side_effect = lambda p_inst: self.path_side_effect_for_target_dir(
+            self.original_path_is_dir, p_inst
+        )
+        mock_glob.side_effect = (
+            lambda p_inst, pattern: self.path_side_effect_for_target_dir(
+                self.original_path_glob, p_inst, pattern
+            )
+        )
+
+        # Run the script with the --system-category argument
+        exit_code, output = self.run_script_main(
+            ["--import-dir", "--system-category", category_name]
+        )
+
+        self.assertEqual(
+            exit_code, 0, f"Script should exit successfully. Output:\n{output}"
+        )
+        self.assertIn(f"CLI System Category specified: '{category_name}'", output)
+
+        self.assertEqual(Quiz.objects.count(), 1)
+        self.assertEqual(Question.objects.count(), 2)
+        quiz = Quiz.objects.first()
+        self.assertIsNotNone(quiz)
+        self.assertEqual(quiz.system_categories.count(), 1)
+        self.assertEqual(quiz.system_categories.first().name, category_name)
+        self.assertTrue(SystemCategory.objects.filter(name=category_name).exists())
