@@ -343,3 +343,56 @@
 3.  **Proceed:** Once tests pass, move to **Step 9.7: Implement Basic Edit Profile**.
 
 ---
+
+
+---
+## Session 9 Summary (Date: 2025-05-09)
+
+**Input:**
+
+*   Session 8 Context.
+*   Codebase snapshot (containing committed changes for Phases 5, 6, 7, 8).
+*   `Project_Requirements.md` (v2.5).
+*   `Profile_and_CoreFeatures_Iteration_Guide.md`.
+
+**Key Activities & Outcomes:**
+
+1.  **Troubleshooting Failing Tests (Phase 9.5 & 9.6):**
+    *   Identified an `AttributeError` in `pages/tests/test_views.py::test_quizzes_page_loads_and_filters_by_category` due to a misnamed test variable (`self.quiz_a2` vs `self.quiz_inactive`). Corrected the test.
+    *   Identified a subsequent `AssertionError` in `test_home_page_loads` due to non-deterministic ordering of `Quiz` objects with identical `created_at` timestamps in `setUpTestData`.
+    *   Resolved this by adding `"-id"` as a secondary ordering criterion to `order_by("-created_at", "-id")` in the `home` and `quizzes` views in `pages/views.py`.
+    *   Confirmed all tests in `pages/tests/test_views.py` passed after these fixes.
+2.  **Implemented Phase 9, Step 9.7 (Basic Edit Profile - Req 9.h, 9.i):**
+    *   Created `EditProfileForm` in `pages/forms.py` for email updates.
+    *   Implemented `edit_profile_view` in `pages/views.py` with GET/POST logic and messages.
+    *   Added URL pattern for `/profile/edit/` in `pages/urls.py`.
+    *   Created `pages/templates/pages/edit_profile.html` template.
+    *   Updated the "Edit Profile" link in `pages/templates/pages/profile.html`.
+3.  **Implemented Phase 9, Step 9.8 (Phase 9 Verification):**
+    *   Created `src/pages/tests/user_profile/test_phase9_verification.py`.
+    *   Added tests for edit profile functionality (GET, POST, login requirement, messages).
+    *   Added placeholder/integration tests verifying dynamic stats/collections display on profile, `SystemCategory` filtering on the quizzes page, and `SystemCategory` display on the homepage.
+    *   Confirmed all tests in `test_phase9_verification.py` passed.
+4.  **Phase 9 Completion:**
+    *   Steps 9.a-9.i are now considered complete and verified.
+    *   Requirement 9.j (UX Evaluation for HTMX/AJAX for "Collections" tab loading) was evaluated: Decided to defer HTMX/AJAX implementation for this tab, as direct rendering is acceptable for now. This decision is documented.
+    *   Marked Phase 9 as **COMPLETE**.
+
+**Current LGID Stage:**
+
+*   **Phase 9 (Collection Models, Profile Population & Public Browsing): COMPLETE.** All implementation steps verified.
+
+**Plan for Next Session (Session 10):**
+
+1.  **(Git Workflow):**
+    *   Ensure all Phase 9 changes are committed to `feature/phase9-collections-profile`.
+    *   Merge `feature/phase9-collections-profile` into the main development branch.
+    *   Create a new feature branch for Phase 10 (e.g., `feature/phase10-collection-mgmt`).
+2.  **Begin Implementation:** Start **Phase 10: User Collection Management & Import Integration**, commencing with **Step 10.1: Implement `UserCollection` Creation** as detailed in the `Profile_and_CoreFeatures_Iteration_Guide.md`.
+    *   This will involve adding a "Create New" button to the "Collections" tab on the profile page.
+    *   Implementing a form and view for creating new `UserCollection` instances.
+    *   Deciding whether to use HTMX/AJAX for this interaction or a full page reload (Req 10.a evaluation).
+3.  Follow the LGID cycle for subsequent steps in Phase 10.
+
+---
+
