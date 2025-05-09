@@ -1,12 +1,15 @@
-# src/conftest.py (Revised - django_server removed, admin_logged_in_page added)
+# src/conftest.py (Revised - django_server removed, admin_logged_in_page added, login verification updated)
 
 import os
 import django
 import pytest
 from playwright.sync_api import Page, expect, Error as PlaywrightError
-from django.contrib.auth import get_user_model  # <<< Added for fixture
-from django.urls import reverse  # <<< Added for fixture
+from django.contrib.auth import get_user_model
+from django.urls import reverse
 from django.conf import settings
+
+# --- Import UserCollection for the fixture ---
+from pages.models import UserCollection
 
 
 # --- Import the standardized logging setup ---
@@ -28,140 +31,124 @@ os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 TAILWIND_WARNING_TEXT = "cdn.tailwindcss.com should not be used in production."
 
 # --- Get User Model ---
-User = get_user_model()  # <<< Added for fixture
+User = get_user_model()
 
 # --- Constants for the admin login fixture ---
 ADMIN_FIXTURE_USER = "admin_fixture_user"
 ADMIN_FIXTURE_PASS = "password123_fixture"
 
 
-# --- NEW FIXTURE DEFINITION ---
-@pytest.fixture(scope="function")  # Run login for each test function using this fixture
+@pytest.fixture(scope="function")
 def admin_logged_in_page(page: Page, live_server):
     """
     Pytest fixture that:
     1. Ensures a specific admin user exists in the test database.
-    2. Logs that user in via the Django admin login page using Playwright.
-    3. Yields the logged-in Playwright Page object and the username.
+    2. Ensures a default collection exists for that user.
+    3. Logs that user in via the Django frontend login page using Playwright.
+    4. Yields the logged-in Playwright Page object and the username.
     """
-    admin_user = ADMIN_FIXTURE_USER
+    admin_user_username = ADMIN_FIXTURE_USER
     admin_pass = ADMIN_FIXTURE_PASS
 
-    # --- 1. Ensure user exists in test DB ---
     try:
         user, created = User.objects.update_or_create(
-            username=admin_user,
+            username=admin_user_username,
             defaults={
                 "is_staff": True,
                 "is_superuser": True,
                 "is_active": True,
-                "email": f"{admin_user}@example.com",
+                "email": f"{admin_user_username}@example.com",
             },
         )
         user.set_password(admin_pass)
         user.save()
         print(
-            f"\n[Fixture] Ensured admin user '{admin_user}' exists ({'created' if created else 'updated'})."
+            f"\n[Fixture] Ensured admin user '{admin_user_username}' exists ({'created' if created else 'updated'})."
+        )
+
+        UserCollection.objects.get_or_create(
+            user=user,
+            name="Admin Fixture Collection",  # Default collection name
+            defaults={"description": "A default collection for admin_fixture_user."},
+        )
+        print(
+            f"[Fixture] Ensured 'Admin Fixture Collection' exists for user '{admin_user_username}'."
         )
     except Exception as e:
-        pytest.fail(f"[Fixture] Failed to ensure test user '{admin_user}': {e}")
+        pytest.fail(
+            f"[Fixture] Failed to ensure test user '{admin_user_username}' or collection: {e}"
+        )
 
-    # --- 2. Perform login via Playwright ---
-    admin_login_url = f"{live_server.url}{reverse('admin:index')}"
-    print(f"[Fixture] Navigating page to admin login: {admin_login_url}")
-    page.goto(admin_login_url)
+    # --- MODIFIED LOGIN PROCESS: Log in via frontend login page ---
+    frontend_login_url = f"{live_server.url}{reverse('login')}"
+    print(f"[Fixture] Navigating page to frontend login: {frontend_login_url}")
+    page.goto(frontend_login_url)
 
-    if "login" in page.url:
-        print("[Fixture] On login page. Filling admin credentials...")
-        page.locator("#id_username").fill(admin_user)
-        page.locator("#id_password").fill(admin_pass)
-        print("[Fixture] Submitting admin login form...")
-        page.locator('input[type="submit"]').click()
+    print("[Fixture] On frontend login page. Filling credentials...")
+    page.locator("#username").fill(admin_user_username)
+    page.locator("#password").fill(admin_pass)
+
+    print("[Fixture] Submitting frontend login form...")
+    page.get_by_role("button", name="Login").click()
+
+    try:
+        # --- MODIFIED VERIFICATION ---
+        # Target the profile link specifically within the desktop navigation,
+        # as this is what's likely to be visible immediately after login on Playwright's default viewport.
+        desktop_nav_profile_link = page.locator(
+            "nav[data-testid='desktop-nav']"
+        ).get_by_test_id("profile-link")
+        expect(desktop_nav_profile_link).to_be_visible(timeout=10000)
+        # --- END MODIFIED VERIFICATION ---
+        print(
+            f"[Fixture] Successfully logged in as {admin_user_username} via frontend login. Desktop profile link visible."
+        )
+    except Exception as e:
         try:
-            expect(
-                page.get_by_role("heading", name="Site administration")
-            ).to_be_visible(timeout=10000)
-            print(f"[Fixture] Successfully logged in as {admin_user} via /admin/")
-        except Exception as e:
-            try:
-                # --- MODIFIED: Use settings.SCREENSHOTS_DIR ---
-                screenshot_dir_base = settings.SCREENSHOTS_DIR / "fixture_failures"
-                screenshot_dir_base.mkdir(parents=True, exist_ok=True)
-                fail_screenshot_path = (
-                    screenshot_dir_base / f"fixture_login_fail_{admin_user}.png"
-                )
-                # --- END MODIFIED ---
-
-                page.screenshot(path=fail_screenshot_path, full_page=True)
-                print(f"[Fixture] Screenshot saved to {fail_screenshot_path}")
-            except Exception as screen_err:
-                print(f"[Fixture] Error taking screenshot: {screen_err}")
-            pytest.fail(f"[Fixture] Login verification failed after submit. Error: {e}")
-    else:
-        try:
-            expect(
-                page.get_by_role("heading", name="Site administration")
-            ).to_be_visible(timeout=5000)
-            print(
-                f"[Fixture] Already logged in or admin page loaded directly for {admin_user}."
+            screenshot_dir_base = settings.SCREENSHOTS_DIR / "fixture_failures"
+            screenshot_dir_base.mkdir(parents=True, exist_ok=True)
+            fail_screenshot_path = (
+                screenshot_dir_base
+                / f"fixture_frontend_login_fail_{admin_user_username}.png"
             )
-        except Exception as e:
-            try:
-                # --- MODIFIED: Use settings.SCREENSHOTS_DIR ---
-                screenshot_dir_base = settings.SCREENSHOTS_DIR / "fixture_failures"
-                screenshot_dir_base.mkdir(parents=True, exist_ok=True)
-                fail_screenshot_path = (
-                    screenshot_dir_base / f"fixture_admin_load_fail_{admin_user}.png"
-                )
-                # --- END MODIFIED ---
-                page.screenshot(path=fail_screenshot_path, full_page=True)
-                print(f"[Fixture] Screenshot saved to {fail_screenshot_path}")
-            except Exception as screen_err:
-                print(f"[Fixture] Error taking screenshot: {screen_err}")
-            pytest.fail(
-                f"[Fixture] Expected admin dashboard, but failed verification. Error: {e}"
-            )
+            page.screenshot(path=fail_screenshot_path, full_page=True)
+            print(f"[Fixture] Screenshot saved to {fail_screenshot_path}")
+        except Exception as screen_err:
+            print(f"[Fixture] Error taking screenshot: {screen_err}")
+        pytest.fail(
+            f"[Fixture] Frontend login verification failed after submit. Current URL: {page.url}. Error: {e}"
+        )
+    # --- END MODIFIED LOGIN PROCESS ---
 
-    # --- 3. Yield page and username to the test ---
-    yield page, admin_user
+    yield page, admin_user_username
 
-    # --- Teardown (Optional) ---
-    print(f"[Fixture] Teardown for admin_logged_in_page (user: {admin_user})")
-
-
-# --- END NEW FIXTURE DEFINITION ---
+    print(f"[Fixture] Teardown for admin_logged_in_page (user: {admin_user_username})")
 
 
 # --- Console Errors Fixture (REVISED - Only fail on Page Errors) ---
-# src/conftest.py (capture_console_errors excerpt - REVISED)
-
-
 @pytest.fixture(scope="function", autouse=True)
 def capture_console_errors(page: Page, request):
-    """
-    Capture JavaScript console/page errors.
-    Ignores specific known warnings (e.g., Tailwind CDN).
-    Only fails the test if actual page errors occur (ignores console warnings/errors if test passed).
-    >>> Only performs setup if 'page' fixture is requested by the test. <<<
-    """
-    # <<< START CHANGE: Check if 'page' is actually needed >>>
     if "page" not in request.fixturenames:
-        # This test doesn't use the 'page' fixture, so skip console/error capture.
         yield
         return
-    # <<< END CHANGE >>>
 
-    # --- The rest of the fixture setup proceeds only if 'page' is requested ---
     logger = None
     if setup_test_logging:
-        logger = setup_test_logging(
-            "js_console_errors", "e2e"
-        )  # Now only logs for E2E tests
+        logger = setup_test_logging("js_console_errors", "e2e")
     else:
-        # Fallback logger setup... (kept for completeness)
-        import logging
+        import logging  # Fallback
 
-        # ... (fallback setup as before) ...
+        # Basic fallback logger setup
+        logger = logging.getLogger("js_console_errors_fallback")
+        if not logger.handlers:  # Avoid adding handlers multiple times
+            logger.setLevel(logging.INFO)
+            ch = logging.StreamHandler()
+            ch.setFormatter(
+                logging.Formatter(
+                    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+                )
+            )
+            logger.addHandler(ch)
         print(
             "WARN: Using fallback logger for capture_console_errors due to import failure."
         )
@@ -171,17 +158,12 @@ def capture_console_errors(page: Page, request):
 
     def handle_console(msg):
         log_text = f"BROWSER CONSOLE [{msg.type}]: {msg.text}"
-        # Use the logger defined above
         if logger:
             logger.info(log_text)
-
-        # Filtering
         if TAILWIND_WARNING_TEXT in msg.text:
             if logger:
                 logger.debug(f"Ignoring known console message: {msg.text}")
             return
-
-        # Add other errors/warnings
         if msg.type in ["error", "warning"]:
             console_issues.append(log_text)
 
@@ -191,35 +173,32 @@ def capture_console_errors(page: Page, request):
             logger.error(log_text)
         page_errors.append(log_text)
 
-    # Attach listeners (only happens if 'page' is in fixturenames)
     page.on("console", handle_console)
     page.on("pageerror", handle_page_error)
 
-    yield  # Run the E2E test function
+    yield
 
-    # Remove listeners
     page.remove_listener("console", handle_console)
     page.remove_listener("pageerror", handle_page_error)
 
-    # Teardown Logic (unchanged, but now only runs for E2E tests)
     test_failed = hasattr(request.node, "rep_call") and request.node.rep_call.failed
     all_reported_issues = console_issues + page_errors
 
-    if all_reported_issues and logger:  # Check logger exists
+    if all_reported_issues and logger:
         issue_summary = f"{len(console_issues)} console error/warning(s), {len(page_errors)} page error(s)"
-        log_level = logger.warning if not page_errors else logger.error
-        log_level(
+        log_level_method = logger.error if page_errors else logger.warning
+        log_level_method(
             f">>> JavaScript issues detected during test '{request.node.name}': {issue_summary}"
         )
         for i, issue in enumerate(all_reported_issues):
-            log_level(f"  Issue {i+1}: {issue}")
+            log_level_method(f"  Issue {i+1}: {issue}")
 
         if not test_failed and page_errors:
             pytest.fail(
                 f"{len(page_errors)} page error(s) detected during test '{request.node.name}'. Check logs.",
                 pytrace=False,
             )
-        elif not test_failed and console_issues:
+        elif not test_failed and console_issues:  # Only console issues, test passed
             logger.warning(
                 f"Test '{request.node.name}' passed but had console issues (logged above). Not failing test."
             )
