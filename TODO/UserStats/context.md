@@ -456,3 +456,60 @@
 3.  Discuss and plan for **Phase 11: Advanced Mistake Analysis & Quiz Suggestion**.
 
 ---
+
+---
+
+---
+## Session 11 Summary (Date: 2025-05-10)
+
+**Input:**
+
+*   Session 10 Context.
+*   Codebase snapshot (containing committed changes for Phases 5-9 and partial Phase 10 implementations).
+*   `Project_Requirements.md` (v2.5).
+*   `Profile_and_CoreFeatures_Iteration_Guide.md`.
+
+**Key Activities & Outcomes:**
+
+1.  **Completed Phase 10, Step 10.5 (Phase 10 Verification):**
+    *   Created `src/pages/tests/collections_mgmt/test_phase10_verification.py`.
+    *   Implemented and successfully ran 11 integration tests covering:
+        *   `UserCollection` creation (GET form, successful POST, duplicate name handling).
+        *   The "select collection for quiz" page loading.
+        *   Adding a quiz to a selected collection (successful POST, handling already added quiz).
+        *   Conditional visibility of "Add to Collection" buttons on public quiz lists (authenticated vs. anonymous).
+        *   Redirection to the "create collection" page if a user has no collections when trying to add a quiz.
+        *   Removing a quiz from a `UserCollection` via the profile page (successful POST, permission denial for other users' collections).
+    *   All tests in `test_phase10_verification.py` passed.
+2.  **Finalized Phase 10 Documentation:**
+    *   Updated `Project_Requirements.md` for Phase 10 to accurately reflect completed work (10.a, 10.b - removal, 10.d) and the deferral of 10.c (import script enhancement).
+    *   Updated the Phase 10 section in `Profile_and_CoreFeatures_Iteration_Guide.md` to detail the UX decisions (full page reloads/redirects) made during implementation and to confirm the completion status of steps 10.1, 10.2, 10.3, and 10.5, while noting 10.4 (Req 10.c) is deferred.
+    *   Phase 10 (excluding the original scope of 10.c) is now considered **COMPLETE**.
+3.  **Reviewed Import Scripts (`dir_import_chapter_quizzes.py` & `import_chapter_quizzes.py`):**
+    *   Conducted a detailed evaluation of both scripts.
+    *   Identified significant code duplication, primarily in `load_quiz_bank` and `import_questions_by_chapter`.
+    *   Agreed that refactoring this common logic into shared utilities in `multi_choice_quiz/utils.py` is necessary before implementing Req 10.c (SystemCategory assignment during import).
+4.  **Updated Iteration Guide for Refactoring:**
+    *   Added a new section "Refactoring Import Scripts & Implementing Req 10.c" to `Profile_and_CoreFeatures_Iteration_Guide.md`, placed immediately before the (previously planned) Phase 11. This new section details the steps for the refactoring and subsequent implementation of Req 10.c.
+
+**Current LGID Stage:**
+
+*   **Phase 10 (User Collection Management & Import Integration): COMPLETE** (Req 10.c deferred to post-refactoring).
+*   **Next Major Task:** Refactor import scripts and then implement Req 10.c.
+
+**Plan for Next Session (Session 12):**
+
+1.  **(Git Workflow):**
+    *   Ensure all Phase 10 changes (including `test_phase10_verification.py`) are committed.
+    *   Merge the `feature/phase10-collection-mgmt` branch into the main development branch.
+    *   Create a new feature branch for the import script refactoring and Req 10.c implementation (e.g., `feature/refactor-import-scripts-systemcategory`).
+2.  **Begin Refactoring Import Scripts (as per "Refactoring Import Scripts & Implementing Req 10.c" in Iteration Guide):**
+    *   **Step REF.1 (Move Shared Logic):** Move `load_quiz_bank` and `import_questions_by_chapter` (potentially renamed) to `multi_choice_quiz/utils.py`.
+    *   **Step REF.2 (Update `dir_import_chapter_quizzes.py`):** Adapt to use shared utilities and verify with existing tests.
+    *   **Step REF.3 (Update `import_chapter_quizzes.py`):** Adapt to use shared utilities and verify.
+3.  **Implement Req 10.c (SystemCategory Assignment in Import Scripts):**
+    *   Add command-line arguments and logic to the shared utility and both scripts for `SystemCategory` assignment.
+    *   Add new tests to verify this functionality.
+4.  After completing the refactoring and Req 10.c, discuss and plan for **Phase 11: Advanced Mistake Analysis & Quiz Suggestion**.
+
+---

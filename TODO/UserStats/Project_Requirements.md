@@ -135,16 +135,16 @@ _(Phases 1-4: Existing Foundational Components)_
   - `9.i`: **Update Edit Link:** Update profile template's "Edit Profile" link.
   - `9.j`: **UX Evaluation:** Evaluate HTMX/AJAX for loading "Collections" tab content; document decision.
 
+
 ### Phase 10: User Collection Management & Import Integration (Revised)
 
-- **Objective:** Allow users to create/manage their private `UserCollection`s. Optionally integrate the import script with public `SystemCategory`.
+- **Objective:** Allow users to create/manage their private `UserCollection`s. Implement UI for adding quizzes from public lists to these collections. (Requirement 10.c, enhancing the import script for `SystemCategory` assignment, is now part of a dedicated refactoring step preceding Phase 11).
 - **Requirements:**
-  - `10.a`: **Create `UserCollection`:** Implement view/form/UI to create new `UserCollection`s from profile. Evaluate HTMX/AJAX.
-  - `10.b`: **Manage `UserCollection` Quizzes:** Implement view/logic/UI to add/remove quizzes from `UserCollection`s. Evaluate HTMX/AJAX.
-  - `10.c`: **Import Script Integration (Optional Enhancement):** Modify `dir_import_chapter_quizzes.py` to optionally assign imported quizzes to existing **`SystemCategory`** instances.
-  - `10.d`: **Add Quiz Control:** Add UI controls to public quiz pages to add a quiz to a user's existing `UserCollection`. Evaluate HTMX/AJAX.
+  - `10.a`: **Create `UserCollection`:** Implement view/form/UI to create new `UserCollection`s from the profile page. Evaluate HTMX/AJAX for this interaction (Decision: Full page reload initially).
+  - `10.b`: **Manage `UserCollection` Quizzes (Removal):** Implement view/logic/UI on the profile page to allow users to remove quizzes from their `UserCollection`s. Evaluate HTMX/AJAX for this interaction (Decision: Full page reload initially).
+  - `10.c`: **Import Script Integration (Refactor & Enhance):** *(This requirement's implementation is now part of a dedicated refactoring phase: "Refactoring Import Scripts & Implementing Req 10.c" which will precede Phase 11. The core task is to modify `dir_import_chapter_quizzes.py` and `import_chapter_quizzes.py` (after refactoring common logic to `utils.py`) to optionally assign imported quizzes to existing `SystemCategory` instances via a command-line argument.)*
+  - `10.d`: **Add Quiz Control (Adding to Collection):** Add UI controls to public quiz pages (e.g., `/quizzes/`, homepage featured quizzes) to allow authenticated users to select one of their existing `UserCollection`s and add the displayed quiz to it. Evaluate HTMX/AJAX for this interaction (Decision: Full page redirect flow initially).
 
----
 
 ## _(Future Core Goal)_
 

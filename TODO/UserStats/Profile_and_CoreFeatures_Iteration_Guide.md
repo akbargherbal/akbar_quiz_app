@@ -190,14 +190,16 @@ This guide outlines the development steps for enhancing the user profile and imp
 
 ---
 ---
+---
+---
 
 ## Phase 10: User Collection Management & Import Integration (Revised)
 
 **Version:** 1.0
-**Date:** 2025-05-09
-**Phase Objective:** Allow users to create and manage their private `UserCollection`s. Optionally integrate the import script with public `SystemCategory`. Provide UI for adding global quizzes to private collections.
-**Related Requirements:** 10.a, 10.b, 10.c, 10.d
-**Phase Status:** Planned 📝
+**Date:** 2025-05-10
+**Phase Objective:** Allow users to create/manage their private `UserCollection`s. Implement UI for adding global quizzes to private collections. (Req 10.c, enhancing import scripts, is deferred to post-refactoring).
+**Related Requirements:** 10.a, 10.b, 10.d
+**Phase Status:** COMPLETE ✅ (Step 10.4/Req 10.c Deferred)
 
 ---
 
@@ -206,26 +208,26 @@ This guide outlines the development steps for enhancing the user profile and imp
 #### Step 10.1: Implement `UserCollection` Creation
 
 *   **Objective:** Add ability to create `UserCollection`s from profile (Req 10.a). Evaluate HTMX/AJAX.
-*   **Key Tasks:** Implement form, view, URL for creating collections. Add UI trigger to profile. Document HTMX/AJAX decision.
+*   **Key Tasks:** Implement form, view, URL for creating collections. Add UI trigger to profile. **UX Decision: Full page reload implemented.**
 *   **Deliverables:** Updated views, new form, updated templates.
-*   **Verification Checklist:** `[ ]` **Unit/E2E Tests:** Add/run tests verifying creation flow.
-*   **Status:** To Do ⏳
+*   **Verification Checklist:** `[✅]` **Unit/E2E Tests:** Add/run tests verifying creation flow. (Covered by Phase 10 Verification Script)
+*   **Status:** Done ✅
 
-#### Step 10.2: Implement Managing Quizzes in `UserCollection`s
+#### Step 10.2: Implement Managing Quizzes in `UserCollection`s (Removal from Profile)
 
-*   **Objective:** Add ability to add/remove quizzes from `UserCollection`s (Req 10.b). Evaluate HTMX/AJAX.
-*   **Key Tasks:** Implement backend logic and UI controls on profile page. Document HTMX/AJAX decision.
-*   **Deliverables:** Updated views, templates, possibly JS/HTMX snippets.
-*   **Verification Checklist:** `[ ]` **Unit/E2E Tests:** Add/run tests verifying add/remove functionality.
-*   **Status:** To Do ⏳
+*   **Objective:** Add ability to remove quizzes from `UserCollection`s via the profile page (Req 10.b). Evaluate HTMX/AJAX.
+*   **Key Tasks:** Implement backend logic and UI controls (form with POST button) on profile page for quiz removal. **UX Decision: Full page reload implemented.**
+*   **Deliverables:** Updated views, templates.
+*   **Verification Checklist:** `[✅]` **Unit/E2E Tests:** Add/run tests verifying remove functionality. (Covered by Phase 10 Verification Script)
+*   **Status:** Done ✅
 
 #### Step 10.3: Implement Adding to `UserCollection` from Quiz Lists
 
 *   **Objective:** Add controls on public pages to add quiz to existing `UserCollection` (Req 10.d). Evaluate HTMX/AJAX.
-*   **Key Tasks:** Add UI controls to `pages/quizzes.html` and `multi_choice_quiz/index.html`. Implement backend view/logic. Document HTMX/AJAX decision.
-*   **Deliverables:** Updated templates, views, possibly JS/HTMX.
-*   **Verification Checklist:** `[ ]` **Unit/E2E Tests:** Add/run tests verifying add-to-collection flow from public pages.
-*   **Status:** To Do ⏳
+*   **Key Tasks:** Add UI controls to `pages/quizzes.html` and homepage. Implement backend views/logic for selecting a collection and adding the quiz. **UX Decision: Full page redirect flow implemented.**
+*   **Deliverables:** Updated templates, views.
+*   **Verification Checklist:** `[✅]` **Unit/E2E Tests:** Add/run tests verifying add-to-collection flow from public pages. (Covered by Phase 10 Verification Script)
+*   **Status:** Done ✅
 
 #### Step 10.4: (Optional) Enhance Import Script for `SystemCategory`
 
@@ -233,15 +235,15 @@ This guide outlines the development steps for enhancing the user profile and imp
 *   **Key Tasks:** Modify `dir_import_chapter_quizzes.py` to accept optional category args and assign imported quizzes to `SystemCategory`.
 *   **Deliverables:** Updated `dir_import_chapter_quizzes.py`.
 *   **Verification Checklist:** `[ ]` **Script Tests:** Add/run tests for the import script verifying category assignment.
-*   **Status:** To Do ⏳
+*   **Status:** Deferred ⏳ *(To be addressed after import script refactoring)*
 
 #### Step 10.5: Phase 10 Verification
 
 *   **Objective:** Verify collection management works correctly.
-*   **Key Tasks:** Create `src/pages/tests/collections_mgmt/test_phase10_verification.py` (or similar). Add integration tests.
-*   **Deliverables:** New verification script.
-*   **Verification Checklist:** `[ ]` Phase Verification Script Passes. `[ ]` All relevant unit/E2E tests pass.
-*   **Status:** To Do ⏳
+*   **Key Tasks:** Create `src/pages/tests/collections_mgmt/test_phase10_verification.py`. Add integration tests covering creation, removal from profile, and adding from public lists.
+*   **Deliverables:** New verification script `test_phase10_verification.py`.
+*   **Verification Checklist:** `[✅]` Phase Verification Script Passes. `[✅]` All relevant unit/E2E tests pass.
+*   **Status:** Done ✅
 
 ---
 ---
