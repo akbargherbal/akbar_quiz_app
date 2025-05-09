@@ -629,3 +629,52 @@
 4.  **Begin Implementation:** Start **Phase 11: Advanced Mistake Analysis & Quiz Suggestion**, commencing with **Step 11.1: Backend Analysis Logic**.
 
 ---
+
+## Session 14 Summary (Date: 2025-05-10)
+
+**Input:**
+
+- Session 13 Context.
+- Codebase snapshot (containing completed refactoring of import scripts and Req 10.c).
+- `Project_Requirements.md` (v2.5).
+- `Profile_and_CoreFeatures_Iteration_Guide.md`.
+
+**Key Activities & Outcomes:**
+
+1.  **(Git Workflow):**
+    - Confirmed merge of `feature/refactor-import-scripts-systemcategory` into the main development branch.
+    - Created and switched to a new feature branch: `feature/e2e-test-phase10-updates` (actual name used by user).
+2.  **Comprehensive E2E Test Review and Update (for `src/pages/tests/test_responsive.py`):**
+    - **CSS Selector Fix:** Corrected an invalid CSS selector (`[role!='group']` to `:not([role='group'])`) in `test_responsive_layout_anonymous_pages` and `test_responsive_layout_auth_pages` that was causing multiple failures.
+    - **Fixture DB Access:** Resolved an issue where the module-scoped `setup_auth_pages_test_data` fixture couldn't access the database. The solution involved removing this fixture and moving test data creation directly into the `test_responsive_layout_auth_pages` function where it's marked with `@pytest.mark.django_db`.
+    - **`admin_logged_in_page` Fixture Update:**
+      - Modified the `admin_logged_in_page` fixture in `src/conftest.py` to log the user in via the frontend login page (`/accounts/login/`) instead of the Django admin. This ensures the Playwright `page` object has a valid frontend session.
+      - Added logic to the fixture to create a default `UserCollection` for the `admin_fixture_user` to prevent redirects when testing pages like `select_collection_for_quiz`.
+      - Refined the login success verification within the fixture to target the desktop navigation's profile link, resolving a strict mode violation.
+    - **Test Data for Authenticated Views:** Added in-test data creation within `test_responsive_layout_auth_pages` for `home`, `quizzes`, and `select_collection_for_quiz` parameterizations to ensure relevant content (like "Add to Collection" buttons or specific quiz titles) is present for testing.
+    - **Verification:** After all fixes and enhancements, all 66 tests in `src/pages/tests/test_responsive.py` passed successfully.
+
+**Current LGID Stage:**
+
+- **E2E Test Maintenance: In Progress.** `src/pages/tests/test_responsive.py` is now stable. Review of `src/pages/tests/test_templates.py` and quick checks of `multi_choice_quiz` E2E tests are pending.
+
+**Plan for Next Session (Session 15):**
+
+1.  **(Git Workflow):**
+    - Ensure all changes from Session 14 (fixes to `test_responsive.py` and `conftest.py`) are committed to the `feature/e2e-test-phase10-updates` branch.
+    - Merge this feature branch into the main development branch.
+2.  **Continue E2E Test Review and Update:**
+    - **Target File:** `src/pages/tests/test_templates.py`.
+      - Review `test_home_page_loads_and_title` against current `home.html`.
+      - Review `test_quizzes_page_loads` against current `quizzes.html`.
+      - Review `test_profile_page_structure_when_authenticated` against current `profile.html`.
+    - **(Optional quick check) `src/multi_choice_quiz/tests/` E2E tests:**
+      - `test_quiz_e2e.py`
+      - `test_database_quiz.py`
+      - `test_responsive.py` (quiz app's own responsive test)
+      - Primarily ensure stability with shared navigation.
+3.  Once all E2E tests are confirmed stable and updated:
+    - **(Git Workflow):** Create a new feature branch for Phase 11 (e.g., `feature/phase11-mistake-analysis`).
+4.  **Begin Implementation:** Start **Phase 11: Advanced Mistake Analysis & Quiz Suggestion**, commencing with **Step 11.1: Backend Analysis Logic** as detailed in the `Profile_and_CoreFeatures_Iteration_Guide.md`.
+
+---
