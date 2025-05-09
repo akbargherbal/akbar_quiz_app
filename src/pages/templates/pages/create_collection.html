@@ -1,0 +1,80 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Create New Collection | QuizMaster{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-15rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 bg-surface rounded-xl shadow-lg p-6 sm:p-8 border border-border">
+        <div class="text-center">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-accent-heading mb-2">Create a New Collection</h1>
+            <p class="text-text-muted text-sm sm:text-base">Organize your quizzes into personal collections.</p>
+        </div>
+
+        {# --- Display Django Messages (e.g., for non-field errors from the view) --- #}
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="p-4 rounded-md
+                        {% if message.tags == 'success' %} bg-green-100 border border-green-400 text-green-700
+                        {% elif message.tags == 'error' %} bg-red-100 border border-red-400 text-red-700
+                        {% elif message.tags == 'warning' %} bg-yellow-100 border border-yellow-400 text-yellow-700
+                        {% else %} bg-blue-100 border border-blue-400 text-blue-700
+                        {% endif %}"
+                         role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {# --- End Django Messages --- #}
+
+        {# --- Display Non-Field Errors from the form (if any) --- #}
+        {% if form.non_field_errors %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <strong class="font-bold">Error:</strong>
+                <span class="block sm:inline">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </span>
+            </div>
+        {% endif %}
+        {# --- End Non-Field Errors --- #}
+
+        <form class="mt-8 space-y-6" method="POST" action="{% url 'pages:create_collection' %}">
+            {% csrf_token %}
+
+            {# --- Render form fields individually for styling --- #}
+            {% for field in form %}
+                <div>
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-text-secondary mb-1">{{ field.label_tag }}</label>
+                    {{ field }} {# Django will render the widget with classes we added in the form #}
+                    {% if field.help_text %}
+                        <p class="mt-1 text-xs text-text-muted">{{ field.help_text|safe }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                        <div class="mt-1 text-xs text-red-500">
+                            {% for error in field.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            {# --- End form field rendering --- #}
+
+            <div class="pt-2 flex flex-col sm:flex-row sm:justify-end sm:gap-3 space-y-3 sm:space-y-0">
+                <a href="{% url 'pages:profile' %}"
+                   class="group relative w-full sm:w-auto flex justify-center py-3 px-4 border border-border text-sm font-medium rounded-lg text-text-secondary bg-tag-bg hover:bg-tag-bg/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-accent-primary transition-colors">
+                    Cancel
+                </a>
+                <button type="submit"
+                        class="group relative w-full sm:w-auto flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-accent-primary hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-accent-primary transition-colors">
+                    Create Collection
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

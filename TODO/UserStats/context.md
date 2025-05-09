@@ -396,3 +396,63 @@
 
 ---
 
+
+---
+
+## Session 10 Summary (Date: 2025-05-10)
+
+**Input:**
+
+*   Session 9 Context.
+*   Codebase snapshot (containing committed changes for Phases 5, 6, 7, 8, 9).
+*   `Project_Requirements.md` (v2.5).
+*   `Profile_and_CoreFeatures_Iteration_Guide.md`.
+
+**Key Activities & Outcomes:**
+
+1.  **(Git Workflow):**
+    *   Confirmed Phase 9 was merged into the main development branch.
+    *   Created and switched to a new feature branch: `feature/phase10-collection-mgmt`.
+2.  **Began Implementation of Phase 10: User Collection Management & Import Integration.**
+3.  **Implemented Phase 10, Step 10.1 (Implement `UserCollection` Creation):**
+    *   Created `UserCollectionForm` in `pages/forms.py` with fields for `name` and `description`, including styling.
+    *   Implemented `create_collection_view` in `pages/views.py` with `@login_required`, handling GET/POST, associating the collection with `request.user`, and redirecting to profile with messages. Added `IntegrityError` handling for duplicate collection names per user.
+    *   Added URL pattern `/profile/collections/create/` in `pages/urls.py` named `create_collection`.
+    *   Updated "Create New" button in `pages/templates/pages/profile.html` (Collections tab) to link to the new URL.
+    *   Created `pages/templates/pages/create_collection.html` to render the form.
+    *   **UX Decision (Req 10.a):** Opted for a full page reload for collection creation initially.
+    *   Verified functionality via manual E2E testing, confirming form rendering, successful creation, error handling for duplicates, and display of new collections on the profile page.
+4.  **Implemented Phase 10, Step 10.2a (Implement Removing Quizzes from `UserCollection` on Profile Page):**
+    *   Added URL pattern `/profile/collections/<int:collection_id>/remove_quiz/<int:quiz_id>/` in `pages/urls.py` named `remove_quiz_from_collection`.
+    *   Implemented `remove_quiz_from_collection_view` in `pages/views.py` with `@login_required`, `@require_POST`, logic to ensure user ownership of the collection, remove the quiz, add messages, and redirect to profile.
+    *   Updated `pages/templates/pages/profile.html` to add a "Remove" button (form submitting via POST with CSRF token and JS confirmation) next to each quiz within a collection. Added a global Django messages display block to `profile.html`.
+    *   **UX Decision (Req 10.b - for removal):** Opted for a full page reload for quiz removal initially.
+    *   Verified functionality via manual E2E testing, including adding quizzes to collections via Django admin for test setup, and confirming successful removal from the profile page.
+5.  **Implemented Phase 10, Step 10.3 (Implement Adding to `UserCollection` from Quiz Lists):**
+    *   Updated `pages/templates/pages/quizzes.html` and `pages/templates/pages/home.html` (featured quizzes) to include an "Add to Collection" button (icon + text) on quiz cards, visible only to authenticated users. This button links to `pages:select_collection_for_quiz`.
+    *   Added URL pattern `/quiz/<int:quiz_id>/add-to-collection/` in `pages/urls.py` named `select_collection_for_quiz`.
+    *   Implemented `select_collection_for_quiz_view` in `pages/views.py` (`@login_required`) to fetch the quiz and the user's collections, and render a new template. Handles cases where the user has no collections by redirecting.
+    *   Created `pages/templates/pages/select_collection_for_quiz.html` template to display the quiz being added and list the user's collections, each with an "Add to this Collection" form/button.
+    *   Added URL pattern `/quiz/<int:quiz_id>/add-to-collection/<int:collection_id>/` in `pages/urls.py` named `add_quiz_to_selected_collection`.
+    *   Implemented `add_quiz_to_selected_collection_view` in `pages/views.py` (`@login_required`, `@require_POST`) to handle adding the quiz to the specified collection (checking ownership), adding messages, and redirecting to profile.
+    *   **UX Decision (Req 10.d):** Opted for a full page reload/redirect flow for adding quizzes to collections.
+    *   Verified functionality via manual E2E testing, confirming the flow from quiz card to collection selection page, and successful addition to the chosen collection with feedback.
+6.  **Deferred Step 10.4:** Decided to defer Step 10.4 (Optional Enhance Import Script for `SystemCategory`) to a later session to prioritize verification of existing collection management features.
+
+**Current LGID Stage:**
+
+*   **Phase 10 (User Collection Management & Import Integration): In Progress.** Steps 10.1, 10.2a, and 10.3 are implemented and manually verified. Step 10.4 is deferred.
+
+**Plan for Next Session (Session 11):**
+
+1.  **Begin Phase 10, Step 10.5: Phase 10 Verification.**
+    *   Create a new verification script (e.g., `src/pages/tests/collections_mgmt/test_phase10_verification.py`).
+    *   Add integration tests to cover:
+        *   Creating new `UserCollection`s.
+        *   Removing quizzes from `UserCollection`s from the profile page.
+        *   The flow of adding a quiz to a `UserCollection` starting from a public quiz list.
+    *   Ensure all relevant unit tests (if any new ones are needed for helper functions) and these new integration tests pass.
+2.  Once Step 10.5 is complete, Phase 10 will be considered complete.
+3.  Discuss and plan for **Phase 11: Advanced Mistake Analysis & Quiz Suggestion**.
+
+---

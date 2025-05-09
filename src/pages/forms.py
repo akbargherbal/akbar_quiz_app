@@ -3,6 +3,9 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 
+# Import UserCollection model
+from .models import UserCollection  # <<< ADD THIS IMPORT
+
 # Get the custom user model if you ever define one, otherwise the default User
 User = get_user_model()
 
@@ -27,7 +30,7 @@ class SignUpForm(UserCreationForm):
     #     ...
 
 
-# --- NEW FORM ---
+# --- Existing EditProfileForm ---
 class EditProfileForm(forms.ModelForm):
     email = forms.EmailField(
         max_length=254,
@@ -60,3 +63,34 @@ class EditProfileForm(forms.ModelForm):
         # if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
         #     raise forms.ValidationError("This email address is already in use.")
         return email
+
+
+# --- NEW FORM FOR UserCollection ---
+class UserCollectionForm(forms.ModelForm):
+    name = forms.CharField(
+        max_length=100,
+        help_text="Enter a name for your collection (e.g., 'My Study Set', 'Weak Areas').",
+        widget=forms.TextInput(
+            attrs={
+                "class": "appearance-none relative block w-full px-3 py-3 border border-border placeholder-text-muted text-text-primary bg-tag-bg/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent focus:z-10 text-sm sm:text-base",
+                "placeholder": "Collection Name",
+            }
+        ),
+    )
+    description = forms.CharField(
+        widget=forms.Textarea(
+            attrs={
+                "rows": 3,
+                "class": "appearance-none relative block w-full px-3 py-3 border border-border placeholder-text-muted text-text-primary bg-tag-bg/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent focus:z-10 text-sm sm:text-base",
+                "placeholder": "Optional: A brief description of what this collection is for.",
+            }
+        ),
+        required=False,
+        help_text="Optional: Describe what this collection is for.",
+    )
+
+    class Meta:
+        model = UserCollection
+        fields = ["name", "description"]
+        # We don't include 'user' here because it will be set automatically in the view.
+        # We don't include 'quizzes' as they will be managed separately.

@@ -8,15 +8,14 @@
 <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
     <!-- Profile Header -->
     <div class="bg-surface rounded-xl p-6 shadow-lg border border-border mb-8 lg:mb-10">
+        {# ... (profile header remains the same) ... #}
         <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
             <div class="flex-shrink-0">
-                {# Dynamic Avatar #}
                 <div class="w-24 h-24 lg:w-28 lg:h-28 bg-accent-primary rounded-full flex items-center justify-center text-white text-3xl lg:text-4xl font-bold">
                     {{ user.username|first|upper }}
                 </div>
             </div>
             <div class="flex-grow text-center md:text-left">
-                {# Dynamic User Info #}
                 <h1 class="text-2xl lg:text-3xl font-bold text-text-secondary">{{ user.get_full_name|default:user.username }}</h1>
                 {% if user.email %}
                 <p class="text-text-muted mb-1">{{ user.email }}</p>
@@ -24,7 +23,6 @@
                 <p class="text-text-muted text-sm">Member since: {{ user.date_joined|date:"F Y" }}</p>
             </div>
             <div class="flex-shrink-0 mt-4 md:mt-0">
-                {# Link to edit profile (Functionality in Step 9.7) #}
                 <a href="{% url 'pages:edit_profile' %}" class="px-4 py-2 border border-border rounded-lg text-sm font-medium text-text-secondary hover:bg-tag-bg transition-colors">
                     Edit Profile
                 </a>
@@ -34,17 +32,15 @@
 
     <!-- Stats Cards (Now Dynamic) -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 lg:mb-10">
+        {# ... (stats cards remain the same) ... #}
         <div class="bg-surface rounded-xl p-4 md:p-6 border border-border shadow-md text-center">
             <h3 class="text-text-muted text-xs sm:text-sm mb-2 uppercase tracking-wider">Quizzes Taken</h3>
-            {# Use stats from context #}
             <div class="text-3xl lg:text-4xl font-bold text-accent-heading" data-testid="stat-quizzes-taken">{{ stats.total_taken|default:"0" }}</div>
         </div>
         <div class="bg-surface rounded-xl p-4 md:p-6 border border-border shadow-md text-center">
             <h3 class="text-text-muted text-xs sm:text-sm mb-2 uppercase tracking-wider">Average Score</h3>
-             {# Use stats from context #}
             <div class="text-3xl lg:text-4xl font-bold text-accent-heading" data-testid="stat-average-score">{{ stats.avg_score_percent|default:"0" }}%</div>
         </div>
-        {# --- Placeholders for other stats - can be implemented later --- #}
         <div class="bg-surface rounded-xl p-4 md:p-6 border border-border shadow-md text-center">
             <h3 class="text-text-muted text-xs sm:text-sm mb-2 uppercase tracking-wider">Strongest Topic</h3>
             <div class="text-lg lg:text-xl font-bold text-tag-teal truncate" title="Not Implemented Yet">--</div>
@@ -53,13 +49,13 @@
             <h3 class="text-text-muted text-xs sm:text-sm mb-2 uppercase tracking-wider">Needs Review</h3>
              <div class="text-lg lg:text-xl font-bold text-yellow-500 truncate" title="Not Implemented Yet">--</div>
         </div>
-        {# --- End Placeholders --- #}
     </div>
 
     <!-- Tabs -->
     <div x-data="{ activeTab: 'history' }" class="bg-surface rounded-xl border border-border shadow-lg overflow-hidden">
-        <!-- Tab Navigation (Unchanged) -->
+        <!-- Tab Navigation -->
         <nav class="flex border-b border-border overflow-x-auto">
+            {# ... (tab buttons remain the same) ... #}
             <button @click="activeTab = 'history'"
                     :class="{ 'border-accent-primary text-accent-heading bg-tag-bg/30': activeTab === 'history', 'border-transparent text-text-muted hover:text-text-secondary hover:border-border': activeTab !== 'history' }"
                     class="flex-1 whitespace-nowrap py-3 px-4 sm:px-6 text-center font-medium text-sm sm:text-base border-b-2 transition-colors">
@@ -75,8 +71,9 @@
         <!-- Tab Content -->
         <div class="p-4 md:p-6 min-h-[300px]">
 
-            <!-- History Tab (Unchanged - Already dynamic) -->
+            <!-- History Tab -->
             <div x-show="activeTab === 'history'" x-cloak class="space-y-4 md:space-y-6">
+                {# ... (history tab content remains the same) ... #}
                 <h2 class="text-xl lg:text-2xl font-bold text-text-secondary mb-4">Your Quiz History</h2>
                 <div class="space-y-4">
                     {% for attempt in quiz_attempts %}
@@ -112,67 +109,122 @@
                 </div>
             </div>
 
-            <!-- Collections Tab (NOW DYNAMIC) -->
+            <!-- Collections Tab -->
             <div x-show="activeTab === 'collections'" x-cloak class="space-y-6">
                  <div class="flex justify-between items-center mb-4">
                      <h2 class="text-xl lg:text-2xl font-bold text-text-secondary">Your Collections</h2>
-                     <button class="px-4 py-2 bg-accent-primary hover:bg-accent-hover text-white rounded-lg text-sm font-bold transition-colors">Create New</button> {# Placeholder - Functionality in Phase 10 #}
+                     <a href="{% url 'pages:create_collection' %}" class="px-4 py-2 bg-accent-primary hover:bg-accent-hover text-white rounded-lg text-sm font-bold transition-colors no-underline">
+                        Create New
+                     </a>
                  </div>
 
-                 {# Loop through user's collections #}
                  {% if user_collections %}
                     {% for collection in user_collections %}
                         <div data-testid="collection-{{ collection.id }}">
-                            {# Collection Header #}
                             <div class="flex justify-between items-baseline mb-3 border-b border-border pb-1">
                                 <h3 class="text-lg font-semibold text-accent-heading truncate" title="{{ collection.name }}">
                                     {{ collection.name }}
                                 </h3>
-                                {# Add Edit/Delete buttons later if needed #}
                                 <span class="text-xs text-text-muted">
                                     {{ collection.quizzes.count }} quiz{{ collection.quizzes.count|pluralize }}
                                 </span>
                             </div>
 
-                            {# Description (Optional) #}
                             {% if collection.description %}
                             <p class="text-sm text-text-muted mb-3">{{ collection.description }}</p>
                             {% endif %}
 
-                            {# Quizzes within the collection #}
                             {% if collection.quizzes.all %}
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="space-y-2"> {# Changed grid to space-y for better vertical listing #}
                                     {% for quiz in collection.quizzes.all %}
                                         <div class="border border-border rounded-lg p-3 flex justify-between items-center gap-2" data-testid="collection-{{ collection.id }}-quiz-{{ quiz.id }}">
-                                            <div>
+                                            <div class="flex-grow min-w-0"> {# Added min-w-0 for better truncation #}
                                                 <h4 class="font-medium text-text-secondary truncate">{{ quiz.title }}</h4>
                                                 <p class="text-xs text-text-muted">{{ quiz.questions.count }} Questions</p>
                                             </div>
-                                            <a href="{% url 'multi_choice_quiz:quiz_detail' quiz.id %}" class="flex-shrink-0 text-accent-heading hover:text-accent-primary text-xs font-medium whitespace-nowrap">Start Quiz »</a>
-                                            {# Add Remove button later #}
+                                            <div class="flex items-center gap-2 flex-shrink-0">
+                                                <a href="{% url 'multi_choice_quiz:quiz_detail' quiz.id %}" class="text-accent-heading hover:text-accent-primary text-xs font-medium whitespace-nowrap">Start Quiz »</a>
+                                                {# --- START NEW FORM FOR REMOVE BUTTON --- #}
+                                                <form method="POST" action="{% url 'pages:remove_quiz_from_collection' collection_id=collection.id quiz_id=quiz.id %}" class="inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit"
+                                                            class="p-1.5 rounded-md text-red-500 hover:bg-red-500/10 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-surface transition-colors"
+                                                            aria-label="Remove {{ quiz.title }} from {{collection.name}}"
+                                                            title="Remove Quiz"
+                                                            onclick="return confirm('Are you sure you want to remove \'{{ quiz.title|escapejs }}\' from this collection?');">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                                {# --- END NEW FORM FOR REMOVE BUTTON --- #}
+                                            </div>
                                         </div>
                                     {% endfor %}
                                 </div>
                             {% else %}
                                 <p class="text-sm text-text-muted italic">This collection is empty.</p>
-                                {# Add link/button to add quizzes later #}
                             {% endif %}
                         </div>
                     {% endfor %}
                  {% else %}
-                    {# Message if user has no collections at all #}
                     <div class="text-center text-text-muted py-6">
                         <p>You haven't created any collections yet.</p>
-                        <button class="mt-3 inline-block text-accent-heading hover:text-accent-primary font-medium">
-                            Create your first collection! {# Placeholder #}
-                        </button>
+                        <a href="{% url 'pages:create_collection' %}" class="mt-3 inline-block text-accent-heading hover:text-accent-primary font-medium no-underline">
+                            Create your first collection!
+                        </a>
                     </div>
                  {% endif %}
-
-                 {# Removed old placeholder content #}
             </div>
-
         </div>
     </div>
 </div>
+
+{# --- Display Django Messages (e.g., for success/error after form submission) --- #}
+{% if messages %}
+    <div class="fixed bottom-0 right-0 p-4 sm:p-6 space-y-3 z-50 max-w-sm w-full">
+        {% for message in messages %}
+            <div x-data="{ show: true }"
+                 x-init="setTimeout(() => show = false, 5000)"
+                 x-show="show"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform translate-y-2"
+                 x-transition:enter-end="opacity-100 transform translate-y-0"
+                 x-transition:leave="transition ease-in duration-300"
+                 x-transition:leave-start="opacity-100 transform translate-y-0"
+                 x-transition:leave-end="opacity-0 transform translate-y-2"
+                 class="p-4 rounded-lg shadow-lg border
+                    {% if message.tags == 'success' %} bg-green-50 border-green-300 text-green-700
+                    {% elif message.tags == 'error' %} bg-red-50 border-red-300 text-red-700
+                    {% elif message.tags == 'warning' %} bg-yellow-50 border-yellow-300 text-yellow-700
+                    {% else %} bg-blue-50 border-blue-300 text-blue-700
+                    {% endif %}"
+                 role="alert">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        {# Icon based on message type #}
+                        {% if message.tags == 'success' %}
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                        {% elif message.tags == 'error' %}
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+                        {% else %}
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                        {% endif %}
+                    </div>
+                    <div class="ml-3 w-0 flex-1 pt-0.5">
+                        <p class="text-sm font-medium">{{ message }}</p>
+                    </div>
+                    <div class="ml-4 flex-shrink-0 flex">
+                        <button @click="show = false" type="button" class="inline-flex rounded-md p-1.5 text-current hover:bg-opacity-20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-current">
+                            <span class="sr-only">Dismiss</span>
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{# --- End Django Messages --- #}
+
 {% endblock %}

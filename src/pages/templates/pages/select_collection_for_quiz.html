@@ -1,0 +1,75 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Add '{{ quiz.title }}' to Collection | QuizMaster{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+    <div class="max-w-2xl mx-auto bg-surface rounded-xl shadow-lg p-6 sm:p-8 border border-border">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-accent-heading mb-2">Add Quiz to Collection</h1>
+            <p class="text-text-secondary">You are adding the quiz: <strong class="text-text-primary">{{ quiz.title }}</strong></p>
+        </div>
+
+        {# Display Django Messages (e.g., if redirected here with a message) #}
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="p-4 rounded-md
+                        {% if message.tags == 'success' %} bg-green-100 border border-green-400 text-green-700
+                        {% elif message.tags == 'error' %} bg-red-100 border border-red-400 text-red-700
+                        {% elif message.tags == 'warning' %} bg-yellow-100 border border-yellow-400 text-yellow-700
+                        {% else %} bg-blue-100 border border-blue-400 text-blue-700
+                        {% endif %}"
+                         role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if collections %}
+            <p class="text-text-secondary mb-4 text-center sm:text-left">Select one of your collections to add this quiz to:</p>
+            <div class="space-y-3">
+                {% for collection in collections %}
+                    <div class="border border-border rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 hover:bg-tag-bg/30 transition-colors">
+                        <div class="flex-grow">
+                            <h2 class="text-lg font-semibold text-text-primary">{{ collection.name }}</h2>
+                            {% if collection.description %}
+                                <p class="text-sm text-text-muted">{{ collection.description }}</p>
+                            {% endif %}
+                            <p class="text-xs text-text-muted mt-1">{{ collection.quizzes.count }} quiz{{ collection.quizzes.count|pluralize }} currently in this collection.</p>
+                        </div>
+                        <div class="flex-shrink-0 mt-2 sm:mt-0 w-full sm:w-auto">
+                            {# Form to add the current quiz to this specific collection #}
+                            <form method="POST" action="{% url 'pages:add_quiz_to_selected_collection' quiz_id=quiz.id collection_id=collection.id %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="w-full sm:w-auto bg-accent-primary hover:bg-accent-hover text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors whitespace-nowrap">
+                                    Add to this Collection
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            {# This state should ideally be handled by the view redirecting if no collections exist,
+               but as a fallback display a message. #}
+            <p class="text-text-primary text-center">You don't have any collections yet.
+                <a href="{% url 'pages:create_collection' %}" class="text-accent-heading hover:text-accent-primary font-medium">Create a collection first.</a>
+            </p>
+        {% endif %}
+
+        <div class="mt-8 text-center">
+            <a href="{% url 'pages:quizzes' %}" class="text-accent-heading hover:text-accent-primary font-medium">
+                « Back to Quizzes
+            </a>
+            <span class="text-text-muted mx-2">|</span>
+            <a href="{% url 'pages:profile' %}" class="text-accent-heading hover:text-accent-primary font-medium">
+                Back to Profile
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -4,8 +4,9 @@
 {% block title %}Home | QuizMaster{% endblock %}
 
 {% block content %}
-<!-- Hero Section (Unchanged) -->
+<!-- Hero Section -->
 <section class="bg-gradient-to-b from-bg-primary to-bg-secondary py-16 md:py-20 lg:py-24">
+    {# ... (hero section remains the same) ... #}
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 text-accent-heading">Challenge Your Knowledge with QuizMaster</h1>
         <p class="text-lg md:text-xl max-w-3xl mx-auto mb-8 text-text-secondary">Test yourself with our collection of quizzes on various topics. Learn, have fun, and track your progress!</p>
@@ -20,7 +21,7 @@
     </div>
 </section>
 
-<!-- Featured Quizzes Section (Unchanged - Still uses featured_quizzes context) -->
+<!-- Featured Quizzes Section -->
 <section class="py-12 lg:py-16 container mx-auto px-4 sm:px-6 lg:px-8">
     <h2 class="text-2xl md:text-3xl font-bold mb-8 text-text-secondary text-center md:text-left">Featured Quizzes</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -33,14 +34,30 @@
                             <span>{{ quiz.questions.count }} questions</span>
                         </div>
                         <p class="text-text-primary mb-6 flex-grow">{{ quiz.description|default:"Test your knowledge with this engaging quiz!" }}</p>
-                        <div class="mt-auto flex justify-between items-center">
+                        <div class="mt-auto flex flex-col sm:flex-row justify-between items-center gap-3"> {# Added flex-col and gap-3 for better stacking on small screens #}
                             <div class="flex flex-wrap gap-2">
-                                {# Display System Categories for the quiz #}
                                 {% for category in quiz.system_categories.all %}
                                     <span class="bg-tag-bg text-tag-teal text-xs px-2 py-1 rounded-full whitespace-nowrap">{{ category.name }}</span>
                                 {% endfor %}
                             </div>
-                            <a href="{% url 'multi_choice_quiz:quiz_detail' quiz.id %}" class="bg-accent-primary hover:bg-accent-hover text-white py-2 px-4 rounded-lg text-sm font-bold transition-colors whitespace-nowrap">Start Quiz</a>
+                            <div class="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0"> {# Button group for alignment #}
+                                <a href="{% url 'multi_choice_quiz:quiz_detail' quiz.id %}"
+                                   class="flex-grow sm:flex-grow-0 bg-accent-primary hover:bg-accent-hover text-white py-2 px-4 rounded-lg text-sm font-bold transition-colors whitespace-nowrap text-center">Start Quiz
+                                </a>
+                                {# --- START NEW "ADD TO COLLECTION" BUTTON --- #}
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'pages:select_collection_for_quiz' quiz_id=quiz.id %}"
+                                   class="flex-grow sm:flex-grow-0 bg-tag-bg hover:bg-tag-bg/80 text-text-secondary py-2 px-3 rounded-lg text-xs font-medium transition-colors whitespace-nowrap text-center border border-border"
+                                   title="Add to Collection">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block align-middle" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1V2m0 2v-.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V3m-4 1V2.5M12 6V3" />
+                                    </svg>
+                                    <span class="hidden sm:inline ml-1">Add</span>
+                                </a>
+                                {% endif %}
+                                {# --- END NEW "ADD TO COLLECTION" BUTTON --- #}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -58,20 +75,16 @@
     {% endif %}
 </section>
 
-<!-- Popular Categories Section (MODIFIED) -->
+<!-- Popular Categories Section -->
 <section class="py-12 lg:py-16 bg-bg-secondary/30">
+    {# ... (popular categories section remains the same) ... #}
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-        {# Changed heading from Topics to Categories #}
         <h2 class="text-2xl md:text-3xl font-bold mb-8 text-text-secondary text-center md:text-left">Popular Categories</h2>
-        {# Use 'popular_categories' from context #}
         {% if popular_categories %}
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 lg:gap-6">
-                {# Loop through SystemCategory objects #}
                 {% for category in popular_categories %}
-                    {# Link to the quizzes page filtered by this category's slug #}
                     <a href="{% url 'pages:quizzes' %}?category={{ category.slug }}" class="block bg-surface hover:bg-tag-bg rounded-xl p-4 border border-border transition-all hover:-translate-y-1 hover:shadow-md text-center sm:text-left">
                         <h3 class="font-bold text-text-secondary mb-1 truncate">{{ category.name }}</h3>
-                        {# Use the annotated count #}
                         <p class="text-sm text-text-muted">{{ category.num_active_quizzes }} quiz{{ category.num_active_quizzes|pluralize }}</p>
                     </a>
                 {% endfor %}
@@ -84,8 +97,9 @@
     </div>
 </section>
 
-<!-- How It Works Section (Unchanged) -->
+<!-- How It Works Section -->
 <section class="py-12 lg:py-16 container mx-auto px-4 sm:px-6 lg:px-8">
+    {# ... (how it works section remains the same) ... #}
     <h2 class="text-2xl md:text-3xl font-bold mb-8 text-text-secondary text-center">How It Works</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
         <div class="bg-surface rounded-xl p-6 border border-border hover:border-accent-primary transition-all hover:-translate-y-2 hover:shadow-lg text-center">
