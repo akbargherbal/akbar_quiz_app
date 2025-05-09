@@ -4,14 +4,13 @@
 {% block title %}Home | QuizMaster{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
+<!-- Hero Section (Unchanged) -->
 <section class="bg-gradient-to-b from-bg-primary to-bg-secondary py-16 md:py-20 lg:py-24">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 text-accent-heading">Challenge Your Knowledge with QuizMaster</h1>
         <p class="text-lg md:text-xl max-w-3xl mx-auto mb-8 text-text-secondary">Test yourself with our collection of quizzes on various topics. Learn, have fun, and track your progress!</p>
         <div class="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
             <a href="{% url 'pages:quizzes' %}" class="bg-accent-primary hover:bg-accent-hover text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:-translate-y-1 hover:shadow-lg text-base md:text-lg">Browse Quizzes</a>
-            {# Conditional CTA based on login status #}
             {% if user.is_authenticated %}
                 <a href="{% url 'pages:profile' %}" class="border border-border hover:bg-tag-bg text-text-secondary font-bold py-3 px-6 rounded-lg transition-all transform hover:-translate-y-1 text-base md:text-lg">View Your Profile</a>
             {% else %}
@@ -21,7 +20,7 @@
     </div>
 </section>
 
-<!-- Featured Quizzes Section -->
+<!-- Featured Quizzes Section (Unchanged - Still uses featured_quizzes context) -->
 <section class="py-12 lg:py-16 container mx-auto px-4 sm:px-6 lg:px-8">
     <h2 class="text-2xl md:text-3xl font-bold mb-8 text-text-secondary text-center md:text-left">Featured Quizzes</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -36,8 +35,9 @@
                         <p class="text-text-primary mb-6 flex-grow">{{ quiz.description|default:"Test your knowledge with this engaging quiz!" }}</p>
                         <div class="mt-auto flex justify-between items-center">
                             <div class="flex flex-wrap gap-2">
-                                {% for topic in quiz.topics.all %}
-                                    <span class="bg-tag-bg text-tag-teal text-xs px-2 py-1 rounded-full whitespace-nowrap">{{ topic.name }}</span>
+                                {# Display System Categories for the quiz #}
+                                {% for category in quiz.system_categories.all %}
+                                    <span class="bg-tag-bg text-tag-teal text-xs px-2 py-1 rounded-full whitespace-nowrap">{{ category.name }}</span>
                                 {% endfor %}
                             </div>
                             <a href="{% url 'multi_choice_quiz:quiz_detail' quiz.id %}" class="bg-accent-primary hover:bg-accent-hover text-white py-2 px-4 rounded-lg text-sm font-bold transition-colors whitespace-nowrap">Start Quiz</a>
@@ -58,28 +58,33 @@
     {% endif %}
 </section>
 
-<!-- Popular Topics Section -->
+<!-- Popular Categories Section (MODIFIED) -->
 <section class="py-12 lg:py-16 bg-bg-secondary/30">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-2xl md:text-3xl font-bold mb-8 text-text-secondary text-center md:text-left">Popular Topics</h2>
-        {% if topics %}
+        {# Changed heading from Topics to Categories #}
+        <h2 class="text-2xl md:text-3xl font-bold mb-8 text-text-secondary text-center md:text-left">Popular Categories</h2>
+        {# Use 'popular_categories' from context #}
+        {% if popular_categories %}
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 lg:gap-6">
-                {% for topic in topics %}
-                    <a href="{% url 'pages:quizzes' %}?topic={{ topic.id }}" class="block bg-surface hover:bg-tag-bg rounded-xl p-4 border border-border transition-all hover:-translate-y-1 hover:shadow-md text-center sm:text-left">
-                        <h3 class="font-bold text-text-secondary mb-1 truncate">{{ topic.name }}</h3>
-                        <p class="text-sm text-text-muted">{{ topic.quizzes.count }} quizzes</p>
+                {# Loop through SystemCategory objects #}
+                {% for category in popular_categories %}
+                    {# Link to the quizzes page filtered by this category's slug #}
+                    <a href="{% url 'pages:quizzes' %}?category={{ category.slug }}" class="block bg-surface hover:bg-tag-bg rounded-xl p-4 border border-border transition-all hover:-translate-y-1 hover:shadow-md text-center sm:text-left">
+                        <h3 class="font-bold text-text-secondary mb-1 truncate">{{ category.name }}</h3>
+                        {# Use the annotated count #}
+                        <p class="text-sm text-text-muted">{{ category.num_active_quizzes }} quiz{{ category.num_active_quizzes|pluralize }}</p>
                     </a>
                 {% endfor %}
             </div>
         {% else %}
             <div class="bg-surface rounded-xl p-6 border border-border">
-                <p class="text-text-primary text-center">No topics available yet. Check back soon!</p>
+                <p class="text-text-primary text-center">No popular categories found (or no categories with active quizzes). Check back soon!</p>
             </div>
         {% endif %}
     </div>
 </section>
 
-<!-- How It Works Section -->
+<!-- How It Works Section (Unchanged) -->
 <section class="py-12 lg:py-16 container mx-auto px-4 sm:px-6 lg:px-8">
     <h2 class="text-2xl md:text-3xl font-bold mb-8 text-text-secondary text-center">How It Works</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">

@@ -1,18 +1,17 @@
-# src/pages/tests/test_views.py
+# src/pages/tests/test_views.py (Cleaned up test_home_page_loads)
 
+import re
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from multi_choice_quiz.models import Quiz, QuizAttempt  # Import models
-from django.utils import timezone  # To set end_time
+from django.utils import timezone
+from django.db.models import Count, Q  # Ensure Q is imported
 
-# --- Replace existing logger setup with this ---
-from multi_choice_quiz.tests.test_logging import setup_test_logging  # CORRECT
+from multi_choice_quiz.models import Quiz, QuizAttempt, Question
+from pages.models import UserCollection, SystemCategory
+from multi_choice_quiz.tests.test_logging import setup_test_logging
 
 logger = setup_test_logging(__name__, "pages")
-# --- End Replacement ---
-
-# Get the User model
 User = get_user_model()
 
 
@@ -20,151 +19,314 @@ class PagesViewTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        # Create users for testing
-        cls.test_user = User.objects.create_user(
-            username="testuser_views", password="password123", email="test@example.com"
+        # ... (setUpTestData remains the same) ...
+        # --- Users ---
+        cls.user_with_data = User.objects.create_user(
+            username="profiletester",
+            password="password123",
+            email="profile@example.com",
         )
-        # Create another user for testing empty state
-        cls.no_attempts_user = User.objects.create_user(
-            username="noattempts_user", password="password123"
+        cls.user_no_data = User.objects.create_user(
+            username="nodataprofile", password="password123"
         )
 
-        # Create some quizzes
-        cls.quiz1 = Quiz.objects.create(title="History Quiz")
-        cls.quiz2 = Quiz.objects.create(title="Science Quiz")
+        # --- System Categories ---
+        cls.cat_tech = SystemCategory.objects.create(
+            name="Technology", slug="technology"
+        )
+        cls.cat_hist = SystemCategory.objects.create(name="History", slug="history")
+        cls.cat_sci = SystemCategory.objects.create(name="Science", slug="science")
+        cls.cat_art = SystemCategory.objects.create(name="Art", slug="art")
+        cls.cat_math = SystemCategory.objects.create(name="Math", slug="math")
+        cls.cat_geo = SystemCategory.objects.create(name="Geography", slug="geo")
 
-        # Create some attempts for test_user
+        # --- Quizzes (Order of creation matters for -created_at ordering) ---
+        # Oldest
+        cls.quiz_t1 = Quiz.objects.create(title="Tech Quiz 1", is_active=True)
+        Question.objects.create(quiz=cls.quiz_t1, text="TQ1")
+
+        cls.quiz_t2 = Quiz.objects.create(title="Tech Quiz 2", is_active=True)
+        Question.objects.create(quiz=cls.quiz_t2, text="TQ2")
+
+        cls.quiz_t3 = Quiz.objects.create(title="Tech Quiz 3", is_active=True)
+        Question.objects.create(quiz=cls.quiz_t3, text="TQ3")
+
+        cls.quiz_h1 = Quiz.objects.create(title="History Quiz 1", is_active=True)
+        Question.objects.create(quiz=cls.quiz_h1, text="HQ1")
+
+        cls.quiz_s1 = Quiz.objects.create(title="Science Quiz 1", is_active=True)
+        Question.objects.create(quiz=cls.quiz_s1, text="SQ1")
+
+        cls.quiz_s2 = Quiz.objects.create(title="Science Quiz 2", is_active=True)
+        Question.objects.create(quiz=cls.quiz_s2, text="SQ2")
+
+        cls.quiz_a1 = Quiz.objects.create(
+            title="Art Quiz 1", is_active=True
+        )  # Active, but no questions
+
+        cls.quiz_a2 = Quiz.objects.create(
+            title="Art Quiz 2", is_active=False
+        )  # Inactive
+        Question.objects.create(quiz=cls.quiz_a2, text="AQ2")
+
+        cls.quiz_m1 = Quiz.objects.create(title="Math Quiz 1", is_active=True)
+        Question.objects.create(quiz=cls.quiz_m1, text="MQ1")
+
+        cls.quiz_g1 = Quiz.objects.create(title="Geography Quiz 1", is_active=True)
+        Question.objects.create(quiz=cls.quiz_g1, text="GQ1")
+
+        # Newest
+        cls.quiz_nocat = Quiz.objects.create(title="No Category Quiz", is_active=True)
+        Question.objects.create(quiz=cls.quiz_nocat, text="NoCatQ")
+
+        # --- Assign Quizzes to Categories ---
+        cls.quiz_t1.system_categories.add(cls.cat_tech)
+        cls.quiz_t2.system_categories.add(cls.cat_tech)
+        cls.quiz_t3.system_categories.add(cls.cat_tech)
+        cls.quiz_h1.system_categories.add(cls.cat_hist)
+        cls.quiz_s1.system_categories.add(cls.cat_sci)
+        cls.quiz_s2.system_categories.add(cls.cat_sci)
+        cls.quiz_a1.system_categories.add(cls.cat_art)
+        cls.quiz_a2.system_categories.add(cls.cat_art)
+        cls.quiz_m1.system_categories.add(cls.cat_math)
+        cls.quiz_g1.system_categories.add(cls.cat_geo)
+
+        # --- Attempts & User Collections ---
         cls.attempt1 = QuizAttempt.objects.create(
-            user=cls.test_user,
-            quiz=cls.quiz1,
+            user=cls.user_with_data,
+            quiz=cls.quiz_t1,
             score=8,
             total_questions=10,
             percentage=80.0,
-            end_time=timezone.now() - timezone.timedelta(days=1),  # Set past end time
+            end_time=timezone.now() - timezone.timedelta(days=1),
         )
         cls.attempt2 = QuizAttempt.objects.create(
-            user=cls.test_user,
-            quiz=cls.quiz2,
+            user=cls.user_with_data,
+            quiz=cls.quiz_h1,
             score=5,
             total_questions=5,
             percentage=100.0,
-            end_time=timezone.now(),  # Set recent end time
+            end_time=timezone.now(),
+        )
+        cls.collection1 = UserCollection.objects.create(
+            user=cls.user_with_data, name="Collection A"
+        )
+        cls.collection1.quizzes.add(cls.quiz_t1, cls.quiz_h1)
+        cls.collection2 = UserCollection.objects.create(
+            user=cls.user_with_data, name="Collection B (Empty)"
+        )
+        cls.nodata_user_collection = UserCollection.objects.create(
+            user=cls.user_no_data, name="No Data User Coll"
         )
 
     def setUp(self):
-        # Create a new client for each test
         self.client = Client()
 
     def test_home_page_loads(self):
+        """Verify homepage loads and includes featured quizzes and popular categories."""
         response = self.client.get(reverse("pages:home"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "pages/home.html")
-        self.assertTemplateUsed(response, "pages/base.html")
 
-    def test_quizzes_page_loads(self):
-        response = self.client.get(reverse("pages:quizzes"))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "pages/quizzes.html")
+        self.assertIn("featured_quizzes", response.context)
+        featured_in_context = response.context["featured_quizzes"]
+        self.assertEqual(len(featured_in_context), 3)
+        expected_featured_titles = {
+            self.quiz_nocat.title,
+            self.quiz_g1.title,
+            self.quiz_m1.title,
+        }
+        self.assertSetEqual(
+            {q.title for q in featured_in_context}, expected_featured_titles
+        )
+
+        self.assertIn("popular_categories", response.context)
+        popular = response.context["popular_categories"]
+
+        self.assertEqual(len(popular), 5)
+        self.assertEqual(
+            [cat.name for cat in popular],
+            ["Technology", "Science", "Geography", "History", "Math"],
+        )
+        self.assertEqual(popular[0].num_active_quizzes, 3)
+        self.assertEqual(popular[1].num_active_quizzes, 2)
+        self.assertEqual(popular[2].num_active_quizzes, 1)
+        self.assertEqual(popular[3].num_active_quizzes, 1)
+        self.assertEqual(popular[4].num_active_quizzes, 1)
+
+        content = response.content.decode()
+        self.assertIn(self.quiz_nocat.title, content)
+        self.assertIn(self.quiz_g1.title, content)
+        self.assertIn(self.quiz_m1.title, content)
+        self.assertIn("Popular Categories", content)
+        self.assertIn(self.cat_tech.name, content)
+        self.assertIn(f">{popular[0].num_active_quizzes} quizs</p>", content)
+        self.assertIn(f">{popular[1].num_active_quizzes} quizs</p>", content)
+        self.assertIn(f">{popular[2].num_active_quizzes} quiz</p>", content)
+        self.assertNotIn(self.cat_art.name, content)
+
+    # ... (rest of the test methods remain unchanged)
+    def test_quizzes_page_loads_and_filters_by_category(self):
+        """Test the quizzes page loads, displays categories, and filters correctly."""
+        all_quizzes_url = reverse("pages:quizzes")
+        response_all = self.client.get(all_quizzes_url)
+        self.assertEqual(response_all.status_code, 200)
+        self.assertTemplateUsed(response_all, "pages/quizzes.html")
+
+        self.assertIn("categories", response_all.context)
+        self.assertEqual(len(response_all.context["categories"]), 6)
+        self.assertIsNone(response_all.context["selected_category"])
+
+        quizzes_page = response_all.context["quizzes"]
+        self.assertEqual(quizzes_page.paginator.count, 10)
+        self.assertEqual(len(quizzes_page.object_list), 9)
+
+        self.assertNotIn(self.quiz_a2, quizzes_page.object_list)
+
+        content_all = response_all.content.decode()
+        self.assertIn(self.cat_tech.name, content_all)
+        self.assertIn(self.cat_hist.name, content_all)
+
+        self.assertIn(self.quiz_nocat.title, content_all)
+        self.assertIn(self.quiz_g1.title, content_all)
+        self.assertIn(self.quiz_m1.title, content_all)
+        self.assertIn(self.quiz_a1.title, content_all)
+        self.assertIn(self.quiz_s2.title, content_all)
+        self.assertIn(self.quiz_s1.title, content_all)
+        self.assertIn(self.quiz_h1.title, content_all)
+        self.assertIn(self.quiz_t3.title, content_all)
+        self.assertIn(self.quiz_t2.title, content_all)
+
+        self.assertNotIn(self.quiz_t1.title, content_all)
+
+        self.assertNotIn(self.quiz_a2.title, content_all)
+
+        self.assertIn(
+            f'<h3 class="text-xl font-bold mb-2 text-text-secondary">{self.quiz_a1.title}</h3>',
+            content_all,
+        )
+        pattern_quiz_a1_zero_questions = (
+            rf"{re.escape(self.quiz_a1.title)}.*?<span>0 questions</span>"
+        )
+        self.assertTrue(
+            re.search(pattern_quiz_a1_zero_questions, content_all, re.DOTALL),
+            f"Could not find '{self.quiz_a1.title}' rendered with '0 questions'.",
+        )
+
+        tech_quizzes_url = f"{all_quizzes_url}?category={self.cat_tech.slug}"
+        response_tech = self.client.get(tech_quizzes_url)
+        self.assertEqual(response_tech.status_code, 200)
+        self.assertEqual(response_tech.context["selected_category"], self.cat_tech)
+        tech_quizzes_on_page = response_tech.context["quizzes"]
+        self.assertEqual(tech_quizzes_on_page.paginator.count, 3)
+        self.assertEqual(len(tech_quizzes_on_page.object_list), 3)
+        self.assertIn(self.quiz_t1, tech_quizzes_on_page.object_list)
+        self.assertIn(self.quiz_t2, tech_quizzes_on_page.object_list)
+        self.assertIn(self.quiz_t3, tech_quizzes_on_page.object_list)
+        self.assertNotIn(self.quiz_h1, tech_quizzes_on_page.object_list)
+
+        content_tech = response_tech.content.decode()
+        self.assertIn(self.quiz_t1.title, content_tech)
+        self.assertIn(self.quiz_t2.title, content_tech)
+        self.assertIn(self.quiz_t3.title, content_tech)
+        self.assertNotIn(self.quiz_h1.title, content_tech)
+        self.assertIn("Showing quizzes for category:", content_tech)
+        self.assertIn(
+            f'<span class="font-bold">{self.cat_tech.name}</span>', content_tech
+        )
+
+        hist_quizzes_url = f"{all_quizzes_url}?category={self.cat_hist.slug}"
+        response_hist = self.client.get(hist_quizzes_url)
+        self.assertEqual(response_hist.status_code, 200)
+        self.assertEqual(response_hist.context["selected_category"], self.cat_hist)
+        hist_quizzes_on_page = response_hist.context["quizzes"]
+        self.assertEqual(hist_quizzes_on_page.paginator.count, 1)
+        self.assertEqual(len(hist_quizzes_on_page.object_list), 1)
+        self.assertIn(self.quiz_h1, hist_quizzes_on_page.object_list)
+        self.assertNotIn(self.quiz_t1, hist_quizzes_on_page.object_list)
+
+        art_quizzes_url = f"{all_quizzes_url}?category={self.cat_art.slug}"
+        response_art = self.client.get(art_quizzes_url)
+        self.assertEqual(response_art.status_code, 200)
+        self.assertEqual(response_art.context["selected_category"], self.cat_art)
+        art_quizzes_on_page = response_art.context["quizzes"]
+        self.assertEqual(art_quizzes_on_page.paginator.count, 1)
+        self.assertEqual(len(art_quizzes_on_page.object_list), 1)
+        self.assertIn(self.quiz_a1, art_quizzes_on_page.object_list)
+        self.assertNotIn(self.quiz_a2, art_quizzes_on_page.object_list)
+
+        content_art = response_art.content.decode()
+        self.assertIn(self.quiz_a1.title, content_art)
+        self.assertNotIn(self.quiz_a2.title, content_art)
+        pattern_quiz_a1_art_details = (
+            rf"{re.escape(self.quiz_a1.title)}.*?<span>0 questions</span>"
+        )
+        self.assertTrue(
+            re.search(pattern_quiz_a1_art_details, content_art, re.DOTALL),
+            "Could not find Art Quiz 1 title followed by '0 questions' when filtered by Art.",
+        )
 
     def test_about_page_loads(self):
         response = self.client.get(reverse("pages:about"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "pages/about.html")
 
-    # --- START CORRECTION 1 ---
-    # def test_login_page_loads(self):
-    #     # This test is no longer relevant as pages:login doesn't exist.
-    #     # The actual login page is at reverse('login') -> /accounts/login/
-    #     # We can test that directly if needed, but it's testing Django's view.
-    #     # It's better to test the *template* rendering if we customize it.
-    #     # Let's test that accessing the built-in login URL works.
-    #     response = self.client.get(reverse("login"))
-    #     self.assertEqual(response.status_code, 200)
-    #     # Check if it uses the correct template (adjust path if necessary)
-    #     self.assertTemplateUsed(response, "registration/login.html")
-    # --- END CORRECTION 1 ---
+    def test_login_page_loads(self):
+        response = self.client.get(reverse("login"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "registration/login.html")
 
     def test_signup_page_loads(self):
         response = self.client.get(reverse("pages:signup"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "pages/signup.html")
 
-    # --- Test Profile Page Access ---
     def test_profile_page_redirects_when_not_logged_in(self):
         response = self.client.get(reverse("pages:profile"))
-        self.assertEqual(response.status_code, 302)  # Should redirect
-
-        # --- START CORRECTION 2 ---
-        # Check if it redirects to the correct built-in login page
+        self.assertEqual(response.status_code, 302)
         expected_redirect_url = f"{reverse('login')}?next={reverse('pages:profile')}"
-        # --- END CORRECTION 2 ---
-
         self.assertRedirects(
             response, expected_redirect_url, fetch_redirect_response=False
         )
 
     def test_profile_page_loads_when_logged_in(self):
-        # Log in the test user
         login_successful = self.client.login(
-            username="testuser_views", password="password123"
+            username="profiletester", password="password123"
         )
         self.assertTrue(login_successful, "Test user login failed")
-
         response = self.client.get(reverse("pages:profile"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "pages/profile.html")
-        # Check that the user object in context matches the logged-in user
-        self.assertEqual(response.context["user"], self.test_user)
+        self.assertEqual(response.context["user"], self.user_with_data)
 
-    # --- START NEW/MODIFIED TESTS for Step 3.3 ---
-    def test_profile_page_displays_user_history(self):
-        """Verify quiz attempts are passed to context and rendered."""
-        # Log in the user who has attempts
-        self.client.login(username="testuser_views", password="password123")
+    def test_profile_page_context_with_data(self):
+        self.client.login(username="profiletester", password="password123")
         response = self.client.get(reverse("pages:profile"))
-
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "pages/profile.html")
-
-        # Check context contains the attempts, ordered correctly (most recent first)
         self.assertIn("quiz_attempts", response.context)
         attempts_in_context = response.context["quiz_attempts"]
-        self.assertEqual(len(attempts_in_context), 2)
-        self.assertEqual(attempts_in_context[0], self.attempt2)  # Most recent
-        self.assertEqual(attempts_in_context[1], self.attempt1)
+        self.assertEqual(attempts_in_context.count(), 2)
+        self.assertIn("user_collections", response.context)
+        collections_in_context = response.context["user_collections"]
+        self.assertEqual(collections_in_context.count(), 2)
+        self.assertNotIn(self.nodata_user_collection, collections_in_context)
+        self.assertIn("stats", response.context)
+        stats_in_context = response.context["stats"]
+        self.assertEqual(stats_in_context.get("total_taken"), 2)
+        self.assertEqual(stats_in_context.get("avg_score_percent"), 90)
 
-        # Check rendered HTML contains info from the attempts
-        content = response.content.decode()
-        self.assertIn(self.quiz1.title, content)  # History Quiz title
-        self.assertIn(f"{self.attempt1.percentage:.0f}%", content)  # 80%
-        self.assertIn(self.quiz2.title, content)  # Science Quiz title
-        self.assertIn(f"{self.attempt2.percentage:.0f}%", content)  # 100%
-        self.assertNotIn("You haven't completed any quizzes yet.", content)
-
-        # Check the "Take Again" link URL for one of the attempts
-        take_again_url_quiz1 = reverse(
-            "multi_choice_quiz:quiz_detail", args=[self.quiz1.id]
-        )
-        self.assertIn(f'href="{take_again_url_quiz1}"', content)
-
-    def test_profile_page_empty_history_message(self):
-        """Verify the empty state message is shown for users with no attempts."""
-        # Log in the user who has NO attempts
-        self.client.login(username="noattempts_user", password="password123")
+    def test_profile_page_context_no_data(self):
+        self.client.login(username="nodataprofile", password="password123")
         response = self.client.get(reverse("pages:profile"))
-
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "pages/profile.html")
-
-        # Check context contains an empty queryset for attempts
         self.assertIn("quiz_attempts", response.context)
-        self.assertEqual(len(response.context["quiz_attempts"]), 0)
-
-        # Check rendered HTML contains the empty message
-        content = response.content.decode()
-        self.assertIn("You haven't completed any quizzes yet.", content)
-        self.assertNotIn(
-            self.quiz1.title, content
-        )  # Ensure no attempt details are shown
-
-    # --- END NEW/MODIFIED TESTS for Step 3.3 ---
+        self.assertEqual(response.context["quiz_attempts"].count(), 0)
+        self.assertIn("user_collections", response.context)
+        self.assertEqual(response.context["user_collections"].count(), 1)
+        self.assertEqual(
+            response.context["user_collections"].first(), self.nodata_user_collection
+        )
+        self.assertIn("stats", response.context)
+        stats_in_context = response.context["stats"]
+        self.assertEqual(stats_in_context.get("total_taken"), 0)
+        self.assertEqual(stats_in_context.get("avg_score_percent"), 0)

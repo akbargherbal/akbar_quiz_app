@@ -1,67 +1,56 @@
-# src/pages/views.py (Existing - Confirmed for Step 5.4)
+# src/pages/views.py
 
-from django.shortcuts import render, redirect  # Added redirect
-from django.contrib.auth import login  # Added login
-from django.contrib import messages  # Added messages
+from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from django.contrib import messages
 from django.views.generic import TemplateView, ListView
-from django.contrib.auth.decorators import login_required  # <<< Already imported
+from django.contrib.auth.decorators import login_required
+from django.db.models import Avg, Count, Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-from multi_choice_quiz.models import (
-    Quiz,
-    Topic,
-    QuizAttempt,  # <<< Already imported
-)
+from multi_choice_quiz.models import Quiz, Question, QuizAttempt
+from .models import UserCollection, SystemCategory
+from .forms import SignUpForm, EditProfileForm
 
-# --- Add form import ---
-from .forms import SignUpForm
+from multi_choice_quiz.tests.test_logging import setup_test_logging
+
+logger = setup_test_logging(__name__, "pages")
 
 
 def home(request):
-    # ... (home view code - unchanged) ...
-    featured_quizzes = Quiz.objects.filter(is_active=True).order_by("-created_at")[:3]
-    topics = Topic.objects.all()[:5]
+    """Displays the homepage with featured quizzes and popular categories."""
+    featured_quizzes = (
+        Quiz.objects.filter(is_active=True, questions__isnull=False)
+        .distinct()
+        .order_by("-created_at", "-id")[:3]  # <<< MODIFIED
+    )
+    popular_categories = (
+        SystemCategory.objects.annotate(
+            num_active_quizzes=Count(
+                "quizzes",
+                filter=Q(quizzes__is_active=True, quizzes__questions__isnull=False),
+            )
+        )
+        .filter(num_active_quizzes__gt=0)
+        .order_by("-num_active_quizzes", "name")[:5]
+    )
     context = {
         "featured_quizzes": featured_quizzes,
-        "topics": topics,
+        "popular_categories": popular_categories,
     }
     return render(request, "pages/home.html", context)
 
 
-def quizzes(request):
-    # ... (quizzes view code - unchanged) ...
-    all_quizzes = Quiz.objects.filter(is_active=True).order_by("-created_at")
-    topics = Topic.objects.all()
-    topic_id = request.GET.get("topic")
-    if topic_id:
-        try:
-            topic_id = int(topic_id)
-            all_quizzes = all_quizzes.filter(topics__id=topic_id)
-            selected_topic = Topic.objects.get(id=topic_id)
-        except (ValueError, Topic.DoesNotExist):
-            selected_topic = None
-    else:
-        selected_topic = None
-    context = {
-        "quizzes": all_quizzes,
-        "topics": topics,
-        "selected_topic": selected_topic,
-    }
-    return render(request, "pages/quizzes.html", context)
-
-
 def about(request):
-    # ... (about view code - unchanged) ...
     return render(request, "pages/about.html")
 
 
-# --- Corrected signup_view ---
 def signup_view(request):
-    # ... (signup_view code - unchanged) ...
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)  # Log the user in automatically
+            login(request, user)
             messages.success(request, "Registration successful! Welcome.")
             return redirect("pages:profile")
         else:
@@ -71,16 +60,81 @@ def signup_view(request):
     return render(request, "pages/signup.html", {"form": form})
 
 
-# --- Profile View (Verification for Step 5.4) ---
-@login_required  # <<< Decorator exists
-def profile_view(request):
-    """User profile page, showing quiz attempt history."""
-    # Get quiz attempts for the logged-in user
-    # Order by the end time, most recent first
-    user_attempts = QuizAttempt.objects.filter(user=request.user).order_by(
-        "-end_time"
-    )  # <<< Fetches attempts for user, orders correctly
+def quizzes(request):
+    quiz_list = (
+        Quiz.objects.filter(is_active=True)
+        .select_related()
+        .prefetch_related("system_categories")
+        .order_by("-created_at", "-id")  # <<< MODIFIED
+    )
+    categories = SystemCategory.objects.all().order_by("name")
+    selected_category = None
+    category_slug = request.GET.get("category")
+    if category_slug:
+        try:
+            selected_category = SystemCategory.objects.get(slug=category_slug)
+            quiz_list = quiz_list.filter(system_categories=selected_category)
+        except SystemCategory.DoesNotExist:
+            selected_category = None
 
-    # Pass the attempts to the template context
-    context = {"quiz_attempts": user_attempts}  # <<< Passes with correct key
+    paginator = Paginator(quiz_list, 9)
+    page_number = request.GET.get("page")
+    try:
+        quizzes_page = paginator.page(page_number)
+    except PageNotAnInteger:
+        quizzes_page = paginator.page(1)
+    except EmptyPage:
+        quizzes_page = paginator.page(paginator.num_pages)
+
+    context = {
+        "quizzes": quizzes_page,
+        "categories": categories,
+        "selected_category": selected_category,
+    }
+    return render(request, "pages/quizzes.html", context)
+
+
+@login_required
+def profile_view(request):
+    user = request.user
+    user_attempts = (
+        QuizAttempt.objects.filter(user=user)
+        .order_by("-end_time")
+        .select_related("quiz")
+    )
+    user_collections = (
+        UserCollection.objects.filter(user=user)
+        .prefetch_related("quizzes")
+        .order_by("name")
+    )
+    stats = user_attempts.aggregate(
+        total_attempts=Count("id"), average_score=Avg("percentage")
+    )
+    average_score = stats.get("average_score")
+    if average_score is None:
+        average_score = 0
+    context = {
+        "quiz_attempts": user_attempts,
+        "user_collections": user_collections,
+        "stats": {
+            "total_taken": stats.get("total_attempts", 0),
+            "avg_score_percent": round(average_score),
+        },
+    }
     return render(request, "pages/profile.html", context)
+
+
+@login_required
+def edit_profile_view(request):
+    if request.method == "POST":
+        form = EditProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile has been updated successfully!")
+            return redirect("pages:profile")
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = EditProfileForm(instance=request.user)
+
+    return render(request, "pages/edit_profile.html", {"form": form})

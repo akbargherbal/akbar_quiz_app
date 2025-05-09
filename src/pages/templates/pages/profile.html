@@ -24,37 +24,41 @@
                 <p class="text-text-muted text-sm">Member since: {{ user.date_joined|date:"F Y" }}</p>
             </div>
             <div class="flex-shrink-0 mt-4 md:mt-0">
-                {# Changed to a link like the mockup, points to # for now (Req 9.f will implement) #}
-                <a href="#" class="px-4 py-2 border border-border rounded-lg text-sm font-medium text-text-secondary hover:bg-tag-bg transition-colors">
+                {# Link to edit profile (Functionality in Step 9.7) #}
+                <a href="{% url 'pages:edit_profile' %}" class="px-4 py-2 border border-border rounded-lg text-sm font-medium text-text-secondary hover:bg-tag-bg transition-colors">
                     Edit Profile
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Stats Cards (Moved Above Tabs - Static Placeholders for now) -->
+    <!-- Stats Cards (Now Dynamic) -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 lg:mb-10">
         <div class="bg-surface rounded-xl p-4 md:p-6 border border-border shadow-md text-center">
             <h3 class="text-text-muted text-xs sm:text-sm mb-2 uppercase tracking-wider">Quizzes Taken</h3>
-            <div class="text-3xl lg:text-4xl font-bold text-accent-heading">35</div> <!-- Placeholder -->
+            {# Use stats from context #}
+            <div class="text-3xl lg:text-4xl font-bold text-accent-heading" data-testid="stat-quizzes-taken">{{ stats.total_taken|default:"0" }}</div>
         </div>
         <div class="bg-surface rounded-xl p-4 md:p-6 border border-border shadow-md text-center">
             <h3 class="text-text-muted text-xs sm:text-sm mb-2 uppercase tracking-wider">Average Score</h3>
-            <div class="text-3xl lg:text-4xl font-bold text-accent-heading">82%</div> <!-- Placeholder -->
+             {# Use stats from context #}
+            <div class="text-3xl lg:text-4xl font-bold text-accent-heading" data-testid="stat-average-score">{{ stats.avg_score_percent|default:"0" }}%</div>
         </div>
+        {# --- Placeholders for other stats - can be implemented later --- #}
         <div class="bg-surface rounded-xl p-4 md:p-6 border border-border shadow-md text-center">
             <h3 class="text-text-muted text-xs sm:text-sm mb-2 uppercase tracking-wider">Strongest Topic</h3>
-            <div class="text-lg lg:text-xl font-bold text-tag-teal truncate" title="Python Basics">Python Basics</div> <!-- Placeholder -->
+            <div class="text-lg lg:text-xl font-bold text-tag-teal truncate" title="Not Implemented Yet">--</div>
         </div>
         <div class="bg-surface rounded-xl p-4 md:p-6 border border-border shadow-md text-center">
             <h3 class="text-text-muted text-xs sm:text-sm mb-2 uppercase tracking-wider">Needs Review</h3>
-             <div class="text-lg lg:text-xl font-bold text-yellow-500 truncate" title="Advanced Algorithms">Adv. Algorithms</div> <!-- Placeholder -->
+             <div class="text-lg lg:text-xl font-bold text-yellow-500 truncate" title="Not Implemented Yet">--</div>
         </div>
+        {# --- End Placeholders --- #}
     </div>
 
     <!-- Tabs -->
     <div x-data="{ activeTab: 'history' }" class="bg-surface rounded-xl border border-border shadow-lg overflow-hidden">
-        <!-- Tab Navigation (Updated) -->
+        <!-- Tab Navigation (Unchanged) -->
         <nav class="flex border-b border-border overflow-x-auto">
             <button @click="activeTab = 'history'"
                     :class="{ 'border-accent-primary text-accent-heading bg-tag-bg/30': activeTab === 'history', 'border-transparent text-text-muted hover:text-text-secondary hover:border-border': activeTab !== 'history' }"
@@ -66,114 +70,109 @@
                     class="flex-1 whitespace-nowrap py-3 px-4 sm:px-6 text-center font-medium text-sm sm:text-base border-b-2 transition-colors">
                 Collections
             </button>
-            {# Removed Favorites and Created Quizzes tabs #}
         </nav>
 
         <!-- Tab Content -->
-        <div class="p-4 md:p-6 min-h-[300px]"> {# Added min-h for consistency #}
+        <div class="p-4 md:p-6 min-h-[300px]">
 
-            <!-- History Tab (Now contains the dynamic loop) -->
+            <!-- History Tab (Unchanged - Already dynamic) -->
             <div x-show="activeTab === 'history'" x-cloak class="space-y-4 md:space-y-6">
                 <h2 class="text-xl lg:text-2xl font-bold text-text-secondary mb-4">Your Quiz History</h2>
                 <div class="space-y-4">
-
                     {% for attempt in quiz_attempts %}
-                    {# History Item Layout based on Mockup #}
-                    <div class="border border-border rounded-lg p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="border border-border rounded-lg p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4" data-testid="history-attempt-{{ attempt.id }}">
                         <div class="flex-grow">
                             <h3 class="font-bold text-text-secondary mb-1">{{ attempt.quiz.title }}</h3>
-                            {# Format the end_time. Adjust format string as needed ('P' includes a.m./p.m.) #}
                             <p class="text-sm text-text-muted">Completed: {{ attempt.end_time|date:"F j, Y, P" }}</p>
                         </div>
                         <div class="flex-shrink-0 w-full md:w-auto flex items-center justify-between md:justify-start gap-4 mt-3 md:mt-0">
-                            {# Display percentage score circle #}
                             <div class="w-16 h-16 rounded-full bg-tag-bg flex items-center justify-center border-4 {% if attempt.percentage >= 90 %}border-tag-teal{% elif attempt.percentage >= 70 %}border-accent-primary{% else %}border-yellow-500{% endif %} text-text-secondary font-bold flex-shrink-0">
                                 {{ attempt.percentage|floatformat:0 }}%
                             </div>
                             <div class="flex gap-2 sm:gap-3 flex-shrink-0">
-                                {# --- START MODIFICATION (Step 7.3) --- #}
-                                {# Conditionally show Review Mistakes link #}
                                 {% if attempt.attempt_details %}
                                     <a href="{% url 'multi_choice_quiz:attempt_mistake_review' attempt.id %}" class="px-3 py-1.5 sm:px-4 sm:py-2 border border-border rounded-lg text-xs sm:text-sm font-medium text-text-secondary hover:bg-tag-bg transition-colors whitespace-nowrap" data-testid="review-mistakes-link-{{ attempt.id }}">
                                         Review Mistakes
                                     </a>
-                                {% else %}
-                                    {# Optional: Show a disabled state or omit completely #}
-                                    {# <span class="px-3 py-1.5 sm:px-4 sm:py-2 border border-border rounded-lg text-xs sm:text-sm font-medium text-text-muted opacity-50 cursor-not-allowed whitespace-nowrap">No Mistakes</span> #}
                                 {% endif %}
-                                {# --- END MODIFICATION (Step 7.3) --- #}
-
-                                {# Link to take the quiz again #}
                                 <a href="{% url 'multi_choice_quiz:quiz_detail' attempt.quiz.id %}" class="px-3 py-1.5 sm:px-4 sm:py-2 border border-border rounded-lg text-xs sm:text-sm font-medium text-text-secondary hover:bg-tag-bg transition-colors whitespace-nowrap">
                                     Take Again
                                 </a>
                             </div>
                         </div>
                     </div>
-                {% empty %}
+                    {% empty %}
                     <div class="text-center text-text-muted py-6">
                         <p>You haven't completed any quizzes yet.</p>
                         <a href="{% url 'pages:quizzes' %}" class="mt-3 inline-block text-accent-heading hover:text-accent-primary font-medium">
                             Find a quiz to take!
                         </a>
                     </div>
-                {% endfor %}
+                    {% endfor %}
                 </div>
             </div>
 
-            <!-- Collections Tab (Static Placeholders for now) -->
+            <!-- Collections Tab (NOW DYNAMIC) -->
             <div x-show="activeTab === 'collections'" x-cloak class="space-y-6">
                  <div class="flex justify-between items-center mb-4">
                      <h2 class="text-xl lg:text-2xl font-bold text-text-secondary">Your Collections</h2>
-                     <button class="px-4 py-2 bg-accent-primary hover:bg-accent-hover text-white rounded-lg text-sm font-bold transition-colors">Create New</button> {# Placeholder button #}
+                     <button class="px-4 py-2 bg-accent-primary hover:bg-accent-hover text-white rounded-lg text-sm font-bold transition-colors">Create New</button> {# Placeholder - Functionality in Phase 10 #}
                  </div>
-                 <!-- Collection 1 -->
-                 <div>
-                     <h3 class="text-lg font-semibold text-accent-heading mb-3 border-b border-border pb-1">Python Study Set</h3>
-                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                         <div class="border border-border rounded-lg p-3">
-                             <h4 class="font-medium text-text-secondary truncate">Python Basics Quiz 1</h4>
-                             <p class="text-xs text-text-muted mb-2">10 Questions</p>
-                             <a href="#" class="text-accent-heading hover:text-accent-primary text-xs font-medium">Start Quiz &raquo;</a>
-                         </div>
-                          <div class="border border-border rounded-lg p-3">
-                             <h4 class="font-medium text-text-secondary truncate">Python Intermediate</h4>
-                             <p class="text-xs text-text-muted mb-2">15 Questions</p>
-                             <a href="#" class="text-accent-heading hover:text-accent-primary text-xs font-medium">Start Quiz &raquo;</a>
-                         </div>
-                     </div>
-                 </div>
-                 <!-- Collection 2 -->
-                  <div>
-                     <h3 class="text-lg font-semibold text-accent-heading mb-3 border-b border-border pb-1">Algorithm Practice</h3>
-                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                         <div class="border border-border rounded-lg p-3">
-                             <h4 class="font-medium text-text-secondary truncate">Advanced Algorithms Quiz</h4>
-                             <p class="text-xs text-text-muted mb-2">20 Questions</p>
-                             <a href="#" class="text-accent-heading hover:text-accent-primary text-xs font-medium">Start Quiz &raquo;</a>
-                         </div>
-                     </div>
-                 </div>
-                 <!-- Uncategorized -->
-                 <div>
-                     <h3 class="text-lg font-semibold text-text-muted mb-3 border-b border-border pb-1">Uncategorized</h3>
-                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                         <div class="border border-border rounded-lg p-3">
-                             <h4 class="font-medium text-text-secondary truncate">General Knowledge Fun</h4>
-                             <p class="text-xs text-text-muted mb-2">25 Questions</p>
-                             <a href="#" class="text-accent-heading hover:text-accent-primary text-xs font-medium">Start Quiz &raquo;</a>
-                         </div>
-                         {# Example empty state - keep commented unless needed #}
-                         {# <p class="text-sm text-text-muted italic sm:col-span-2">All quizzes are in collections.</p> #}
-                     </div>
-                 </div>
+
+                 {# Loop through user's collections #}
+                 {% if user_collections %}
+                    {% for collection in user_collections %}
+                        <div data-testid="collection-{{ collection.id }}">
+                            {# Collection Header #}
+                            <div class="flex justify-between items-baseline mb-3 border-b border-border pb-1">
+                                <h3 class="text-lg font-semibold text-accent-heading truncate" title="{{ collection.name }}">
+                                    {{ collection.name }}
+                                </h3>
+                                {# Add Edit/Delete buttons later if needed #}
+                                <span class="text-xs text-text-muted">
+                                    {{ collection.quizzes.count }} quiz{{ collection.quizzes.count|pluralize }}
+                                </span>
+                            </div>
+
+                            {# Description (Optional) #}
+                            {% if collection.description %}
+                            <p class="text-sm text-text-muted mb-3">{{ collection.description }}</p>
+                            {% endif %}
+
+                            {# Quizzes within the collection #}
+                            {% if collection.quizzes.all %}
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {% for quiz in collection.quizzes.all %}
+                                        <div class="border border-border rounded-lg p-3 flex justify-between items-center gap-2" data-testid="collection-{{ collection.id }}-quiz-{{ quiz.id }}">
+                                            <div>
+                                                <h4 class="font-medium text-text-secondary truncate">{{ quiz.title }}</h4>
+                                                <p class="text-xs text-text-muted">{{ quiz.questions.count }} Questions</p>
+                                            </div>
+                                            <a href="{% url 'multi_choice_quiz:quiz_detail' quiz.id %}" class="flex-shrink-0 text-accent-heading hover:text-accent-primary text-xs font-medium whitespace-nowrap">Start Quiz »</a>
+                                            {# Add Remove button later #}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-sm text-text-muted italic">This collection is empty.</p>
+                                {# Add link/button to add quizzes later #}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                 {% else %}
+                    {# Message if user has no collections at all #}
+                    <div class="text-center text-text-muted py-6">
+                        <p>You haven't created any collections yet.</p>
+                        <button class="mt-3 inline-block text-accent-heading hover:text-accent-primary font-medium">
+                            Create your first collection! {# Placeholder #}
+                        </button>
+                    </div>
+                 {% endif %}
+
+                 {# Removed old placeholder content #}
             </div>
 
-            {# Removed old Favorites and Created Quizzes Tab content divs #}
         </div>
     </div>
 </div>
-
-{# Removed the non-functional notice #}
-
 {% endblock %}
