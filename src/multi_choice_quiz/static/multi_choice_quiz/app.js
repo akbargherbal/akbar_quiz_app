@@ -28,8 +28,8 @@ window.quizApp = function () {
     score: 0,
     wrongAnswers: 0, // Tracks count of wrong answers
     feedbackTimer: null,
-    correctFeedbackDuration: 400,
-    incorrectFeedbackDuration: 600,
+    correctFeedbackDuration: 4000,
+    incorrectFeedbackDuration: 6000,
     startTime: null,
     endTime: null,
     quizTime: 0,
