@@ -53,7 +53,7 @@ if K_REVISION:
 
 # CSRF_TRUSTED_ORIGINS requires the specific URL scheme + hostname
 # Use the exact URL from your deployment output
-CSRF_TRUSTED_ORIGINS = ["https://quiz-app-service-5r3kfclnrq-uc.a.run.app"]
+CSRF_TRUSTED_ORIGINS = ["https://quiz-app-service-62863504143.us-central1.run.app"]
 
 # Determine environment based on DEBUG for simplicity now
 if DEBUG:
