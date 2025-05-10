@@ -35,7 +35,6 @@ except (ImportError, ModuleNotFoundError):
 
 
 
-logger = setup_test_logging(__name__, "pages")
 
 
 # ... (home, about, signup_view, quizzes, profile_view, edit_profile_view, create_collection_view, remove_quiz_from_collection_view, select_collection_for_quiz_view views remain the same) ...
