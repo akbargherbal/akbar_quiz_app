@@ -1,0 +1,5 @@
+Quzzis that already taken should be sent to the back.
+Quizzes taken in profile should be indicate how many times the were taken.
+Adding Quiz to Collection Send on to profile; it should not; it should send them back to where they come from.
+Featured Quizzes; Should Be the One that hasn't been tried.
+Collections Should be more pronounced on Home Page.
