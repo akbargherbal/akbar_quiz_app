@@ -63,6 +63,15 @@ if DEBUG:
 else:
     # Assume non-DEBUG is production-like on Cloud Run
     DJANGO_ENVIRONMENT = "production"
+    SECURE_HSTS_SECONDS = (
+        31536000  # 1 year; consider a smaller value for initial rollout
+    )
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True  # Optional: if you plan to submit to HSTS preload lists
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
     # Optional: Add production security settings here if desired
     # SECURE_SSL_REDIRECT = True
     # SESSION_COOKIE_SECURE = True

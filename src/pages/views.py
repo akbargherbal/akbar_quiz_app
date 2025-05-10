@@ -13,6 +13,7 @@ from django.views.decorators.http import require_POST
 from multi_choice_quiz.models import Quiz, Question, QuizAttempt
 from .models import UserCollection, SystemCategory
 from .forms import SignUpForm, EditProfileForm, UserCollectionForm
+import logging
 
 
 # Attempt to import test-specific logging, fall back if not found (e.g., in production)
