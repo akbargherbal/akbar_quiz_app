@@ -1,5 +1,39 @@
-Quzzis that already taken should be sent to the back.
-Quizzes taken in profile should be indicate how many times the were taken.
-Adding Quiz to Collection Send on to profile; it should not; it should send them back to where they come from.
-Featured Quizzes; Should Be the One that hasn't been tried.
-Collections Should be more pronounced on Home Page.
+### ✅ To-Do List (with Priorities & Annotations)
+
+1. **Reorder Taken Quizzes**
+   Quizzes that have already been taken should appear at the end of the quiz list.
+   **Priority:** High
+
+2. **Track Quiz Attempts in Profile**
+   In the user's profile, display how many times each quiz has been taken.
+   **Priority:** High
+
+3. **Fix Quiz Collection Behavior**
+   When a quiz is added to a collection, the user should be redirected back to the page they were on, not to their profile.
+   Avoid context-switching for the user.
+   **Priority:** High
+   **Note:** Properly test this flow; evaluate if HTMX can simplify this interaction.
+
+4. **Improve Featured Quizzes Logic**
+   Featured quizzes should prioritize ones the user hasn't attempted.
+   **Priority:** Medium
+   **Note:** May be redundant if quizzes are already reordered based on whether they've been taken (see item #1).
+
+5. **Enhance Collections Visibility on Home Page**
+   Make quiz collections more prominent in the homepage layout/design.
+   **Priority:** Low
+
+6. **Visualize Time Spent on Quizzes per Day**
+   Explore a simple but effective way to track and visualize how much time users spend each day on the app.
+   Consider a date-based heatmap, similar to GitHub's contribution graph.
+   **Priority:** Exploratory / Low but Nice to Have if implementation is easy.
+   **Goal:** Help users reflect on their learning activity and maintain engagement.
+   ** For example there is already a placholder for that - 3. Track Your Progress; Could have it's own logic and view **
+
+7. Navbar:
+If the user is logged in remove the word Profile; consider adding placholder for avatar.
+Priority: High
+
+8. Consider Search Utility; search quizzes.
+
+9. Deleteing quiz should prompt a modal not an alert prompt.
