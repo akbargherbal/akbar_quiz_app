@@ -1,188 +1,205 @@
 ## **LLM-Guided Iterative Development (LGID): A Practical and Adaptive Framework for the Independent Django Developer**
 
-**Version:** 2.1 (Revised based on experimental findings and to enhance Iteration Guide clarity)
-**Date:** 2025-05-08
+**Version:** 2.2 (Revised based on comprehensive session analyses and validated practical application)
+**Date:** 2025-05-10
 
 **Abstract:**
 
-Independent Django developers face unique resource constraints, making Large Language Models (LLMs) attractive for accelerating development, primarily observed in generating boilerplate code (models, views, forms). However, unmanaged LLM interaction risks subtle inaccuracies, integration complexities, and significant debugging overhead, counteracting potential gains. This paper introduces the refined **LLM-Guided Iterative Development (LGID)** framework, validated and improved through practical application. It emphasizes **upfront requirements planning (Stage 0)**, where developers define scope and core architecture (potentially using LLMs for drafting assistance), followed by **LLM-assisted iterative implementation (Stages 1..N)** against that plan. Developers act as critical reviewers, integrators, and debuggers, leveraging LLMs as coding assistants. LGID incorporates **adaptive rigor** in implementation tracking (Lean/Standard Iteration Guides) and verification intensity, acknowledging observed variations in testing practices while recommending heuristics for stronger integration. Key refinements include guidance on leveraging LLMs for **debugging assistance**, incorporating an explicit **code refinement step**, promoting **TDD-lite practices** by generating tests alongside implementation, and providing enhanced **prompting strategies**, including those for generating appropriately abstracted planning documents. Supported by concrete templates and grounded in observed developer practices, the refined LGID provides a robust framework for solo developers to build high-quality Django applications, balancing structured planning with flexible, LLM-accelerated execution while mitigating risks identified through practical usage.
+Independent Django developers face unique resource constraints, making Large Language Models (LLMs) attractive for accelerating development. However, unmanaged LLM interaction risks subtle inaccuracies and significant debugging overhead. This paper details the **LLM-Guided Iterative Development (LGID)** framework, Version 2.2, refined and validated through 13 in-depth session analyses. LGID emphasizes **upfront requirements planning (Stage 0)**, where developers define scope and core architecture using LLMs for drafting assistance, followed by **LLM-assisted iterative implementation (Stages 1..N)** against that plan. The developer acts as the central controller, critical reviewer, integrator, and primary debugger, leveraging LLMs as coding assistants. LGID incorporates **adaptive rigor** in implementation tracking (Standard Iteration Guides were consistently preferred) and verification intensity. Session analyses confirmed the high efficacy of leveraging LLMs for **debugging assistance**. While **TDD-lite practices** were observed, the explicit **code refinement step** was less frequently utilized. The framework's strength in managing **planning document abstraction** through developer oversight and effective prompting was also validated. Supported by concrete templates and grounded in observed developer practices, the refined LGID (v2.2) provides a robust framework for solo developers to build high-quality Django applications, balancing structured planning with flexible, LLM-accelerated execution while mitigating risks identified through practical usage.
 
 **1. Introduction**
 
 **1.1. The LLM Opportunity and Challenge for Indie Developers:**
-Large Language Models offer transformative potential, particularly appealing to independent Django developers seeking efficiency. LLMs demonstrably accelerate the generation of boilerplate code (models, forms, views, admin configurations), freeing developers for more complex tasks. However, practical experiments reveal significant challenges: LLMs can produce subtly incorrect or overly complex code, miss dependencies, and require careful context management. Integrating LLM output often introduces non-trivial debugging complexities, particularly at component boundaries. Without structure, relying heavily on LLMs can lead to architectural drift and consume more time in review and debugging than initially saved. These risks are amplified for solo developers lacking extensive peer review.
+Large Language Models offer transformative potential, particularly appealing to independent Django developers seeking efficiency. LLMs demonstrably accelerate the generation of boilerplate code (models, forms, views, tests, admin configurations). However, practical application across 13 development sessions confirms significant challenges: LLMs can produce subtly incorrect code (e.g., missing imports, minor logical flaws in tests), miss dependencies, and require careful context management. Integrating LLM output, even for boilerplate, often introduces non-trivial debugging complexities, particularly at component boundaries. Without a structured approach, heavy reliance on LLMs can lead to architectural drift and consume more time in review and debugging than initially saved.
 
 **1.2. The Need for Structured Guidance with Upfront Planning:**
-Empirical evidence confirms that simply prompting an LLM with high-level requests ("build feature X") is inefficient and risky. Effective LLM leverage requires a process where the developer maintains firm control over architecture, quality, and verification. This control must be grounded in **well-defined initial requirements**. While iterative _implementation_ is beneficial, attempting to discover core requirements iteratively using LLMs introduces significant friction, integration problems, and necessitates costly refactoring, validating the need for foundational decisions before iterative building commences.
+The analyzed sessions strongly validate that simply prompting an LLM with high-level requests is inefficient and risky. Effective LLM leverage requires a process where the developer maintains firm control over architecture, quality, and verification. This control must be grounded in **well-defined initial requirements**. The successful application of Stage 0 (Strategic Planning & Requirements Definition) in the initial sessions (Sessions 1, 2) and its role in guiding subsequent development underscored its criticality. Attempting to discover core requirements iteratively using LLMs without this foundation introduces significant friction and necessitates costly refactoring.
 
-**1.3. Introducing the Refined LGID: Upfront Planning, Iterative Execution, Informed by Practice:**
-This paper details the **LLM-Guided Iterative Development (LGID)** framework, refined based on observed developer workflows and challenges. It integrates LLM assistance within a structure prioritizing **clear requirements established in Stage 0**, followed by iterative, verifiable implementation phases. Key principles, validated and enhanced by practice:
+**1.3. Introducing the Refined LGID (v2.2): Upfront Planning, Iterative Execution, Validated by Practice:**
+This paper details the **LLM-Guided Iterative Development (LGID)** framework, Version 2.2, further refined based on consistent patterns and outcomes observed across 13 development sessions. It integrates LLM assistance within a structure prioritizing **clear requirements established in Stage 0**, followed by iterative, verifiable implementation phases. Key principles, validated and enhanced by extensive practical application:
 
-- **Structured Upfront Planning:** Core architecture and feature requirements are defined and documented in `Project_Requirements.md` _before_ iterative development starts (Stage 0). LLMs were observed assisting effectively in drafting these requirements. This stage proved crucial in providing context for subsequent LLM prompts and preventing scope creep.
-- **Iteration & Modularity in Implementation:** Build _against_ the plan in small, verifiable increments, often aligned with Django app boundaries or pre-defined phases. Developers consistently followed this pattern using `Iteration_Guide.md`.
-- **Developer as Central Controller:** The developer remains the architect, requirements finalizer (Stage 0), **critical code reviewer**, integrator, and primary debugger. Findings underscore that significant developer oversight is non-negotiable.
-- **Adaptive Rigor (Implementation & Verification):** Allows adjusting procedural overhead (Lean/Standard Iteration Guides, verification depth). Findings show developers utilize this strategically, though it can lead to variability. Refined LGID includes heuristics for verification decisions.
-- **Leveraging LLMs Effectively:** Focus LLM use on boilerplate generation, test creation, configuration assistance, and increasingly, **debugging assistance** and **code refinement prompts**.
-- **Practical Aids:** Provides updated templates and examples (Appendices A-E) reflecting observed best practices and addressing identified gaps (e.g., TDD-lite prompts, refinement step, guidance on Iteration Guide granularity).
-- **Skill Development Focus:** Acknowledges necessary skills (testing, prompt engineering, planning) and incorporates guidance based on observed challenges and successes.
+- **Structured Upfront Planning:** Core architecture and feature requirements are defined and documented in `Project_Requirements.md` _before_ iterative development starts (Stage 0). LLMs were consistently and effectively used for drafting and iteratively refining these requirements under developer guidance (Sessions 1, 2). This stage proved crucial in providing context for subsequent LLM prompts and preventing scope creep.
+- **Iteration & Modularity in Implementation:** Development proceeded by building _against_ the plan in small, verifiable increments, typically aligned with pre-defined phases and steps within an `Iteration_Guide.md`. Developers consistently followed this pattern.
+- **Developer as Central Controller:** The developer unequivocally remained the architect, requirements finalizer (Stage 0), **critical code reviewer**, integrator, and primary debugger. The sessions underscored that significant developer oversight and decision-making are non-negotiable for success.
+- **Adaptive Rigor (Implementation & Verification):** Developers strategically adapted plans and verification intensity. This included adding unplanned verification scripts (Session 8), deferring tasks (Sessions 10, 15), or inserting new refactoring/planning steps (Sessions 2, 11, 12). The consistent use of a "Standard" Iteration Guide was observed.
+- **Leveraging LLMs Effectively:** LLMs were most effectively used for boilerplate code generation, test creation/modification, documentation drafting (`context.md`, requirements, iteration guides), and, critically, **debugging assistance** (analyzing `pytest` outputs and suggesting fixes became a highly impactful and frequent use-case, observed in at least 9 relevant sessions).
+- **Practical Aids:** The framework is supported by updated templates and examples (Appendices A-E) reflecting observed best practices, such as the consistent use of `context.md` for session continuity and the developer-guided generation of `Iteration_Guide.md`.
+- **Skill Development Focus:** The sessions highlighted the developer's evolving skill in prompt engineering (especially for document formatting and debugging), context management, and strategic task delegation to the LLM.
 
 **1.4. Purpose of this Document:**
 This study aims to:
 
-- Detail the components of the refined LGID methodology, incorporating empirical findings.
-- Illustrate its practical application, highlighting adaptive decision points informed by real-world usage.
+- Detail the components of the LGID methodology (Version 2.2), incorporating empirical findings from 13 development sessions.
+- Illustrate its practical application, highlighting adaptive decision points and maturation of use.
 - Analyze its feasibility and provide strategies based on observed challenges and developer workarounds.
 - Offer updated, actionable templates and examples reflecting successful patterns and addressing weaknesses, including clear guidance on planning document abstraction.
-- Advocate for the refined LGID as a practical, evidence-based strategy for maximizing LLM benefits while mitigating observed risks in solo Django development.
+- Advocate for the refined LGID (v2.2) as a practical, evidence-based strategy for maximizing LLM benefits while mitigating observed risks in solo Django development.
 
-**2. The LGID Methodology: Core Components & Refinements**
+**2. The LGID Methodology: Core Components & Refinements (Version 2.2)**
 
 LGID structures development around **upfront planning** followed by **LLM-assisted iterative implementation cycles**, tracked via an Iteration Guide and verified adaptively but rigorously.
 
 **2.1. The Project Requirements Document (`Project_Requirements.md`): The Foundational Blueprint**
 
-- A **mandatory component** created during Stage 0. Foundational for providing LLM context and guiding development.
+- A **mandatory component** created during Stage 0, validated as foundational for providing LLM context and guiding all subsequent development.
 - Central Markdown document defining vision, core architecture, and features.
-- **Breaks project into logical Phases** and lists **specific, numbered requirements** per phase. This structure was consistently used and valued.
-- LLMs can assist in brainstorming and drafting requirements (observed practice), but the developer **must** finalize and approve this document before proceeding.
-- Serves as the **single source of truth**, minimizing ambiguity and requirement discovery friction during implementation phases. Changes require explicit updates here.
+- **Breaks project into logical Phases** and lists **specific, numbered requirements** per phase. This structure was consistently used and valued across all sessions.
+- LLMs effectively assist in brainstorming and drafting requirements (Sessions 1, 2), but the developer **must** finalize and approve this document before proceeding.
+- Serves as the **single source of truth**. It was actively referenced in all 13 sessions. Changes (e.g., due to re-prioritization or clarification, as in Sessions 2, 11) require explicit updates here, which was observed practice.
 
-**2.2. The Iteration Guide (`AppName_Iteration_Guide.md`): Tracking Implementation**
+**2.2. The Iteration Guide (`AppName_Iteration_Guide.md`): Tracking Implementation and Guiding Execution**
 
-- A living Markdown document per app/feature **tracking implementation progress against `Project_Requirements.md`**.
-- Outlines **Phases** (matching `Project_Requirements.md`) and **Implementation Steps**, tracking Objective (derived from Requirements), Key Tasks, Deliverables, and Verification.
-- **Does NOT define requirements**; it references them (e.g., "Step 1.1: Implement Req 1.a - Post Model"). This linkage was critical for context in prompts.
-- Offers **two template options** (See fully fleshed-out examples with annotations in Appendix A) for adaptive rigor in tracking:
-  - **Standard Guide:** Provides a detailed structure suitable for complex phases or when maximum traceability is desired. It's designed for comprehensive planning without being overly prescriptive.
-    -   **Important Clarification on Detail Level:** The 'Key Tasks' in a Standard Guide should remain at a summary or objective level (typically 1-3 high-level actions per step). They are intended to guide the developer's thinking and overall approach, not to prescribe specific commands, code snippets, or minute sub-tasks. Similarly, the 'Verification Checklist' should list key verification activities or goals, not detailed test case descriptions. The developer retains autonomy in decomposing these tasks and checks into specific actions during implementation. See Appendix A for an annotated example demonstrating this desired level of abstraction.
-  - **Lean Guide:** A checklist-style format focusing on objectives, direct references to requirements, minimal task listing, and essential verification points. This is often adopted for its efficiency in simpler phases or by developers more comfortable with less explicit tracking.
-- Emphasizes the guide as a _tool_: developers choose the appropriate template. Linking steps/phases to commits (e.g., `git commit -m "Complete Step 1.1 (Ref #Step-1.1, implements Req 1.a)"`) is a recommended practice for traceability.
-- **Anti-Pattern to Avoid:** A common pitfall is generating Iteration Guides where 'Key Tasks' or 'Verification' sections become overly granular, listing specific API calls, shell commands, detailed UI interaction sequences, or pseudo-code. This transforms the guide from a flexible planning tool into a rigid, micro-managed script, which constrains developer agency, quickly becomes outdated, and diminishes its utility. LGID promotes Iteration Guides as high-level roadmaps, not turn-by-turn directions. Referencing the examples in Appendix A and using targeted prompts (see Appendix B) can help avoid this.
+- A living Markdown document per app/feature (or a consolidated multi-phase guide, as observed in practice for `Profile_and_CoreFeatures_Iteration_Guide.md`) **tracking implementation progress against `Project_Requirements.md`**. It serves as the primary tactical plan for executing development phases.
+- Outlines **Phases** (matching `Project_Requirements.md`) and **Implementation Steps**. Each step typically tracks:
+  - **Objective(s):** Derived directly from, and referencing, specific requirements in `Project_Requirements.md`. This linkage proved critical for maintaining LLM context during implementation prompts.
+  - **Key Tasks:** A high-level summary of the main actions for the step.
+  - **Deliverables:** Expected code artifacts or outcomes.
+  - **Verification Checklist:** Key verification goals for the step.
+- **Does NOT define new requirements**; it meticulously references them (e.g., "Step 1.1: Implement Req 1.a - Post Model"). This clear distinction was consistently maintained.
+- The developer **chooses the Iteration Guide template**. The **Standard Guide template was observed to be consistently chosen (Session 2) and effectively utilized for phases requiring detailed planning and tracking**, particularly when the developer guided the LLM on its structure. No use of a "Lean" guide was observed in the analyzed sessions.
+- **LLM Assistance in Drafting and Updating:**
+  - Findings show that LLMs can be effectively utilized as **Planning Document Drafting Assistants** to help generate initial drafts of Iteration Guides for new phases or to draft updates for existing ones, especially when significant plan adaptations occur (e.g., introducing new refactoring steps, as seen in Session 11).
+  - However, the **developer must direct this process**, providing clear context (e.g., relevant `Project_Requirements.md` sections) and examples of the desired format and abstraction level, as demonstrated in Session 2 where developer feedback refined the LLM's output for the `Profile_and_CoreFeatures_Iteration_Guide.md`.
+- **Maintaining the Guide as a Living Document:**
+  - The Iteration Guide is updated throughout the development lifecycle. While direct LLM-assisted updates to the guide file were observed during planning/re-planning sessions (Sessions 2, 11), progress within implementation-focused sessions was often captured in `context.md` summaries. This implies that the developer subsequently updates the `Iteration_Guide.md` file, using these summaries as a reference.
+- Emphasizes the guide as a _tool_. Linking steps/phases to commits is a recommended practice for traceability.
+
+- **Important Clarification on Detail Level (Validated by Practice):**
+  The 'Key Tasks' in a Standard Guide must remain at a summary or objective level (typically 1-3 high-level actions per step). They are intended to guide the developer's thinking and overall approach, not to prescribe specific commands, code snippets, or minute sub-tasks. Similarly, the 'Verification Checklist' should list key verification activities or goals, not detailed test case descriptions. The developer retains autonomy in decomposing these tasks and checks into specific actions during implementation. This principle was actively managed by the developer; for instance, in Session 2, the LLM's initially over-detailed guide draft was corrected to align with this principle of appropriate abstraction. See Appendix A for an annotated example.
+
+- **Anti-Pattern to Avoid (and Developer Correction):**
+  A common pitfall is generating Iteration Guides where 'Key Tasks' or 'Verification' sections become overly granular. This transforms the guide from a flexible planning tool into a rigid, micro-managed script. LGID promotes Iteration Guides as high-level roadmaps.
+  - **Observed Practice:** Instances where an LLM-generated plan bordered on being too granular (e.g., an overly comprehensive E2E test fixing plan in Session 13) were effectively mitigated by the developer redirecting the LLM or scoping down the immediate work. This highlights the developer's critical role in maintaining the guide's utility. Referencing the examples in Appendix A and using targeted prompts (see Appendix B) are crucial for achieving the desired abstraction level.
 
 **2.3. Upfront Requirements Specification & Phased Implementation**
 
-- **Stage 0 is Critical:** Development **does not begin** until `Project_Requirements.md` is drafted. This proved essential for successful LLM utilization in subsequent stages by providing clear scope and context. Foundational decisions are locked in here.
-- **Phased Execution:** Work proceeds phase by phase according to `Project_Requirements.md`. Each phase delivers a verifiable increment.
-- **Handling Changes:** If requirements change _after_ Stage 0, `Project_Requirements.md` is updated _first_. Future implementation phases are adjusted, or specific, controlled refactoring is planned and documented. This avoids chaotic, ad-hoc changes during implementation.
+- **Stage 0 is Critical:** Development **does not begin** until `Project_Requirements.md` is drafted. This was validated as essential for successful LLM utilization by providing clear scope and context (Sessions 1, 2). Foundational decisions are locked in here.
+- **Phased Execution:** Work proceeds phase by phase according to `Project_Requirements.md`, guided by the `Iteration_Guide.md`. Each phase delivers a verifiable increment.
+- **Handling Changes:** If requirements change _after_ Stage 0, `Project_Requirements.md` is updated _first_ (observed in Sessions 2, 11). Future implementation phases are adjusted, or specific, controlled refactoring is planned and documented. This avoids chaotic, ad-hoc changes.
 - **Addressing Architectural Foresight:** Stage 0 planning forces upfront architectural consideration, mitigating major structural issues discovered late in development.
 
 **2.4. Granular Implementation Steps & Focused LLM Prompts**
 
 - Break phase _implementation_ into small, actionable steps documented in the Iteration Guide (respecting the abstraction levels discussed in Section 2.2).
-- Use highly specific, context-aware prompts referencing the requirement(s) from `Project_Requirements.md`. Findings show this is the predominant and most effective prompting strategy.
-- Provides an **Enhanced Example Prompt Library (Appendix B)** illustrating effective prompts for common tasks (models, views, forms, admin, tests, config, basic debugging, refinement suggestions, and generating Iteration Guides themselves) based on observed usage and addressing missed opportunities.
+- Use highly specific, context-aware prompts referencing the requirement(s) from `Project_Requirements.md`. This was the predominant and most effective prompting strategy observed. Error logs from `pytest` became a common and effective prompt for debugging (observed in at least 9 sessions).
+- Provides an **Enhanced Example Prompt Library (Appendix B)** illustrating effective prompts for common tasks (models, views, forms, admin, tests, config, debugging, refinement suggestions, and generating Iteration Guides).
 
 **2.5. Defined Roles (Reflecting Practice)**
 
-- **Developer** = Architect, Project Manager, Requirements Definer/Approver (Stage 0), **Critical Code Reviewer**, **Integrator**, **Primary Debugger**, QA Engineer, Prompt Engineer.
-- **LLM** = **Requirements Drafting Assistant (Stage 0)**, **Planning Document Drafting Assistant (e.g., Iteration Guides - Stage 1..N)**, **Boilerplate Code Generator** (models, views, forms, tests, admin, etc.), **Configuration Assistant**, **Basic Debugging Assistant** (explaining errors, suggesting fixes when prompted with context), **Refactoring Suggestion Engine** (when prompted).
+- **Developer** = Architect, Project Manager, Requirements Definer/Approver (Stage 0), **Critical Code Reviewer**, **Integrator**, **Primary Debugger**, QA Engineer, Prompt Engineer. These roles were consistently fulfilled by the developer across all sessions.
+- **LLM** = **Requirements Drafting Assistant (Stage 0)**, **Planning Document Drafting Assistant (e.g., Iteration Guides - Stage 1..N)**, **Boilerplate Code Generator** (models, views, forms, tests, admin, etc.), **Configuration Assistant**, **Highly Effective Debugging Assistant** (explaining errors, suggesting fixes when prompted with context), **Refactoring Suggestion Engine** (when prompted, e.g., Session 11). The LLM's "Thought Process" output, observed in all sessions, was beneficial for transparency.
 
-**2.6. Verification with Adaptive Rigor (Refined Approach)**
+**2.6. Verification with Adaptive Rigor (Refined Approach, Validated by Practice)**
 
-- Verification at multiple stages is essential. Findings show multi-layered verification (step, phase, regression) is practiced.
+- Verification at multiple stages is essential. Multi-layered verification (step, phase, regression) was consistently practiced.
 - **Adaptive Rigor in Verification Intensity:**
-  - **Step-Level Verification:** _Always Recommended._ Minimum checks observed and recommended: Code linting/formatting, `python manage.py check`, `makemigrations`/`migrate` (if applicable), developer code review (manual inspection against requirements), basic security checks (Appendix D). **Crucially, generate basic unit tests (TDD-lite) for new logic alongside implementation code** (use LLM assist - Appendix B). This strengthens continuous validation. Check for implicit dependencies (e.g., Pillow) introduced by LLM code.
-  - **Phase Verification Scripts (`test_phaseX_verification.py`):** _Adaptive._ Recommended for complex phases, foundational work, or high-risk integrations. _Optional_ for simple phases where step-level tests + regression tests provide sufficient confidence.
-    - **Decision Heuristic:** Consider creating a script if the phase introduces significant new interactions, modifies core shared components, involves complex logic susceptible to integration errors, or touches security-sensitive areas. Document the decision (include/omit) and rationale in the Iteration Guide. (See Appendix C guidance).
-  - **Regression Testing:** _Always Essential._ Running the full test suite (`pytest` or `manage.py test`) after each phase proved vital for catching unintended side effects.
-  - **Leverage LLM for Debugging:** When verification fails (step, phase, or regression), **explicitly prompt the LLM with the error message, traceback, and relevant code snippets** to ask for explanations, potential causes, or fixes (See Appendix B). This addresses a key missed opportunity.
-  - **No Progression on Critical Failure:** Halt, diagnose (using LLM assist if helpful), fix, and re-verify before moving forward.
+  - **Step-Level Verification:** _Always Performed._ Observed minimum checks included: Developer code review (manual inspection), `python manage.py makemigrations`/`migrate` (if applicable), and running `pytest` for relevant unit/integration tests. Linting/formatting and `manage.py check` were less explicitly mentioned but implied in a professional workflow. **TDD-lite practices** (generating basic unit tests alongside implementation code) were evident in approximately 6 of 13 sessions, often for models or new views. LLM assistance was used for generating these tests.
+  - **Phase Verification Scripts (`test_phaseX_verification.py`):** _Adaptive, but became standard practice._ Initially discussed as optional, these scripts were consistently created and executed for phase completion in later sessions (Sessions 6, 7, 8, 9, 10, 11), often at the developer's insistence for "formality sake" or to ensure comprehensive E2E checks for the phase's objectives. This aligns with the LGID heuristic for complex or foundational phases.
+  - **Regression Testing:** _Always Essential._ Running the full test suite (`pytest`) after each phase or significant change was a vital practice for catching unintended side effects, particularly evident when fixing the E2E test suite (Session 14, 15).
+  - **Leverage LLM for Debugging:** When verification failed, the developer **consistently and effectively prompted the LLM with the error message, traceback, and relevant code snippets** to ask for explanations, potential causes, or fixes (observed in at least 9 sessions). This proved to be one of the most impactful applications of the LLM.
+  - **No Progression on Critical Failure:** The developer consistently halted progress on new features to address critical test failures or regressions (e.g., Session 6, Session 9).
 
-**3. The Refined LGID Development Pipeline**
+**3. The Refined LGID Development Pipeline (Version 2.2)**
 
 1.  **Stage 0: Strategic Planning, Requirements Definition & Initialization:**
     - Define goals, architecture.
-    - **Create `Project_Requirements.md`:** Document vision, architecture, phases, requirements per phase (LLM assist optional for drafting). Developer finalizes.
+    - **Create `Project_Requirements.md`:** Document vision, architecture, phases, requirements per phase (LLM assist for drafting, developer finalizes). (Validated as crucial in Sessions 1, 2).
     - Standard project setup, version control.
-    - Developer **chooses Standard or Lean Iteration Guide template** (see Appendix A for examples). An LLM can assist in drafting the Iteration Guide using prompts like those in Appendix B.
+    - Developer **chooses Standard or Lean Iteration Guide template** (Standard was consistently preferred). LLM assists in drafting the Iteration Guide using prompts like those in Appendix B, under developer oversight for abstraction.
 2.  **Stage 1..N: Phased Implementation:**
     - **Step X.0: Phase Kick-off: Review Requirements & Plan/Refine Implementation Steps:**
       - Consult `Project_Requirements.md` for Phase X requirements.
-      - Create or refine implementation steps in `AppName_Iteration_Guide.md` (developer-led, LLM-assisted optional, ensuring appropriate abstraction).
+      - Create or refine implementation steps in `AppName_Iteration_Guide.md` (developer-led, LLM-assisted for drafting, ensuring appropriate abstraction).
     - **Step X.1...X.N: Implement Phase X Steps:**
       - For each step:
         - Write focused prompts referencing requirement(s) and step plan.
-        - LLM generates code/artifacts (e.g., model code + basic unit test skeleton).
+        - LLM generates code/artifacts (e.g., model code + basic unit test skeleton for TDD-lite).
         - Developer reviews critically against requirements, quality, security (Appendix D). Check for implicit dependencies.
         - Developer integrates code, making necessary manual adjustments.
         - Developer performs **Step-Level Verification** (lint, check, migrations, run _new_ unit tests, manual review).
-        - **If verification fails:** Use LLM assist with error context for diagnosis/fixes. Re-verify.
-        - Document step completion/verification in Iteration Guide. Link commit.
+        - **If verification fails:** Use LLM assist with error context (tracebacks, code) for diagnosis/fixes. Re-verify. (Frequently observed and effective).
+        - Document step completion/verification in Iteration Guide (often via `context.md` informing the guide). Link commit.
     - **(Optional but Recommended) Step X.N+1: Code Refinement:**
-      - Prompt LLM to review the newly integrated code for the phase (or specific complex parts) for potential improvements, clarity, or adherence to best practices.
-      - Developer critically evaluates suggestions and applies useful refinements. Document briefly in Iteration Guide.
+      - Prompt LLM to review the newly integrated code for the phase (or specific complex parts) for potential improvements, clarity, or adherence to best practices. (Observed rarely for new application code in the analyzed sessions; more often applied to refine test code or during planned refactoring phases).
+      - Developer critically evaluates suggestions and applies useful refinements. Document briefly.
     - **Step X.N+2: Phase Verification (Adaptive):**
-      - Developer **decides if a Phase Verification Script is warranted** based on heuristics (complexity, risk, interactions). Document decision.
+      - Developer **decides if a Phase Verification Script is warranted** based on heuristics (complexity, risk, interactions). Document decision. (Consistently implemented in later phases).
       - If yes: Generate/update script (LLM-assisted optional), run it.
       - **If script fails:** Use LLM assist with error context. Fix and re-verify. Document results.
-    - **Step X.N+3: Run Full Regression Tests:** Run relevant test suites.
+    - **Step X.N+3: Run Full Regression Tests:** Run relevant test suites (`pytest`).
       - **If tests fail:** Use LLM assist with error context. Fix regressions. Re-verify.
-    - Mark phase as complete in Iteration Guide.
+    - Mark phase as complete in Iteration Guide (and `context.md`).
 
 **4. Addressing Practical Concerns & Scaling LGID (Informed by Findings)**
 
 - **4.1. Managing Overhead & Scaling:**
-  - Use the **Lean Iteration Guide** (Appendix A) and make **informed decisions** about skipping Phase Scripts for simpler phases (document rationale). The upfront investment in `Project_Requirements.md` consistently pays off by reducing downstream confusion and rework.
+  - The consistent preference for the **Standard Iteration Guide** suggests developers value detailed tracking for complex projects. The upfront investment in `Project_Requirements.md` and structured `Iteration_Guide.md` consistently paid off by reducing downstream confusion and rework. `context.md` was invaluable for low-overhead session continuity.
 - **4.2. Bridging Skill Gaps:**
-  - _Planning:_ Use LLM in Stage 0 for drafting requirements. For Iteration Guides, use LLMs with clear prompts specifying desired abstraction (Appendix B) and reference good examples (Appendix A). Focus on clear, testable requirements.
-  - _Testing:_ Start with LLM-generated basic unit tests (TDD-lite, Appendix B). Focus phase scripts (Appendix C) on key integration points. Treat tests as vital code.
-  - _Prompt Engineering:_ Study Appendix B (enhanced). Provide clear requirement context. Iterate. Explicitly prompt for debugging and refinement. Effective context management was noted as important, especially when prompting for planning documents to ensure they meet the desired level of detail.
+  - _Planning:_ LLMs effectively drafted requirements and iteration guides under developer direction. The developer's skill in guiding the LLM to achieve correct document formatting and abstraction evolved (e.g., Session 2).
+  - _Testing:_ LLM-generated basic unit tests (TDD-lite) lowered the barrier to test creation. LLM's ability to analyze `pytest` output greatly aided in understanding and fixing test failures.
+  - _Prompt Engineering:_ Effective context management (via core documents) and the use of error logs as prompts for debugging were key skills demonstrated. Appendix B provides enhanced examples.
 - **4.3. Maintaining Documents & Tests:**
-  - _Requirements Doc:_ Keep it the source of truth. Update deliberately.
-  - _Iteration Guides:_ Keep them lean (or appropriately detailed for Standard) but accurate for tracking execution and verification decisions. Link commits.
-  - _Tests:_ Maintain them. Refactor. Integrate phase checks into broader suites over time.
+  - _Requirements Doc:_ Maintained as the source of truth; updated deliberately for strategic shifts.
+  - _Iteration Guides:_ Kept accurate for tracking, with `context.md` serving as an interim update mechanism.
+  - _Tests:_ Iteratively developed and fixed with LLM assistance. Phase Verification Scripts became a standard part of the "definition of done."
 - **4.4. Tooling and Automation:**
-  - Use `cookiecutter` for scaffolding. Integrate checks into CI/CD (Appendix E) - linters, `manage.py check`, `pytest` - aligns with professional practices and reinforces verification. Consider simple scripts/extensions for guide management or prompt generation (recommendation).
+  - Standard Django tooling was used. CI/CD (Appendix E) remains a recommendation for further automation of checks. The consistent use of `pytest` was central.
 - **4.5. Economic Feasibility & Costs:**
-  - LLM API costs remain low for focused tasks. The major investment is developer time for Stage 0 planning, **critical review/integration (significant effort observed)**, and verification. This is offset by **accelerated boilerplate generation**, reduced debugging time (if LLM assist used effectively), and improved maintainability.
-- **4.6. Feasibility Summary:** LGID is technically feasible. Operational feasibility is high due to structure, adaptability, and alignment with observed effective practices. Economic feasibility strong due to targeted LLM efficiencies balanced against necessary developer oversight and risk reduction from upfront planning.
+  - LLM API costs are assumed low. The major investment remains developer time for Stage 0, critical review/integration, and verification. This is offset by accelerated boilerplate/test generation and, significantly, **reduced debugging time due to effective LLM diagnostic assistance**.
+- **4.6. Feasibility Summary:** LGID v2.2 is technically and operationally feasible, as demonstrated by 13 successful development sessions. Its structure, adaptability, and effective LLM leverage contribute to its high feasibility.
 
-**5. Benefits of Refined LGID (Validated & Enhanced)**
+**5. Benefits of Refined LGID (Validated & Enhanced by Session Analyses)**
 
-- **Predictability & Reduced Risk:** Upfront requirements (Stage 0) minimize surprises and provide LLM context.
-- **Controlled Acceleration:** LLMs speed up **boilerplate implementation, test generation, and initial drafting of planning documents**.
-- **Improved Quality & Consistency:** Structured review against requirements, integrated testing (including TDD-lite), and regression checks catch issues early. Developer oversight is key.
-- **Enhanced Developer Control:** Developer directs architecture, approves requirements, reviews all code, manages integration, and sets the abstraction level for planning.
-- **More Efficient Debugging:** Issues caught earlier. **Leveraging LLM for diagnosis** speeds up resolution. Integration debugging remains a challenge requiring developer skill.
-- **Increased & Earlier Test Coverage:** Process now explicitly encourages TDD-lite and leverages LLMs for test generation.
-- **Living Documentation:** Requirements doc = plan; Iteration guide = execution log (at an appropriate level of detail).
-- **Flexibility in Process:** Adaptive rigor (tracking/verification) allows tailoring effort, guided by heuristics.
-- **Actionable Guidance:** Updated templates/examples (especially for Iteration Guides in Appendix A and prompting in Appendix B) reflect practice and address identified needs for clarity and appropriate abstraction.
-- **Leverages LLM Proactivity:** Encourages evaluating useful LLM suggestions (validators, constraints, etc.) within the review step.
+- **Predictability & Reduced Risk:** Upfront requirements (Stage 0) minimized surprises and provided crucial LLM context.
+- **Controlled Acceleration:** LLMs sped up boilerplate implementation, test generation, and initial drafting of planning documents and `context.md` summaries.
+- **Improved Quality & Consistency:** Structured review against requirements, integrated testing (including varied TDD-lite application and consistent Phase Verification Scripts), and regression checks caught issues effectively. Developer oversight was paramount.
+- **Enhanced Developer Control:** The developer consistently directed architecture, approved requirements, reviewed all code, managed integration, and set the abstraction level for planning, validating this core LGID tenet.
+- **More Efficient Debugging:** This was a standout benefit. Issues were caught early through iterative testing, and **leveraging the LLM with error tracebacks significantly accelerated diagnosis and resolution of test failures and bugs.**
+- **Increased & Earlier Test Coverage:** The process explicitly encouraged TDD-lite (though variably applied) and standardized the use of Phase Verification Scripts, demonstrably increasing test coverage.
+- **Living Documentation:** `Project_Requirements.md` as the plan, `Iteration_Guide.md` as the execution map, and `context.md` as the session log created a robust documentation ecosystem.
+- **Flexibility in Process:** Adaptive rigor in planning and verification was consistently observed, allowing the developer to tailor effort effectively (e.g., adding refactoring phases, deferring tasks).
+- **Actionable Guidance:** The LGID paper, including its appendices, served as effective guidance, with the developer actively ensuring LLM outputs (especially planning documents) aligned with its principles.
+- **Leverages LLM Proactivity:** The LLM's "Thought Process" and occasional unsolicited (but relevant) suggestions were generally helpful.
 
-**6. Challenges & Mitigation in Refined LGID (Based on Findings)**
+**6. Challenges & Mitigation in Refined LGID (Based on Session Analyses)**
 
-- **LLM Output Imperfections:** Requires **vigilant developer review and correction**. This applies to code, documentation, and planning artifacts.
-    - Mitigation: Review against specific requirements; Use LLM for refinement prompts; Robust verification. For planning documents like Iteration Guides, LLMs might generate overly verbose or minutely detailed content. **Mitigation for this includes providing clear, complete examples of desired output (see revised Appendix A) and using precise prompts that specify the expected abstraction level (see new prompt in revised Appendix B).**
-- **Integration & Debugging Complexity:** Integrating LLM code and debugging subtle issues remains a primary developer task. Mitigation: Small implementation steps; Step-level verification; **Use LLM for debugging assistance (new)**; Developer expertise remains crucial.
-- **Verification Variability:** Adaptive rigor can lead to gaps if not applied judiciously. Mitigation: Clearer **heuristics for phase verification decisions**; Emphasize TDD-lite for continuous checks; Mandatory regression testing.
-- **Effective Prompt Engineering & Context:** Requires skill and iteration.
-    - Mitigation: Enhanced **Prompt Library (Appendix B)**; Emphasize requirement linkage; Prompt for specific tasks (debug, refine). This principle is particularly critical when prompting for the generation of planning documents like the Iteration Guide. Reinforce that **clearly defining the expected level of detail and referencing established templates (like the revised Appendix A) is crucial for obtaining useful, appropriately abstracted outputs.**
-- **Upfront Planning Effort (Stage 0):** Requires dedicated time but prevents larger downstream problems (validated by findings). Mitigation: Use LLM assist for drafting; View as essential investment.
-- **Discipline:** Adherence to process (updates, verification) is key. Mitigation: Lean Guide option; Clear benefits demonstrated by practice.
-- **Handling Requirement Changes:** Requires disciplined updates to `Project_Requirements.md` and replanning. Mitigation: Emphasize Stage 0 importance; Treat changes formally.
+- **LLM Output Imperfections:** LLMs consistently produced code with minor errors (missing imports, slight logic flaws, incorrect test assertions) requiring **vigilant developer review and iterative debugging**.
+  - Mitigation: This was effectively managed by the developer performing all verifications and using the LLM itself for debugging assistance with precise error context. For planning documents, the developer's iterative feedback and provision of examples (Session 2) were key to achieving desired quality and format.
+- **Integration & Debugging Complexity:** While LLM assistance was invaluable, integrating LLM-generated code and debugging the resulting issues remained the primary developer task, requiring skill and patience. The iterative test-fail-fix cycle was common.
+  - Mitigation: Small implementation steps, robust step-level verification, and consistent use of the LLM as a debugging partner.
+- **Verification Variability:** While TDD-lite was present, its application wasn't uniformly strict across all new logic. The explicit "Code Refinement" step for new application code was rarely invoked.
+  - Mitigation: Emphasize TDD-lite as a default for all new logic. Provide clearer heuristics or prompts for when to trigger the optional Code Refinement step. The consistent use of Phase Verification Scripts did, however, provide a strong safety net.
+- **Effective Prompt Engineering & Context:** While the developer became proficient, initial challenges with document formatting (Session 2) highlight the need for clear, example-driven prompts, especially for structured outputs.
+  - Mitigation: The LGID paper's enhanced Prompt Library (Appendix B) and emphasis on providing examples remains crucial. The `context.md` proved highly effective for context maintenance.
+- **Upfront Planning Effort (Stage 0):** Sessions 1 and 2 demonstrated this requires dedicated time but was validated as essential.
+  - Mitigation: Use LLM assist for drafting; View as a high-ROI investment.
+- **Discipline:** Adherence to updating documents and performing verifications is key.
+  - Mitigation: The observed benefits (smoother subsequent sessions, easier debugging) reinforce the value. `context.md` made session-to-session discipline easier.
+- **Handling Requirement Changes:** Requires disciplined updates to `Project_Requirements.md` and replanning, as seen in Sessions 2 and 11.
+  - Mitigation: Emphasize Stage 0 importance; Treat changes formally.
 
 **7. Illustrative Case Study Snippet: Adding Comments (Refined Process)**
+_(This section remains largely the same as v2.1, as it illustrates the general process. Notes on observed practices are integrated into the main body.)_
 
 - **Scenario:** Add comments to a blog app (Phase 2).
 - **LGID Application:**
-  - **Stage 0:** `Project_Requirements.md` created (possibly LLM-drafted), defining architecture and Phase 1/Phase 2 requirements (2.a-2.f as before). Developer finalizes.
+  - **Stage 0:** `Project_Requirements.md` created (LLM-drafted, developer-finalized), defining architecture and Phase 1/Phase 2 requirements.
   - **(Assume Phase 1 completed)**
-  - **Phase 2 Kick-off (Step 2.0):** Review Reqs 2.a-2.f. Developer chooses Lean Guide (`blog_Iteration_Guide.md` - see Appendix A for Lean template structure). Plans high-level steps/actions for the guide: 2.1 (Model+Admin+Basic Test), 2.2 (Form+Test), 2.3 (View GET), 2.4 (Template Update), 2.5 (View POST+Test). (LLM could assist in drafting this guide structure using a prompt similar to Appendix B, but adapted for a Lean Guide).
+  - **Phase 2 Kick-off (Step 2.0):** Review Reqs 2.a-2.f. Developer chooses Standard Guide (`blog_Iteration_Guide.md`). Plans high-level steps (LLM could assist in drafting this guide structure per Appendix B).
   - **Step 2.1 (Implement Model, Admin & Basic Test - Req 2.a, 2.c):**
     - _Prompt Example (for code):_ "Per Req 2.a & 2.c, generate `Comment` model for `blog/models.py`. Include admin registration in `blog/admin.py`. Also, generate a basic `pytest` test structure in `blog/tests/test_models.py` to check `__str__` output for a sample `Comment`."
-    - _Verification:_ Review LLM code against Reqs. Check dependencies. Run `makemigrations`/`migrate`. Run the _new_ basic test. Mark complete in Lean Guide.
-  - **(Steps 2.2 - 2.5 proceed similarly, potentially generating tests for form validation (Step 2.2) and POST logic (Step 2.5), performing step-level verification, using LLM debug assist if a step's test fails. Key tasks in the guide remain high-level.)**
-  - **(Optional) Step 2.6 (Code Refinement):**
-    - _Prompt Example:_ "Review the `PostDetailView` (GET and POST handling for comments) implemented for Reqs 2.b/2.d/2.e. Any suggestions for clarity, efficiency, or adherence to Django best practices?" Evaluate suggestions.
+    - _Verification:_ Review LLM code. Run `makemigrations`/`migrate`. Run the _new_ basic test. (If fails, provide error to LLM for debug assist). Mark complete.
+  - **(Steps 2.2 - 2.5 proceed similarly, generating tests alongside or immediately after implementation, performing step-level verification, using LLM debug assist if a step's test fails.)**
+  - **(Optional) Step 2.6 (Code Refinement):** (Less frequently observed for new app code in sessions, but available if deemed necessary by developer).
+    - _Prompt Example:_ "Review the `PostDetailView`... Any suggestions for clarity, efficiency...?" Evaluate.
   - **Step 2.7 (Phase 2 Verification Decision):**
-    - _Decision:_ Phase involves form handling, auth, DB interaction. _Heuristic:_ Introduces new interactions and modifies core view. Developer decides _to create_ `test_phase2_verification.py` (Appendix C style) checking integration points (form display, logged-in post success, anonymous post failure). Rationale documented in Lean Guide. Script created (LLM assist optional) and run. (If it failed, LLM would be prompted with error/traceback).
-  - **Step 2.8 (Regression):** Run full `pytest`. Fix issues (using LLM assist if needed). Mark Phase 2 complete.
-- **Reflection:** Requirements defined upfront. Lean Guide used, with high-level actions. **TDD-lite** applied. **Optional refinement** considered. **Adaptive verification decision** made. **LLM debugging** planned. LLM assisted based on clear specs.
+    - _Decision (developer-led):_ Phase involves form handling. Create `test_phase2_verification.py` (Appendix C style). Rationale documented. Script created (LLM assist) and run. (If fails, LLM assists debugging).
+  - **Step 2.8 (Regression):** Run full `pytest`. Fix issues (LLM assist). Mark Phase 2 complete.
+- **Reflection:** Requirements defined. Standard Guide used. TDD-lite applied variably. Debugging heavily LLM-assisted. Adaptive verification decision made.
 
 **8. Conclusion**
 
-The refined LLM-Guided Iterative Development (LGID) framework, informed by practical developer experience, offers a robust and adaptive approach for solo Django developers. By mandating **upfront requirements planning (Stage 0)** and structuring **LLM-assisted iterative implementation** against that plan, LGID leverages LLM strengths (boilerplate generation, drafting assistance for code and planning documents) while mitigating observed weaknesses (inaccuracies, integration challenges, overly detailed LLM outputs). The emphasis on the **developer's critical role** in review, integration, debugging, and setting appropriate abstraction levels for planning, augmented by **targeted LLM assistance for debugging and refinement**, is crucial. Incorporating **TDD-lite practices** and **heuristics for adaptive verification** strengthens quality assurance. LGID provides a practical, evidence-based pathway for independent developers to harness LLM power effectively, building architecturally sound, maintainable Django applications with improved predictability, velocity, and quality control.
+LGID Version 2.2, refined and validated through 13 comprehensive development sessions, stands as a robust and highly adaptive framework for solo Django developers. By mandating **upfront requirements planning (Stage 0)** and structuring **LLM-assisted iterative implementation** against that plan, LGID effectively leverages LLM strengths (boilerplate generation, drafting, debugging) while mitigating weaknesses (inaccuracies, integration challenges). The consistent emphasis on the **developer's central control** in architecture, review, integration, debugging, and setting planning document abstraction proved paramount. The framework's most impactful successes include the dramatic efficiency gains from **LLM-assisted debugging**, the clarity provided by well-maintained core documents (`Project_Requirements.md`, `Iteration_Guide.md`, `context.md`), and the flexibility to adapt to emergent project needs. LGID v2.2 provides a practical, evidence-based pathway for independent developers to harness LLM power effectively, building architecturally sound, maintainable Django applications with improved predictability, velocity, and quality control.
 
 ---
 
@@ -203,86 +220,90 @@ This appendix provides complete examples of both Standard and Lean Iteration Gui
 **Phase 1: User Authentication and Basic Post Management**
 
 **Overall Objective(s) for Phase 1 (from `Project_Requirements.md`):**
--   Req 1.a: Implement custom user model with email as username.
--   Req 1.b: Implement user registration, login, logout functionality.
--   Req 1.c: Create `Post` model (title, content, author, timestamps).
--   Req 1.d: Basic Django admin integration for `User` and `Post` models.
--   Req 1.e: Authenticated users can create new posts.
--   Req 1.f: List all posts on homepage, view individual posts.
+
+- Req 1.a: Implement custom user model with email as username.
+- Req 1.b: Implement user registration, login, logout functionality.
+- Req 1.c: Create `Post` model (title, content, author, timestamps).
+- Req 1.d: Basic Django admin integration for `User` and `Post` models.
+- Req 1.e: Authenticated users can create new posts.
+- Req 1.f: List all posts on homepage, view individual posts.
 
 ---
 
 **Implementation Steps:**
 
 **Step 1.1: Setup Custom User Model**
--   **Objective(s) (from `Project_Requirements.md`):** Req 1.a
--   **Key Tasks:**
-    ```
-    <!-- Annotation: Key Tasks should be high-level summaries of the main actions.
-         The developer will decompose these into specific sub-tasks, commands,
-         and detailed coding steps during actual implementation. This guide is for
-         planning and tracking progress at a strategic level, not a micro-plan.
-         Typically 1-3 key tasks per step. -->
-    ```
-    1.  Define `CustomUser` model inheriting from `AbstractUser`, using email as `USERNAME_FIELD`.
-    2.  Define `CustomUserManager` for the new user model.
-    3.  Update `settings.py` to use `AUTH_USER_MODEL`.
--   **Deliverables:**
-    -   `users/models.py` (with `CustomUser`, `CustomUserManager`)
-    -   `settings.py` (updated `AUTH_USER_MODEL`)
-    -   Initial migration files for the `users` app.
--   **Verification Checklist:**
-    ```
-    <!-- Annotation: Verification is a checklist of what to confirm or achieve,
-         not detailed test script content or step-by-step QA procedures.
-         Specific unit tests, integration tests, and manual checks will be
-         performed by the developer based on these goals. -->
-    ```
-    -   [ ] Code lints successfully (`flake8`, `black`).
-    -   [ ] `python manage.py check` passes.
-    -   [ ] `python manage.py makemigrations users` and `migrate` run without errors.
-    -   [ ] `CustomUser` model structure reviewed against Req 1.a.
-    -   [ ] Able to create a superuser using the custom model.
--   **Status:** Not Started
--   **Commit(s):**
+
+- **Objective(s) (from `Project_Requirements.md`):** Req 1.a
+- **Key Tasks:**
+  ```
+  <!-- Annotation: Key Tasks should be high-level summaries of the main actions.
+       The developer will decompose these into specific sub-tasks, commands,
+       and detailed coding steps during actual implementation. This guide is for
+       planning and tracking progress at a strategic level, not a micro-plan.
+       Typically 1-3 key tasks per step. -->
+  ```
+  1.  Define `CustomUser` model inheriting from `AbstractUser`, using email as `USERNAME_FIELD`.
+  2.  Define `CustomUserManager` for the new user model.
+  3.  Update `settings.py` to use `AUTH_USER_MODEL`.
+- **Deliverables:**
+  - `users/models.py` (with `CustomUser`, `CustomUserManager`)
+  - `settings.py` (updated `AUTH_USER_MODEL`)
+  - Initial migration files for the `users` app.
+- **Verification Checklist:**
+  ```
+  <!-- Annotation: Verification is a checklist of what to confirm or achieve,
+       not detailed test script content or step-by-step QA procedures.
+       Specific unit tests, integration tests, and manual checks will be
+       performed by the developer based on these goals. -->
+  ```
+  - [ ] Code lints successfully (`flake8`, `black`).
+  - [ ] `python manage.py check` passes.
+  - [ ] `python manage.py makemigrations users` and `migrate` run without errors.
+  - [ ] `CustomUser` model structure reviewed against Req 1.a.
+  - [ ] Able to create a superuser using the custom model.
+- **Status:** Not Started
+- **Commit(s):**
 
 **Step 1.2: Implement User Authentication Views & Forms**
--   **Objective(s) (from `Project_Requirements.md`):** Req 1.b
--   **Key Tasks:**
-    1.  Create forms for user registration and login.
-    2.  Implement views for registration, login, and logout.
-    3.  Define URL patterns for authentication views.
--   **Deliverables:**
-    -   `users/forms.py` (RegistrationForm, LoginForm)
-    -   `users/views.py` (registration_view, login_view, logout_view)
-    -   `users/urls.py`
-    -   Associated templates (`register.html`, `login.html`)
--   **Verification Checklist:**
-    -   [ ] User registration flow works as expected.
-    -   [ ] User login/logout functionality operational.
-    -   [ ] Form validation (e.g., password mismatch, existing email) behaves correctly.
-    -   [ ] Basic unit tests for forms (e.g., valid/invalid data) pass.
-    -   [ ] Relevant templates render correctly.
--   **Status:** Not Started
--   **Commit(s):**
+
+- **Objective(s) (from `Project_Requirements.md`):** Req 1.b
+- **Key Tasks:**
+  1.  Create forms for user registration and login.
+  2.  Implement views for registration, login, and logout.
+  3.  Define URL patterns for authentication views.
+- **Deliverables:**
+  - `users/forms.py` (RegistrationForm, LoginForm)
+  - `users/views.py` (registration_view, login_view, logout_view)
+  - `users/urls.py`
+  - Associated templates (`register.html`, `login.html`)
+- **Verification Checklist:**
+  - [ ] User registration flow works as expected.
+  - [ ] User login/logout functionality operational.
+  - [ ] Form validation (e.g., password mismatch, existing email) behaves correctly.
+  - [ ] Basic unit tests for forms (e.g., valid/invalid data) pass.
+  - [ ] Relevant templates render correctly.
+- **Status:** Not Started
+- **Commit(s):**
 
 **Step 1.3: Define and Register Post Model**
--   **Objective(s) (from `Project_Requirements.md`):** Req 1.c, Req 1.d (Post part)
--   **Key Tasks:**
-    1.  Define `Post` model in `blog/models.py` with specified fields and foreign key to `CustomUser`.
-    2.  Register `Post` model with Django admin, customizing display if necessary.
-    3.  Generate and apply migrations for the `blog` app.
--   **Deliverables:**
-    -   `blog/models.py` (with `Post` model)
-    -   `blog/admin.py` (with `PostAdmin`)
-    -   Migration files for `blog` app.
--   **Verification Checklist:**
-    -   [ ] `python manage.py makemigrations blog` and `migrate` run cleanly.
-    -   [ ] `Post` model structure review against Req 1.c.
-    -   [ ] Admin interface for `Post` model accessible; CUD operations functional.
-    -   [ ] Basic unit tests for `Post` model (`__str__`, any custom methods) pass.
--   **Status:** Not Started
--   **Commit(s):**
+
+- **Objective(s) (from `Project_Requirements.md`):** Req 1.c, Req 1.d (Post part)
+- **Key Tasks:**
+  1.  Define `Post` model in `blog/models.py` with specified fields and foreign key to `CustomUser`.
+  2.  Register `Post` model with Django admin, customizing display if necessary.
+  3.  Generate and apply migrations for the `blog` app.
+- **Deliverables:**
+  - `blog/models.py` (with `Post` model)
+  - `blog/admin.py` (with `PostAdmin`)
+  - Migration files for `blog` app.
+- **Verification Checklist:**
+  - [ ] `python manage.py makemigrations blog` and `migrate` run cleanly.
+  - [ ] `Post` model structure review against Req 1.c.
+  - [ ] Admin interface for `Post` model accessible; CUD operations functional.
+  - [ ] Basic unit tests for `Post` model (`__str__`, any custom methods) pass.
+- **Status:** Not Started
+- **Commit(s):**
 
 **(Further steps for Phase 1, e.g., Post Creation Views/Forms, Post List/Detail Views, would follow a similar structure.)**
 
@@ -299,49 +320,28 @@ This appendix provides complete examples of both Standard and Lean Iteration Gui
 **Phase 3: Initial Documentation Site Setup**
 
 **Overall Objective(s) for Phase 3 (from `Project_Requirements.md`):**
--   Req 3.a: Integrate Sphinx for project documentation.
--   Req 3.b: Basic `index.rst` and `conf.py` configuration.
--   Req 3.c: Document an overview of the project architecture.
+
+- Req 3.a: Integrate Sphinx for project documentation.
+- Req 3.b: Basic `index.rst` and `conf.py` configuration.
+- Req 3.c: Document an overview of the project architecture.
 
 ---
 
 **Implementation Checklist:**
 
-**[ ] Step 3.1: Initialize Sphinx**
-    -   **Objective:** Req 3.a
-    -   **Key Action(s):**
-        ```
-        <!-- Annotation: Key Actions in a Lean Guide are very concise,
+**[ ] Step 3.1: Initialize Sphinx** - **Objective:** Req 3.a - **Key Action(s):**
+`        <!-- Annotation: Key Actions in a Lean Guide are very concise,
              focusing on the primary outcome or the main task cluster.
              The developer is expected to know the sub-steps. -->
-        ```
-        -   Install Sphinx, run `sphinx-quickstart`.
-    -   **Verification:**
-        ```
-        <!-- Annotation: Verification in a Lean Guide is a brief confirmation.
+       ` - Install Sphinx, run `sphinx-quickstart`. - **Verification:**
+`        <!-- Annotation: Verification in a Lean Guide is a brief confirmation.
              Detailed step-level checks (linting, basic functionality) are assumed
              as per general LGID practice, even if not explicitly listed here. -->
-        ```
-        -   Sphinx directory structure created. Basic HTML build (`make html`) successful.
-    -   **Commit(s):**
+       ` - Sphinx directory structure created. Basic HTML build (`make html`) successful. - **Commit(s):**
 
-**[ ] Step 3.2: Basic Configuration & Index Page**
-    -   **Objective:** Req 3.b
-    -   **Key Action(s):**
-        -   Configure `conf.py` (theme, extensions if any).
-        -   Create initial content for `index.rst`.
-    -   **Verification:**
-        -   `index.html` renders with chosen theme and basic content.
-    -   **Commit(s):**
+**[ ] Step 3.2: Basic Configuration & Index Page** - **Objective:** Req 3.b - **Key Action(s):** - Configure `conf.py` (theme, extensions if any). - Create initial content for `index.rst`. - **Verification:** - `index.html` renders with chosen theme and basic content. - **Commit(s):**
 
-**[ ] Step 3.3: Draft Architecture Overview**
-    -   **Objective:** Req 3.c
-    -   **Key Action(s):**
-        -   Create `architecture.rst` and write initial overview.
-        -   Link `architecture.rst` from `index.rst`.
-    -   **Verification:**
-        -   Architecture page accessible from index and renders content.
-    -   **Commit(s):**
+**[ ] Step 3.3: Draft Architecture Overview** - **Objective:** Req 3.c - **Key Action(s):** - Create `architecture.rst` and write initial overview. - Link `architecture.rst` from `index.rst`. - **Verification:** - Architecture page accessible from index and renders content. - **Commit(s):**
 
 ---
 
@@ -362,8 +362,10 @@ You are assisting a Django developer using the LGID framework. The developer has
 "Generate a `Standard_Iteration_Guide.md` for **Phase [Number/Name of Phase from Project_Requirements.md - e.g., Phase 2: Commenting System]** for the **[AppName]** app.
 
 Refer to the following `Project_Requirements.md` snippet for the scope of this phase:
+
 ```markdown
 ### Phase 2: Commenting System (for 'blog' app)
+
 - Req 2.a: Users can add comments to blog posts. Comment model should include text, author (User FK), post (Post FK), creation timestamp.
 - Req 2.b: Comments displayed on the post detail page, oldest first.
 - Req 2.c: Basic admin integration for comments (list, view, delete).
@@ -375,16 +377,16 @@ Refer to the following `Project_Requirements.md` snippet for the scope of this p
 **Output Format and Structure:**
 Use the Standard Iteration Guide template structure. For guidance on the appropriate level of detail and structure, refer to the example provided in **Appendix A.1 (Standard Iteration Guide Example) of the LGID paper (Version 2.1)**. Specifically ensure:
 
-*   **Overall Objective(s) for Phase:** List the requirement IDs and a brief summary for this phase.
-*   **Implementation Steps:**
-    *   Break down the phase into logical implementation steps (e.g., "Define Comment Model & Admin," "Implement Comment Form & View Logic," "Update Template to Display Comments & Form").
-    *   For each step:
-        *   **Objective(s):** Clearly state the requirement ID(s) from `Project_Requirements.md` that the step addresses.
-        *   **Key Tasks:** List **1-3 high-level summary actions** needed to complete the step. *Critical: Do NOT include specific shell commands, detailed code snippets, or minute sub-tasks.* These are for the developer to determine during implementation. For example, a Key Task might be "Define Comment model and register with admin," *NOT* "Run `python manage.py startapp comments`. Add `Comment` class to `models.py` with fields X, Y, Z. Add `CommentAdmin` to `admin.py`." The goal is strategic guidance, not a micro-plan.
-        *   **Deliverables:** List the key files or artifacts created/modified (e.g., `models.py`, `forms.py`, specific templates).
-        *   **Verification Checklist:** Provide a **checklist of key verification goals or activities** (e.g., "Code lints successfully," "Migrations run cleanly," "Comment submission by authenticated user successful," "Comments display correctly"). *Critical: Do NOT write detailed test cases or exhaustive test scripts.* This should be a high-level checklist.
-        *   **Status:** (Default to 'Not Started')
-        *   **Commit(s):** (Leave blank)
+- **Overall Objective(s) for Phase:** List the requirement IDs and a brief summary for this phase.
+- **Implementation Steps:**
+  - Break down the phase into logical implementation steps (e.g., "Define Comment Model & Admin," "Implement Comment Form & View Logic," "Update Template to Display Comments & Form").
+  - For each step:
+    - **Objective(s):** Clearly state the requirement ID(s) from `Project_Requirements.md` that the step addresses.
+    - **Key Tasks:** List **1-3 high-level summary actions** needed to complete the step. _Critical: Do NOT include specific shell commands, detailed code snippets, or minute sub-tasks._ These are for the developer to determine during implementation. For example, a Key Task might be "Define Comment model and register with admin," _NOT_ "Run `python manage.py startapp comments`. Add `Comment` class to `models.py` with fields X, Y, Z. Add `CommentAdmin` to `admin.py`." The goal is strategic guidance, not a micro-plan.
+    - **Deliverables:** List the key files or artifacts created/modified (e.g., `models.py`, `forms.py`, specific templates).
+    - **Verification Checklist:** Provide a **checklist of key verification goals or activities** (e.g., "Code lints successfully," "Migrations run cleanly," "Comment submission by authenticated user successful," "Comments display correctly"). _Critical: Do NOT write detailed test cases or exhaustive test scripts._ This should be a high-level checklist.
+    - **Status:** (Default to 'Not Started')
+    - **Commit(s):** (Leave blank)
 
 **Goal:**
 The generated Iteration Guide should serve as a high-level plan and tracking document for the developer, empowering them to manage the detailed execution. It must align with the principles of developer agency and the desired level of abstraction for planning documents as emphasized in the LGID framework. It should be suitable for the `AppName_Standard_Iteration_Guide.md` file.
@@ -395,12 +397,15 @@ The generated Iteration Guide should serve as a high-level plan and tracking doc
 ### Prompts for Debugging Assistance
 
 **Prompt: Explain This Error**
+
 ```
 "I'm working on my Django project. When I try to [action, e.g., 'access the /admin/ page'], I get the following error and traceback. Can you explain what this error typically means and point to potential areas in my code to investigate?
 
 Error:
 ```
+
 [Paste full error message and traceback here]
+
 ```
 
 Relevant code snippets:
@@ -408,17 +413,22 @@ Relevant code snippets:
 ```
 
 **Prompt: Suggest Fixes for This Error (with Context)**
+
 ```
 "Following up on the previous error, I've investigated [mention what you found or suspect]. Here's the error again:
 ```
+
 [Paste full error message and traceback here]
-```
+
+````
 And here's the relevant code I believe is causing the issue:
 `[filename.py]`
 ```python
 [Paste specific code block here]
-```
+````
+
 Based on this, can you suggest potential fixes or modifications to resolve this error? Explain the reasoning behind your suggestions."
+
 ```
 
 ---
@@ -427,6 +437,7 @@ Based on this, can you suggest potential fixes or modifications to resolve this 
 
 **Prompt: Review Django Code for Best Practices**
 ```
+
 "Please review the following Django [model/view/form/template] code from my `[app_name]/[file_name.py]` file.
 It's intended to [briefly describe functionality and relevant requirements, e.g., 'handle user registration and ensure unique emails, per Req 1.b'].
 
@@ -435,10 +446,12 @@ It's intended to [briefly describe functionality and relevant requirements, e.g.
 ```
 
 Could you:
+
 1. Identify any areas that don't follow Django best practices?
 2. Suggest improvements for clarity, efficiency, or security?
 3. Point out any potential bugs or edge cases I might have missed?
-Please explain your suggestions."
+   Please explain your suggestions."
+
 ```
 
 ---
@@ -447,19 +460,26 @@ Please explain your suggestions."
 
 **Prompt: Security Check for Django View**
 ```
+
 "I've written this Django view in `[app_name]/views.py` to handle [describe functionality, e.g., 'processing a user-submitted form for creating a new blog post'].
+
 ```python
 [Paste view code here]
 ```
+
 And here is the relevant form from `[app_name]/forms.py`:
+
 ```python
 [Paste form code here]
 ```
+
 Referring to common Django security considerations (like those in Appendix D of the LGID framework, e.g., CSRF, XSS, input validation, authorization checks, query parameter safety):
+
 1. Are there any obvious security vulnerabilities in this code?
 2. What specific checks or improvements should I consider adding to enhance its security?
-For example, is my form validation sufficient? Am I handling authorization correctly before performing actions?"
-```
+   For example, is my form validation sufficient? Am I handling authorization correctly before performing actions?"
+
+````
 
 ---
 
@@ -527,7 +547,7 @@ def test_phase1_authenticated_user_can_create_post(client, django_user_model):
 # Add more tests relevant to Phase 1 objectives, e.g.:
 # - Test anonymous user cannot access post creation page.
 # - Test post list and detail views display correctly (if part of phase).
-```
+````
 
 **C.2. Guidance on Creating Phase Verification Scripts (Heuristics)**
 
@@ -544,10 +564,10 @@ A dedicated Phase Verification Script is **recommended but adaptive**. The decis
 
 **When might you OMIT a dedicated Phase Script (and document why)?**
 
-*   **Very Simple, Isolated Changes:** e.g., Adding a single, non-critical field to a model already well-tested, minor UI tweaks with no backend logic change.
-*   **Highly Reused/Library-like Components:** Where comprehensive unit tests for the component itself provide sufficient confidence, and its integration points are simple and already covered.
-*   **Purely Refactoring Phases:** If the refactoring is covered by existing comprehensive unit and integration tests that confirm behavioral equivalence.
-*   **Developer Confidence & Risk Assessment:** If step-level tests are thorough, regression tests are robust, and the developer assesses the risk of integration issues within the phase as very low.
+- **Very Simple, Isolated Changes:** e.g., Adding a single, non-critical field to a model already well-tested, minor UI tweaks with no backend logic change.
+- **Highly Reused/Library-like Components:** Where comprehensive unit tests for the component itself provide sufficient confidence, and its integration points are simple and already covered.
+- **Purely Refactoring Phases:** If the refactoring is covered by existing comprehensive unit and integration tests that confirm behavioral equivalence.
+- **Developer Confidence & Risk Assessment:** If step-level tests are thorough, regression tests are robust, and the developer assesses the risk of integration issues within the phase as very low.
 
 **Goal:** The Phase Verification Script should provide confidence that the primary objectives of the phase are met from an integration perspective, complementing finer-grained unit tests.
 
@@ -559,44 +579,21 @@ This checklist is intended for use during the **Step-Level Verification** by the
 
 **For each relevant code change (Models, Views, Forms, Templates):**
 
-**D.1. Input Validation & Sanitization:**
-    - [ ] **Forms:** Are all user-supplied inputs validated by Django Forms or model validation?
-    - [ ] **Model Fields:** Are appropriate `validators`, `max_length`, `choices`, etc., used on model fields?
-    - [ ] **Query Parameters:** If using raw query parameters in views, are they validated/cast appropriately before use (especially in DB queries to prevent injection if not using ORM safely)?
-    - [ ] **Output Escaping (Templates):** Is `{% autoescape %}` on? Is `|safe` filter used judiciously and only on trusted content? (Django default is on, but good to be mindful).
-    - [ ] **File Uploads:** If handling uploads, are file types, sizes, and names validated? (Consider `django-cleanup` or custom validation).
+**D.1. Input Validation & Sanitization:** - [ ] **Forms:** Are all user-supplied inputs validated by Django Forms or model validation? - [ ] **Model Fields:** Are appropriate `validators`, `max_length`, `choices`, etc., used on model fields? - [ ] **Query Parameters:** If using raw query parameters in views, are they validated/cast appropriately before use (especially in DB queries to prevent injection if not using ORM safely)? - [ ] **Output Escaping (Templates):** Is `{% autoescape %}` on? Is `|safe` filter used judiciously and only on trusted content? (Django default is on, but good to be mindful). - [ ] **File Uploads:** If handling uploads, are file types, sizes, and names validated? (Consider `django-cleanup` or custom validation).
 
-**D.2. Authentication & Authorization:**
-    - [ ] **Protected Views:** Are views that require login protected with `@login_required`, `LoginRequiredMixin`, or equivalent permission checks (`@permission_required`, `PermissionRequiredMixin`, custom checks)?
-    - [ ] **Object-Level Permissions:** For views modifying specific objects, are checks in place to ensure the logged-in user *owns* or *has permission* to modify/delete that specific object (not just any object of that type)?
-    - [ ] **CSRF Protection:** Are forms submitted via POST using the `{% csrf_token %}` template tag? (Django default, but verify). Are AJAX POSTs handling CSRF tokens correctly?
-    - [ ] **Password Management:** Using Django's built-in password hashing? Not storing plain-text passwords?
+**D.2. Authentication & Authorization:** - [ ] **Protected Views:** Are views that require login protected with `@login_required`, `LoginRequiredMixin`, or equivalent permission checks (`@permission_required`, `PermissionRequiredMixin`, custom checks)? - [ ] **Object-Level Permissions:** For views modifying specific objects, are checks in place to ensure the logged-in user _owns_ or _has permission_ to modify/delete that specific object (not just any object of that type)? - [ ] **CSRF Protection:** Are forms submitted via POST using the `{% csrf_token %}` template tag? (Django default, but verify). Are AJAX POSTs handling CSRF tokens correctly? - [ ] **Password Management:** Using Django's built-in password hashing? Not storing plain-text passwords?
 
-**D.3. ORM & Database:**
-    - [ ] **QuerySet Usage:** Primarily using Django ORM methods (which handle SQL injection prevention)?
-    - [ ] **Raw SQL:** If raw SQL (`.raw()`, `cursor.execute()`) is used, are queries properly parameterized to prevent SQL injection?
-    - [ ] **Migrations:** Are migrations reviewed for unintended data loss or problematic operations before applying to production?
+**D.3. ORM & Database:** - [ ] **QuerySet Usage:** Primarily using Django ORM methods (which handle SQL injection prevention)? - [ ] **Raw SQL:** If raw SQL (`.raw()`, `cursor.execute()`) is used, are queries properly parameterized to prevent SQL injection? - [ ] **Migrations:** Are migrations reviewed for unintended data loss or problematic operations before applying to production?
 
-**D.4. Session Management:**
-    - [ ] **Sensitive Data in Session:** Avoid storing highly sensitive data directly in sessions if possible. If necessary, ensure it's minimized and cleared appropriately.
-    - [ ] **Session Fixation:** (Generally handled by Django, but be aware if customizing session handling).
+**D.4. Session Management:** - [ ] **Sensitive Data in Session:** Avoid storing highly sensitive data directly in sessions if possible. If necessary, ensure it's minimized and cleared appropriately. - [ ] **Session Fixation:** (Generally handled by Django, but be aware if customizing session handling).
 
-**D.5. Error Handling & Information Disclosure:**
-    - [ ] **DEBUG Mode:** Is `DEBUG = False` in production settings?
-    - [ ] **Sensitive Info in Errors:** Do production error pages/logs avoid leaking sensitive configuration details, internal paths, or user data?
+**D.5. Error Handling & Information Disclosure:** - [ ] **DEBUG Mode:** Is `DEBUG = False` in production settings? - [ ] **Sensitive Info in Errors:** Do production error pages/logs avoid leaking sensitive configuration details, internal paths, or user data?
 
-**D.6. Third-Party Packages:**
-    - [ ] **Package Security:** Are third-party packages kept up-to-date to patch known vulnerabilities? (Use tools like `piprot` or `safety`).
-    - [ ] **Package Trust:** Are packages sourced from reputable locations?
+**D.6. Third-Party Packages:** - [ ] **Package Security:** Are third-party packages kept up-to-date to patch known vulnerabilities? (Use tools like `piprot` or `safety`). - [ ] **Package Trust:** Are packages sourced from reputable locations?
 
-**D.7. HTTPS:**
-    - [ ] **Production Deployment:** Is HTTPS enforced in production (via web server/load balancer config)?
-    - [ ] **Secure Cookies:** Are `SESSION_COOKIE_SECURE` and `CSRF_COOKIE_SECURE` set to `True` in production settings?
+**D.7. HTTPS:** - [ ] **Production Deployment:** Is HTTPS enforced in production (via web server/load balancer config)? - [ ] **Secure Cookies:** Are `SESSION_COOKIE_SECURE` and `CSRF_COOKIE_SECURE` set to `True` in production settings?
 
-**D.8. Admin Security:**
-    - [ ] **Admin URL:** Consider changing the default `/admin/` URL.
-    - [ ] **Strong Admin Passwords:** Enforce strong passwords for admin users.
-    - [ ] **Limit Admin Access:** Restrict admin access by IP if feasible and appropriate.
+**D.8. Admin Security:** - [ ] **Admin URL:** Consider changing the default `/admin/` URL. - [ ] **Strong Admin Passwords:** Enforce strong passwords for admin users. - [ ] **Limit Admin Access:** Restrict admin access by IP if feasible and appropriate.
 
 **Note:** This checklist complements, but does not replace, thorough security reviews or penetration testing for critical applications.
 
@@ -636,38 +633,38 @@ jobs:
           --health-retries 5
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt # Or requirements_dev.txt
-        # Install any system dependencies if needed, e.g., for Pillow or psycopg2
-        # sudo apt-get update && sudo apt-get install -y libpq-dev gcc
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt # Or requirements_dev.txt
+          # Install any system dependencies if needed, e.g., for Pillow or psycopg2
+          # sudo apt-get update && sudo apt-get install -y libpq-dev gcc
 
-    - name: Lint with Flake8
-      run: |
-        pip install flake8
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Lint with Flake8
+        run: |
+          pip install flake8
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-    - name: Run Django System Checks
-      run: |
-        python manage.py check
+      - name: Run Django System Checks
+        run: |
+          python manage.py check
 
-    - name: Run Tests with Pytest
-      env: # Set environment variables for tests if needed
-        DATABASE_URL: "postgres://test_user:test_password@localhost:5432/test_db"
-        SECRET_KEY: "ci_secret_key_for_testing"
-        DEBUG: "False"
-        # Add other necessary environment variables
-      run: |
-        pip install pytest pytest-django
-        pytest
+      - name: Run Tests with Pytest
+        env: # Set environment variables for tests if needed
+          DATABASE_URL: "postgres://test_user:test_password@localhost:5432/test_db"
+          SECRET_KEY: "ci_secret_key_for_testing"
+          DEBUG: "False"
+          # Add other necessary environment variables
+        run: |
+          pip install pytest pytest-django
+          pytest
 ```
 
 This CI/CD snippet helps automate some of the verification steps, ensuring consistency and early feedback.
@@ -699,19 +696,20 @@ This appendix illustrates how the LGID framework is applied when extending an ex
   - `7.c`: **Form Update (`blog/forms.py`):** Update any existing `PostForm` (used for creating/editing posts) to include the `post_image` field. Ensure the form's `enctype` is set to `"multipart/form-data"` where it's rendered.
   - `7.d`: **View Logic (`blog/views.py`):** Modify existing `PostCreateView` and `PostUpdateView` (or equivalent functional views) to handle image file uploads and save them with the `Post` instance.
   - `7.e`: **Template Updates (`blog/templates/blog/`):**
-    -   Modify `post_detail.html` to display the `post_image` if one exists for the post.
-    -   (Optional) Modify `post_list.html` (or item snippet) to display a thumbnail of `post_image` if it exists.
-    -   Ensure post creation/update form templates correctly set `enctype="multipart/form-data"`.
+    - Modify `post_detail.html` to display the `post_image` if one exists for the post.
+    - (Optional) Modify `post_list.html` (or item snippet) to display a thumbnail of `post_image` if it exists.
+    - Ensure post creation/update form templates correctly set `enctype="multipart/form-data"`.
   - `7.f`: **Admin Integration (`blog/admin.py`):** Update `PostAdmin` to display the `post_image` (e.g., as a read-only field showing a thumbnail or link) in the admin interface.
   - `7.g`: **Verification:** Ensure that posts can be created/edited with or without an image. Verify image display and graceful degradation if no image is present. Basic image validation (e.g., via `django-imagekit` or simple form validation for file type/size) is desirable but can be a follow-up refinement if not initially included.
 
 ---
+
 ## ... (Other phases may follow) ...
 ```
 
 ### F.2. Corresponding `Iteration_Guide.md` (Standard Template Example)
 
-```markdown
+````markdown
 # Iteration Guide: Blog App - Post Image Uploads
 
 **Scope:** Implementing Phase 7: Post Image Uploads for the `blog` app.
@@ -720,6 +718,7 @@ This appendix illustrates how the LGID framework is applied when extending an ex
 **Overall Status:** Phase 7 Planned
 
 ---
+
 ---
 
 ## Phase 7: Post Image Uploads
@@ -736,114 +735,114 @@ This appendix illustrates how the LGID framework is applied when extending an ex
 
 #### Step 7.1: Update `Post` Model and Configure Media Settings
 
-*   **Objective(s) (from `Project_Requirements.md`):** Req 7.a, Req 7.b
-*   **Key Tasks:**
-    ```
-    <!-- Annotation: Key Tasks are high-level summaries.
-         The developer will handle Pillow installation if needed,
-         specific upload_to logic, and detailed settings. -->
-    ```
-    1.  Add `ImageField` (`post_image`) to `Post` model in `blog/models.py` (optional, define `upload_to`).
-    2.  Ensure `MEDIA_URL` and `MEDIA_ROOT` are defined in `settings.py`.
-    3.  Generate and apply database migrations for the `blog` app.
-*   **Deliverables:**
-    *   Updated `blog/models.py`.
-    *   Updated `settings.py` (if `MEDIA_URL`/`MEDIA_ROOT` were not already set).
-    *   New migration file(s) in `blog/migrations/`.
-*   **Verification Checklist:**
-    ```
-    <!-- Annotation: Verification goals, not scripts. Developer performs checks. -->
-    ```
-    -   `[ ]` `python manage.py check` passes.
-    -   `[ ]` `python manage.py makemigrations blog` and `migrate` run successfully.
-    -   `[ ]` `post_image` field visible in `Post` model via shell or DB inspection.
-    -   `[ ]` **Unit Test:** (Optional) Basic test in `test_models.py` confirming `post_image` field exists.
-*   **Status:** To Do ⏳
-*   **Commit(s):**
+- **Objective(s) (from `Project_Requirements.md`):** Req 7.a, Req 7.b
+- **Key Tasks:**
+  ```
+  <!-- Annotation: Key Tasks are high-level summaries.
+       The developer will handle Pillow installation if needed,
+       specific upload_to logic, and detailed settings. -->
+  ```
+  1.  Add `ImageField` (`post_image`) to `Post` model in `blog/models.py` (optional, define `upload_to`).
+  2.  Ensure `MEDIA_URL` and `MEDIA_ROOT` are defined in `settings.py`.
+  3.  Generate and apply database migrations for the `blog` app.
+- **Deliverables:**
+  - Updated `blog/models.py`.
+  - Updated `settings.py` (if `MEDIA_URL`/`MEDIA_ROOT` were not already set).
+  - New migration file(s) in `blog/migrations/`.
+- **Verification Checklist:**
+  ```
+  <!-- Annotation: Verification goals, not scripts. Developer performs checks. -->
+  ```
+  - `[ ]` `python manage.py check` passes.
+  - `[ ]` `python manage.py makemigrations blog` and `migrate` run successfully.
+  - `[ ]` `post_image` field visible in `Post` model via shell or DB inspection.
+  - `[ ]` **Unit Test:** (Optional) Basic test in `test_models.py` confirming `post_image` field exists.
+- **Status:** To Do ⏳
+- **Commit(s):**
 
 #### Step 7.2: Update `PostForm` and Form Rendering Templates
 
-*   **Objective(s) (from `Project_Requirements.md`):** Req 7.c
-*   **Key Tasks:**
-    1.  Modify `PostForm` in `blog/forms.py` to include the `post_image` field.
-    2.  Ensure templates rendering this form (e.g., `post_form.html`) have `enctype="multipart/form-data"` on the `<form>` tag.
-*   **Deliverables:**
-    *   Updated `blog/forms.py`.
-    *   Updated relevant form-rendering templates (e.g., `blog/templates/blog/post_form.html`).
-*   **Verification Checklist:**
-    -   `[ ]` `PostForm` renders the `post_image` file input field correctly.
-    -   `[ ]` Form tag in template includes correct `enctype`.
-    -   `[ ]` **Unit Test:** (Optional) Test in `test_forms.py` that `post_image` is a field in `PostForm`.
-*   **Status:** To Do ⏳
-*   **Commit(s):**
+- **Objective(s) (from `Project_Requirements.md`):** Req 7.c
+- **Key Tasks:**
+  1.  Modify `PostForm` in `blog/forms.py` to include the `post_image` field.
+  2.  Ensure templates rendering this form (e.g., `post_form.html`) have `enctype="multipart/form-data"` on the `<form>` tag.
+- **Deliverables:**
+  - Updated `blog/forms.py`.
+  - Updated relevant form-rendering templates (e.g., `blog/templates/blog/post_form.html`).
+- **Verification Checklist:**
+  - `[ ]` `PostForm` renders the `post_image` file input field correctly.
+  - `[ ]` Form tag in template includes correct `enctype`.
+  - `[ ]` **Unit Test:** (Optional) Test in `test_forms.py` that `post_image` is a field in `PostForm`.
+- **Status:** To Do ⏳
+- **Commit(s):**
 
 #### Step 7.3: Update View Logic for Image Handling
 
-*   **Objective(s) (from `Project_Requirements.md`):** Req 7.d
-*   **Key Tasks:**
-    1.  Modify `PostCreateView` and `PostUpdateView` (or equivalent functions) in `blog/views.py` to correctly handle `request.FILES` for the `post_image`.
-    2.  Ensure images are saved to the `Post` instance.
-    3.  Handle cases where no image is uploaded (field is optional).
-*   **Deliverables:**
-    *   Updated `blog/views.py`.
-*   **Verification Checklist:**
-    -   `[ ]` **Manual E2E Check:** Create a new post with an image; image is saved and associated with the post.
-    -   `[ ]` **Manual E2E Check:** Edit an existing post to add/change/remove an image.
-    -   `[ ]` **Manual E2E Check:** Create/edit a post without an image; no errors occur.
-    -   `[ ]` **Unit Tests:** Add/run tests in `test_views.py` mocking file uploads to verify view logic for create/update with and without image.
-*   **Status:** To Do ⏳
-*   **Commit(s):**
+- **Objective(s) (from `Project_Requirements.md`):** Req 7.d
+- **Key Tasks:**
+  1.  Modify `PostCreateView` and `PostUpdateView` (or equivalent functions) in `blog/views.py` to correctly handle `request.FILES` for the `post_image`.
+  2.  Ensure images are saved to the `Post` instance.
+  3.  Handle cases where no image is uploaded (field is optional).
+- **Deliverables:**
+  - Updated `blog/views.py`.
+- **Verification Checklist:**
+  - `[ ]` **Manual E2E Check:** Create a new post with an image; image is saved and associated with the post.
+  - `[ ]` **Manual E2E Check:** Edit an existing post to add/change/remove an image.
+  - `[ ]` **Manual E2E Check:** Create/edit a post without an image; no errors occur.
+  - `[ ]` **Unit Tests:** Add/run tests in `test_views.py` mocking file uploads to verify view logic for create/update with and without image.
+- **Status:** To Do ⏳
+- **Commit(s):**
 
 #### Step 7.4: Update Templates to Display Images
 
-*   **Objective(s) (from `Project_Requirements.md`):** Req 7.e
-*   **Key Tasks:**
-    1.  Modify `blog/templates/blog/post_detail.html` to display `post.post_image.url` if an image exists.
-    2.  (Optional) Modify `blog/templates/blog/post_list.html` (or item snippet) to display `post.post_image.url` (perhaps as a thumbnail).
-    3.  Implement graceful display (e.g., placeholder or nothing) if `post.post_image` is not set.
-*   **Deliverables:**
-    *   Updated `blog/templates/blog/post_detail.html`.
-    *   (Optional) Updated `blog/templates/blog/post_list.html` or `_post_item.html`.
-*   **Verification Checklist:**
-    -   `[ ]` **Manual E2E Check:** Uploaded image displays correctly on the post detail page.
-    -   `[ ]` (If implemented) Image/thumbnail displays on post list page.
-    -   `[ ]` No errors or broken image icons if a post has no image.
-*   **Status:** To Do ⏳
-*   **Commit(s):**
+- **Objective(s) (from `Project_Requirements.md`):** Req 7.e
+- **Key Tasks:**
+  1.  Modify `blog/templates/blog/post_detail.html` to display `post.post_image.url` if an image exists.
+  2.  (Optional) Modify `blog/templates/blog/post_list.html` (or item snippet) to display `post.post_image.url` (perhaps as a thumbnail).
+  3.  Implement graceful display (e.g., placeholder or nothing) if `post.post_image` is not set.
+- **Deliverables:**
+  - Updated `blog/templates/blog/post_detail.html`.
+  - (Optional) Updated `blog/templates/blog/post_list.html` or `_post_item.html`.
+- **Verification Checklist:**
+  - `[ ]` **Manual E2E Check:** Uploaded image displays correctly on the post detail page.
+  - `[ ]` (If implemented) Image/thumbnail displays on post list page.
+  - `[ ]` No errors or broken image icons if a post has no image.
+- **Status:** To Do ⏳
+- **Commit(s):**
 
 #### Step 7.5: Update Admin Interface
 
-*   **Objective(s) (from `Project_Requirements.md`):** Req 7.f
-*   **Key Tasks:**
-    1.  Modify `PostAdmin` in `blog/admin.py` to include `post_image` in `list_display` (e.g., using a method to render a thumbnail) and/or `readonly_fields` on the change form.
-*   **Deliverables:**
-    *   Updated `blog/admin.py`.
-*   **Verification Checklist:**
-    -   `[ ]` **Manual Admin Check:** `post_image` is visible and displays appropriately (thumbnail/link) in the Django admin for `Post` objects.
-    -   `[ ]` Admin interface remains functional for creating/editing posts.
-*   **Status:** To Do ⏳
-*   **Commit(s):**
+- **Objective(s) (from `Project_Requirements.md`):** Req 7.f
+- **Key Tasks:**
+  1.  Modify `PostAdmin` in `blog/admin.py` to include `post_image` in `list_display` (e.g., using a method to render a thumbnail) and/or `readonly_fields` on the change form.
+- **Deliverables:**
+  - Updated `blog/admin.py`.
+- **Verification Checklist:**
+  - `[ ]` **Manual Admin Check:** `post_image` is visible and displays appropriately (thumbnail/link) in the Django admin for `Post` objects.
+  - `[ ]` Admin interface remains functional for creating/editing posts.
+- **Status:** To Do ⏳
+- **Commit(s):**
 
 #### Step 7.6: Phase 7 Verification & (Optional) Basic Validation
 
-*   **Objective(s) (from `Project_Requirements.md`):** Req 7.g
-*   **Key Tasks:**
-    1.  Perform comprehensive end-to-end testing of the entire feature: create post with image, edit to change image, edit to remove image, view post with/without image on site and admin.
-    2.  (Optional, per Req 7.g refinement) If implementing basic validation (e.g., file type/size), add relevant validators to the model field or form.
-    3.  (Optional, per LGID) Decide if a `test_phase7_verification.py` script is warranted based on complexity. Document decision. If yes, create and run it.
-*   **Deliverables:**
-    *   (If validation added) Updated `blog/models.py` or `blog/forms.py`.
-    *   (If created) `blog/tests/test_phase7_verification.py`.
-*   **Verification Checklist:**
-    -   `[ ]` All step-level verification checks passed.
-    -   `[ ]` All relevant existing unit and integration tests for the `blog` app pass.
-    -   `[ ]` **E2E Test:** Full user flow (create/edit/view post with/without image) works as expected.
-    -   `[ ]` (If implemented) Basic image validation works (rejects invalid, accepts valid).
-    -   `[ ]` (If created) Phase verification script passes.
-*   **Status:** To Do ⏳
-*   **Commit(s):**
+- **Objective(s) (from `Project_Requirements.md`):** Req 7.g
+- **Key Tasks:**
+  1.  Perform comprehensive end-to-end testing of the entire feature: create post with image, edit to change image, edit to remove image, view post with/without image on site and admin.
+  2.  (Optional, per Req 7.g refinement) If implementing basic validation (e.g., file type/size), add relevant validators to the model field or form.
+  3.  (Optional, per LGID) Decide if a `test_phase7_verification.py` script is warranted based on complexity. Document decision. If yes, create and run it.
+- **Deliverables:**
+  - (If validation added) Updated `blog/models.py` or `blog/forms.py`.
+  - (If created) `blog/tests/test_phase7_verification.py`.
+- **Verification Checklist:**
+  - `[ ]` All step-level verification checks passed.
+  - `[ ]` All relevant existing unit and integration tests for the `blog` app pass.
+  - `[ ]` **E2E Test:** Full user flow (create/edit/view post with/without image) works as expected.
+  - `[ ]` (If implemented) Basic image validation works (rejects invalid, accepts valid).
+  - `[ ]` (If created) Phase verification script passes.
+- **Status:** To Do ⏳
+- **Commit(s):**
 
 ---
-```
+````
 
 This appendix provides a focused example. In a real project, the `Project_Requirements.md` would be more extensive, and the `Iteration_Guide.md` might use the Lean template for simpler phases or if the developer prefers less explicit tracking for certain tasks. The key is the clear link between upfront requirements and the planned iterative steps, with the Iteration Guide maintaining a high-level planning focus.
