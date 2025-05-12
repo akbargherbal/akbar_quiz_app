@@ -698,9 +698,9 @@
 2.  **Continued E2E Test Review and Update (Verification):**
     - **`src/pages/tests/test_templates.py`:** Reviewed all 9 tests. Confirmed they accurately reflect the current state of corresponding templates and navigation. Ran `pytest src/pages/tests/test_templates.py -s -v` successfully (9 passed).
     - **`src/multi_choice_quiz/tests/` E2E tests:**
-        - Ran `pytest src/multi_choice_quiz/tests/test_quiz_e2e.py -s -v` successfully (1 passed).
-        - Ran `pytest src/multi_choice_quiz/tests/test_database_quiz.py -s -v` successfully (1 passed).
-        - Ran `pytest src/multi_choice_quiz/tests/test_responsive.py -s -v` successfully (6 passed).
+      - Ran `pytest src/multi_choice_quiz/tests/test_quiz_e2e.py -s -v` successfully (1 passed).
+      - Ran `pytest src/multi_choice_quiz/tests/test_database_quiz.py -s -v` successfully (1 passed).
+      - Ran `pytest src/multi_choice_quiz/tests/test_responsive.py -s -v` successfully (6 passed).
     - All E2E tests reviewed in this session were confirmed to be stable and passing.
 3.  **Decision to Pause:** Decided to pause before starting Phase 11 to ensure full test suite stability and allow for a break. User will run a full `pytest -v -s -x` on the entire repository.
 
@@ -716,7 +716,6 @@
 3.  If any tests fail, address those failures first.
 
 ---
-
 
 ---
 
@@ -736,9 +735,9 @@
 2.  **Continued E2E Test Review and Update (Verification):**
     - **`src/pages/tests/test_templates.py`:** All 9 tests passed.
     - **`src/multi_choice_quiz/tests/` E2E tests:**
-        - `test_quiz_e2e.py`: 1 test passed.
-        - `test_database_quiz.py`: 1 test passed.
-        - `test_responsive.py` (quiz app): 6 tests passed.
+      - `test_quiz_e2e.py`: 1 test passed.
+      - `test_database_quiz.py`: 1 test passed.
+      - `test_responsive.py` (quiz app): 6 tests passed.
     - All E2E tests reviewed in this session were confirmed to be stable and passing.
 3.  **Decision to Refactor Import Scripts:** Before starting Phase 11, a decision was made to refactor the quiz import scripts (`dir_import_chapter_quizzes.py`, `import_chapter_quizzes.py`, and underlying utilities in `multi_choice_quiz/utils.py`) to use Django's `bulk_create` for `Question` and `Option` objects. This is to address a significant performance disparity observed between SQLite (fast) and PostgreSQL on Cloud SQL (very slow, e.g., 1 min vs. 20+ mins).
 4.  **Documentation for README:** Created a draft section for `README.md` documenting how to use the import scripts.
@@ -754,29 +753,85 @@
     - Current branch is `feature/phase11-mistake-analysis`. It's recommended to create a **new, dedicated branch** for the import script refactoring (e.g., `feature/refactor-bulk-import`) off the latest `main` (which should include all E2E test fixes). The `feature/phase11-mistake-analysis` branch can be kept aside for now.
 2.  **Refactor Import Logic for `bulk_create`:**
     - **Primary Target File for Code Changes:** `src/multi_choice_quiz/utils.py`.
-        - The `quiz_bank_to_models` function will be refactored.
-        - Logic will change from individual `Question.objects.create()` and `Option.objects.create()` calls in loops to:
-            1.  Accumulating lists of `Question` model instances (without saving).
-            2.  Calling `Question.objects.bulk_create()` for these instances.
-            3.  Retrieving the created `Question` instances with their database-assigned IDs (e.g., by re-querying from the parent `Quiz`).
-            4.  Accumulating lists of `Option` model instances, ensuring they are correctly linked to the `Question` instances (that now have IDs).
-            5.  Calling `Option.objects.bulk_create()` for these option instances.
-        - The entire process for a single quiz's data should remain within a `transaction.atomic()` block.
+      - The `quiz_bank_to_models` function will be refactored.
+      - Logic will change from individual `Question.objects.create()` and `Option.objects.create()` calls in loops to:
+        1.  Accumulating lists of `Question` model instances (without saving).
+        2.  Calling `Question.objects.bulk_create()` for these instances.
+        3.  Retrieving the created `Question` instances with their database-assigned IDs (e.g., by re-querying from the parent `Quiz`).
+        4.  Accumulating lists of `Option` model instances, ensuring they are correctly linked to the `Question` instances (that now have IDs).
+        5.  Calling `Option.objects.bulk_create()` for these option instances.
+      - The entire process for a single quiz's data should remain within a `transaction.atomic()` block.
     - **Files Requiring No Code Changes (but verified by tests):**
-        - `src/dir_import_chapter_quizzes.py`
-        - `src/import_chapter_quizzes.py`
-        - `src/multi_choice_quiz/management/commands/import_quiz_bank.py`
-        - (These scripts call the utility functions in `utils.py` whose internal logic will change, but their calling signature should remain the same).
+      - `src/dir_import_chapter_quizzes.py`
+      - `src/import_chapter_quizzes.py`
+      - `src/multi_choice_quiz/management/commands/import_quiz_bank.py`
+      - (These scripts call the utility functions in `utils.py` whose internal logic will change, but their calling signature should remain the same).
 3.  **Verification:**
     - **Crucial:** All existing tests in the following files must pass after the refactoring to ensure the external behavior of the import system remains consistent:
-        - `src/multi_choice_quiz/tests/test_models.py` (especially `TransformationTests`)
-        - `src/multi_choice_quiz/tests/test_utils.py`
-        - `src/multi_choice_quiz/tests/test_import_chapter_script.py`
-        - `src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py`
-        - `src/multi_choice_quiz/tests/test_import_quiz_bank.py`
-    - No changes to the *test assertions* should be necessary if the refactoring is done correctly.
+      - `src/multi_choice_quiz/tests/test_models.py` (especially `TransformationTests`)
+      - `src/multi_choice_quiz/tests/test_utils.py`
+      - `src/multi_choice_quiz/tests/test_import_chapter_script.py`
+      - `src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py`
+      - `src/multi_choice_quiz/tests/test_import_quiz_bank.py`
+    - No changes to the _test assertions_ should be necessary if the refactoring is done correctly.
 4.  **Performance Testing (Manual/Qualitative):** After all tests pass, manually run an import on a development/staging environment using PostgreSQL to observe the performance improvement.
 5.  Once the refactoring is complete, verified by automated tests, and performance improvement is confirmed, this task will be considered done. Then, we can re-evaluate starting **Phase 11: Advanced Mistake Analysis & Quiz Suggestion** from the `feature/phase11-mistake-analysis` branch (or a new one based off the `main` branch that now includes the bulk import refactoring).
 
 ---
 
+## Session 16 Summary (Date: 2025-05-12)
+
+**Input:**
+
+- Session 15 Context.
+- Codebase snapshot (with E2E tests stable and `feature/phase11-mistake-analysis` branch created).
+- `Project_Requirements.md` (v2.5).
+- `Profile_and_CoreFeatures_Iteration_Guide.md`.
+
+**Key Activities & Outcomes:**
+
+1.  **(Git Workflow):**
+    - Confirmed `main` branch was up-to-date with all E2E test fixes.
+    - Created and switched to a new feature branch: `feature/refactor-bulk-import` (actual name used by user, though session plan suggested this name).
+2.  **Documentation Update (Pre-Refactor):**
+    - Updated `Project_Requirements.md` (Req 10.c) to reflect completion of SystemCategory assignment in import scripts.
+    - Updated `Profile_and_CoreFeatures_Iteration_Guide.md`:
+      - Marked Phase 10 and its Step 10.4 (SystemCategory import) as complete.
+      - Marked the "Refactoring Import Scripts & Implementing Req 10.c" section as complete, along with all its sub-steps.
+      - Added a new section "Performance Refactoring: Bulk Create for Imports" with planned steps (PERF.1, PERF.2).
+3.  **Implemented `bulk_create` Refactoring (Step PERF.1):**
+    - Refactored the `quiz_bank_to_models` function in `src/multi_choice_quiz/utils.py` to use `Question.objects.bulk_create()` and `Option.objects.bulk_create()`.
+    - The refactoring included a crucial step to re-fetch newly created `Question` objects to reliably obtain their database-assigned IDs before preparing and bulk-creating their associated `Option` objects. This ensures compatibility with SQLite's `bulk_create` behavior regarding PKs.
+    - The signatures of other utility functions in `utils.py` (`import_from_dataframe`, `curate_data`, `load_quiz_bank`, `import_questions_by_chapter`) remained unchanged, as they call the refactored `quiz_bank_to_models`.
+4.  **Verified Refactoring (Step PERF.1 - Automated Tests):**
+    - Ran all relevant existing test suites:
+      - `multi_choice_quiz/tests/test_models.py` (13 passed)
+      - `multi_choice_quiz/tests/test_utils.py` (15 passed after fixing an assertion in `TestCurateData::test_missing_required_columns` to match the new error message format from `curate_data`).
+      - `multi_choice_quiz/tests/test_import_chapter_script.py` (13 passed after aligning an assertion in `test_very_few_questions_creates_single_quiz` with the current behavior of `import_questions_by_chapter` regarding single quiz question counts).
+      - `multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py` (9 passed)
+      - `multi_choice_quiz/tests/test_import_quiz_bank.py` (8 passed)
+    - All tests passed, confirming the functional correctness of the `bulk_create` refactoring.
+5.  **Updated `README.md`:**
+    - Revised the "Populating the Database with Quizzes" section to accurately reflect the current state of the import scripts (`dir_import_chapter_quizzes.py` and `import_chapter_quizzes.py`), their command-line arguments (including `--system-category`), expected `.pkl` file structure, and logging behavior.
+
+**Current LGID Stage:**
+
+- **Performance Refactoring: Bulk Create for Imports: In Progress.**
+  - Step PERF.1 (Code Refactor & Automated Tests) is **COMPLETE**.
+  - Step PERF.2 (Qualitative Performance Verification on PostgreSQL) is pending.
+
+**Plan for Next Session (Session 17):**
+
+1.  **Update Iteration Guide:**
+    - In `Profile_and_CoreFeatures_Iteration_Guide.md`, for the "Performance Refactoring: Bulk Create for Imports" section:
+      - Mark Step PERF.1 as `Status: Done ✅` and check its verification item `[✅]`.
+2.  **(Git Workflow):**
+    - Ensure all changes from Session 16 (refactoring, test fixes, README update) are committed to `feature/refactor-bulk-import`.
+    - Merge `feature/refactor-bulk-import` into the main development branch.
+    - Delete the `feature/refactor-bulk-import` branch.
+3.  **Qualitative Performance Verification (Step PERF.2):**
+    - Discuss feasibility and plan for manually testing the import script performance on a PostgreSQL instance.
+    - If testing proceeds, document observations.
+4.  **Re-evaluate and Plan for Phase 11:**
+    - Once the "Performance Refactoring" phase is fully complete (including at least a discussion/decision on PERF.2), switch back to (or recreate from main) the `feature/phase11-mistake-analysis` branch.
+    - Begin implementation of **Phase 11: Advanced Mistake Analysis & Quiz Suggestion**, starting with **Step 11.1: Backend Analysis Logic** as detailed in the Iteration Guide.

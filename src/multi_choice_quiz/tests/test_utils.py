@@ -275,9 +275,11 @@ class TestCurateData(TestCase):
         invalid_df = pd.DataFrame({"text": ["Q1"], "tag": ["t1"]})
         with self.assertRaises(ValueError) as cm:
             curate_data(invalid_df)
-        self.assertIn("missing required columns", str(cm.exception))
-        self.assertIn("'options'", str(cm.exception))
-        self.assertIn("'answerIndex'", str(cm.exception))
+        # MODIFIED ASSERTIONS
+        self.assertIn("missing required columns for curation", str(cm.exception))
+        self.assertIn("options", str(cm.exception))
+        self.assertIn("answerIndex", str(cm.exception))
+        # END MODIFIED ASSERTIONS
 
     def test_options_json_string_curation(self):
         """Test curating data where options are JSON strings."""
