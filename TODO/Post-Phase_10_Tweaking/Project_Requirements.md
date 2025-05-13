@@ -1,7 +1,7 @@
 # Project Requirements: QuizMaster
 
-**Version:** 2.5
-**Date:** 2025-05-09 (Reflects Two-Model Collection Approach)
+**Version:** 2.6
+**Date:** 2025-05-12 (Reflects UI/UX Tweaking Phase Insertion)
 
 ## 1. Vision & Scope
 
@@ -77,7 +77,7 @@ _(Phases 1-4: Existing Foundational Components)_
 
 ## _(Core Functionality & Profile Foundation)_
 
-### Phase 5: Foundational Attempt Tracking & Profile Page Structure (Revised)
+### Phase 5: Foundational Attempt Tracking & Profile Page Structure (Revised) - COMPLETE
 
 - **Objective:** Store overall quiz attempt results and establish the **final, responsive profile page structure based on Mockup 1 (Stats Above Tabs)**, including the initial display of quiz history.
 - **Requirements:**
@@ -90,7 +90,7 @@ _(Phases 1-4: Existing Foundational Components)_
   - `5.g`: Populate the "History" tab within the new structure (`5.f`) using the fetched `QuizAttempt` records from `5.e`.
   - `5.h`: Verify the profile page structure (`5.f`) is reasonably responsive across defined breakpoints.
 
-### Phase 6: Detailed Mistake Data Capture (NEW CORE - High Priority)
+### Phase 6: Detailed Mistake Data Capture (NEW CORE - High Priority) - COMPLETE
 
 - **Objective:** Capture _exactly_ which questions were answered incorrectly during a quiz attempt.
 - **Requirements:**
@@ -98,7 +98,7 @@ _(Phases 1-4: Existing Foundational Components)_
   - `6.b`: Modify frontend (`app.js`) to include detailed answer data in the payload sent to `submit_quiz_attempt`.
   - `6.c`: Modify `submit_quiz_attempt` view to receive details, compare user/correct answers, generate mistake structure, and store it in the `attempt_details` JSONField of the `QuizAttempt`.
 
-### Phase 7: Basic Mistake Review Interface (NEW CORE - High Priority)
+### Phase 7: Basic Mistake Review Interface (NEW CORE - High Priority) - COMPLETE
 
 - **Objective:** Allow the user to review the specific mistakes made in a past attempt.
 - **Requirements:**
@@ -107,7 +107,7 @@ _(Phases 1-4: Existing Foundational Components)_
   - `7.c`: Create `multi_choice_quiz/mistake_review.html` template to display Question text, User's incorrect answer, and Correct answer for each mistake.
   - `7.d`: Add a "Review Mistakes" link/button on the `profile.html` history list for attempts with recorded mistakes.
 
-### Phase 8: Password Management (Necessary Utility)
+### Phase 8: Password Management (Necessary Utility) - COMPLETE
 
 - **Objective:** Implement standard Django password change and reset functionality.
 - **Requirements:**
@@ -120,7 +120,7 @@ _(Phases 1-4: Existing Foundational Components)_
 
 ## _(Collections, Profile Population & Management)_
 
-### Phase 9: Collection Models, Profile Population & Public Browsing (Revised)
+### Phase 9: Collection Models, Profile Population & Public Browsing (Revised) - COMPLETE
 
 - **Objective:** Implement models for both public categories (`SystemCategory`) and private user collections (`UserCollection`). Populate the profile page with dynamic stats and private collections. Update public quiz browsing to use categories.
 - **Requirements:**
@@ -133,89 +133,64 @@ _(Phases 1-4: Existing Foundational Components)_
   - `9.g`: **Homepage View (`pages/views.py::home`):** Optionally, update view to display featured `SystemCategory` instances.
   - `9.h`: **Basic Edit Profile (Quick Win):** Implement `EditProfileForm` (email only), `edit_profile_view` (GET/POST), URL pattern, and template.
   - `9.i`: **Update Edit Link:** Update profile template's "Edit Profile" link.
-  - `9.j`: **UX Evaluation:** Evaluate HTMX/AJAX for loading "Collections" tab content; document decision.
+  - `9.j`: **UX Evaluation:** Evaluate HTMX/AJAX for loading "Collections" tab content; document decision. (Decision: Defer HTMX for now).
+
+### Phase 10: User Collection Management & Import Integration (Revised) - COMPLETE
+
+- **Objective:** Allow users to create/manage their private `UserCollection`s. Implement UI for adding global quizzes to private collections. (Req 10.c, enhancing import scripts for `SystemCategory`, has been completed).
+- **Requirements:**
+  - `10.a`: Implement ability to create `UserCollection`s (form, view, URL, UI trigger on profile). Evaluate HTMX/AJAX for this interaction. (Decision: Full page reload implemented).
+  - `10.b`: Implement ability to remove quizzes from `UserCollection`s via the profile page. Evaluate HTMX/AJAX. (Decision: Full page reload implemented).
+  - `10.c`: **(Completed)** Enhance import scripts (`dir_import_chapter_quizzes.py`, `import_questions_by_chapter` utility) to allow assigning imported quizzes to a specified `SystemCategory` via a CLI argument or based on a DataFrame column.
+  - `10.d`: Implement UI controls on public quiz listing pages (e.g., `/quizzes/`, homepage featured quizzes) for authenticated users to add a quiz to one of their existing `UserCollection`s. This involves a selection mechanism if multiple collections exist. Evaluate HTMX/AJAX. (Decision: Full page redirect flow implemented).
 
 ---
 
----
+## _(UI/UX Enhancement)_
 
-## Phase 10: User Collection Management & Import Integration (Revised)
+### Phase 11: Post-Phase 10 UI/UX Tweaking (NEW)
 
-**Version:** 1.0
-**Date:** 2025-05-10
-**Phase Objective:** Allow users to create/manage their private `UserCollection`s. Implement UI for adding global quizzes to private collections. (Req 10.c, enhancing import scripts, has been completed in a separate refactoring phase).
-**Related Requirements:** 10.a, 10.b, 10.d
-**Phase Status:** COMPLETE ✅
-
----
-
-### Implementation Steps
-
-#### Step 10.1: Implement `UserCollection` Creation
-
-- **Objective:** Add ability to create `UserCollection`s from profile (Req 10.a). Evaluate HTMX/AJAX.
-- **Key Tasks:** Implement form, view, URL for creating collections. Add UI trigger to profile. **UX Decision: Full page reload implemented.**
-- **Deliverables:** Updated views, new form, updated templates.
-- **Verification Checklist:** `[✅]` **Unit/E2E Tests:** Add/run tests verifying creation flow. (Covered by Phase 10 Verification Script)
-- **Status:** Done ✅
-
-#### Step 10.2: Implement Managing Quizzes in `UserCollection`s (Removal from Profile)
-
-- **Objective:** Add ability to remove quizzes from `UserCollection`s via the profile page (Req 10.b). Evaluate HTMX/AJAX.
-- **Key Tasks:** Implement backend logic and UI controls (form with POST button) on profile page for quiz removal. **UX Decision: Full page reload implemented.**
-- **Deliverables:** Updated views, templates.
-- **Verification Checklist:** `[✅]` **Unit/E2E Tests:** Add/run tests verifying remove functionality. (Covered by Phase 10 Verification Script)
-- **Status:** Done ✅
-
-#### Step 10.3: Implement Adding to `UserCollection` from Quiz Lists
-
-- **Objective:** Add controls on public pages to add quiz to existing `UserCollection` (Req 10.d). Evaluate HTMX/AJAX.
-- **Key Tasks:** Add UI controls to `pages/quizzes.html` and homepage. Implement backend views/logic for selecting a collection and adding the quiz. **UX Decision: Full page redirect flow implemented.**
-- **Deliverables:** Updated templates, views.
-- **Verification Checklist:** `[✅]` **Unit/E2E Tests:** Add/run tests verifying add-to-collection flow from public pages. (Covered by Phase 10 Verification Script)
-- **Status:** Done ✅
-
-#### Step 10.4: (Optional) Enhance Import Script for `SystemCategory`
-
-- **Objective:** Allow assigning imported quizzes to `SystemCategory` (Req 10.c).
-- **Key Tasks:** Modify `dir_import_chapter_quizzes.py` to accept optional category args and assign imported quizzes to `SystemCategory`.
-- **Deliverables:** Updated `dir_import_chapter_quizzes.py`.
-- **Verification Checklist:** `[✅]` **Script Tests:** Add/run tests for the import script verifying category assignment.
-- **Status:** Done ✅ _(Completed as part of "Refactoring Import Scripts & Implementing Req 10.c" phase)._
-
-#### Step 10.5: Phase 10 Verification
-
-- **Objective:** Verify collection management works correctly.
-- **Key Tasks:** Create `src/pages/tests/collections_mgmt/test_phase10_verification.py`. Add integration tests covering creation, removal from profile, and adding from public lists.
-- **Deliverables:** New verification script `test_phase10_verification.py`.
-- **Verification Checklist:** `[✅]` Phase Verification Script Passes. `[✅]` All relevant unit/E2E tests pass.
-- **Status:** Done ✅
+- **Objective:** Enhance the user interface and user experience based on observations and priorities identified after the completion of core collection management features. These are primarily template and view modifications without DB schema changes.
+- **Requirements:**
+  - `11.a`: **Navbar Enhancements:**
+    - Modify the profile link in the navbar for logged-in users to be more concise (e.g., "(username)" instead of "Profile (username)").
+    - Add a placeholder avatar (e.g., user's initial in a circle) next to the username in the navbar.
+  - `11.b`: **Improved Redirection for Collections:**
+    - When adding a quiz to a collection, redirect the user back to the page they initiated the action from (e.g., `/quizzes/` or quiz detail page) instead of their profile.
+  - `11.c`: **Refined Quiz List Presentation:**
+    - On public quiz listing pages (`/quizzes/`, homepage featured quizzes), reorder quizzes so that those already attempted by the logged-in user appear at the end of the list.
+    - For featured quizzes on the homepage, prioritize displaying quizzes the logged-in user has not yet attempted.
+  - `11.d`: **Enhanced Profile Page Collections Tab:**
+    - Make individual collection items (listing their quizzes) in the "Collections" tab on the profile page collapsible/expandable using Alpine.js.
+  - `11.e`: **Profile Page Polish:**
+    - Update placeholder text for "Strongest Topic" and "Needs Review" stats on the profile page to be more informative (e.g., "Analysis Coming Soon!").
+    - In the "Quiz History" tab, display how many times each listed quiz has been taken by the user.
 
 ---
 
 ## _(Future Core Goal)_
 
-### Phase 11: Advanced Mistake Analysis & Quiz Suggestion (Future - High Importance)
+### Phase 12: Advanced Mistake Analysis & Quiz Suggestion (Future - High Importance) (Previously Phase 11)
 
 - **Objective:** Analyze aggregated mistake patterns and suggest relevant quizzes/topics for review.
 - **Requirements:**
-  - `11.a`: Develop backend logic to query `QuizAttempt.attempt_details`.
-  - `11.b`: Identify patterns (frequently missed questions, weak topics/`SystemCategory`/tags).
-  - `11.c`: Implement logic to suggest Quizzes or `SystemCategory` instances.
-  - `11.d`: Design and implement UI for suggestions.
+  - `12.a`: Develop backend logic to query `QuizAttempt.attempt_details`. (Previously 11.a)
+  - `12.b`: Identify patterns (frequently missed questions, weak topics/`SystemCategory`/tags). (Previously 11.b)
+  - `12.c`: Implement logic to suggest Quizzes or `SystemCategory` instances. (Previously 11.c)
+  - `12.d`: Design and implement UI for suggestions. (Previously 11.d)
 
 ---
 
 ## _(Lowest Priority / Future)_
 
-### Phase 12: Favorites (Future - Low Priority)
+### Phase 13: Favorites (Future - Low Priority) (Previously Phase 12)
 
 - **Objective:** Allow users to mark quizzes as favorites (alternative or supplementary to `UserCollection`).
 - **Requirements:**
-  - `12.a`: Add M2M `favorited_by` field to `Quiz` model.
-  - `12.b`: Implement toggle logic (view/AJAX/HTMX).
-  - `12.c`: Implement "Favorites" display.
-  - `12.d`: Add toggle controls to quiz lists/detail pages.
+  - `13.a`: Add M2M `favorited_by` field to `Quiz` model. (Previously 12.a)
+  - `13.b`: Implement toggle logic (view/AJAX/HTMX). (Previously 12.b)
+  - `13.c`: Implement "Favorites" display. (Previously 12.c)
+  - `13.d`: Add toggle controls to quiz lists/detail pages. (Previously 12.d)
 
 ---
 
