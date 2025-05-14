@@ -88,62 +88,88 @@ def test_anonymous_user_navigation(page: Page, live_server):
     print("Mobile checks passed.")
 
 
+# src/pages/tests/test_templates.py
+
+# ... (other imports and tests) ...
+
+
 @pytest.mark.django_db
 def test_authenticated_user_navigation(admin_logged_in_page, live_server):
     """Verify navigation links for authenticated users using fixture."""
     page, admin_user = admin_logged_in_page
-    print(f"\n--- Running Authenticated Desktop Nav Checks (User: {admin_user}) ---")
 
-    # --- Desktop checks ---
-    page.set_viewport_size(DESKTOP_VIEWPORT)
     home_url = f"{live_server.url}{reverse('pages:home')}"
-    print(f"Navigating to homepage: {home_url}")
     page.goto(home_url)
     page.wait_for_load_state("networkidle")
 
-    desktop_nav = page.locator("nav.hidden.md\\:flex")
-    expect(desktop_nav).to_be_visible()
-    profile_link_desktop = desktop_nav.get_by_role(
-        "link", name=re.compile(f"Profile \\({admin_user}\\)")
-    )
-    expect(profile_link_desktop).to_be_visible()
-    expect(profile_link_desktop).to_have_attribute("href", reverse("pages:profile"))
+    print(f"\n--- Running Authenticated Desktop Nav Checks (User: {admin_user}) ---")
+    page.set_viewport_size(DESKTOP_VIEWPORT)
+    # page.reload() # Consider if reload is necessary after viewport change; usually not for nav elements
+    # page.wait_for_load_state("networkidle")
 
-    logout_button_desktop = desktop_nav.locator(
-        "form[action*='logout'] > button:has-text('Logout')"
+    desktop_nav = page.locator("nav[data-testid='desktop-nav']")
+    expect(desktop_nav).to_be_visible()
+
+    profile_link_anchor_desktop = desktop_nav.get_by_test_id("profile-link")
+    expect(profile_link_anchor_desktop).to_be_visible()
+    expect(profile_link_anchor_desktop).to_have_attribute(
+        "href", reverse("pages:profile")
     )
+
+    # --- MODIFIED AVATAR SPAN LOCATOR (Desktop) ---
+    avatar_span_desktop = profile_link_anchor_desktop.locator("span").nth(0)
+    expect(avatar_span_desktop).to_be_visible()
+    expect(avatar_span_desktop).to_have_text(admin_user[0].upper())
+    # --- END MODIFIED ---
+
+    profile_link_anchor_desktop.hover()
+    page.wait_for_timeout(250)
+    tooltip_span_desktop = profile_link_anchor_desktop.locator("span").nth(1)
+    expect(tooltip_span_desktop).to_be_visible()
+    expect(tooltip_span_desktop).to_have_text(admin_user)
+
+    logout_button_desktop = desktop_nav.get_by_test_id("logout-button")
     expect(logout_button_desktop).to_be_visible()
 
-    expect(desktop_nav.get_by_role("link", name="Login")).not_to_be_visible()
-    expect(desktop_nav.get_by_role("link", name="Sign Up")).not_to_be_visible()
+    expect(desktop_nav.get_by_test_id("login-link")).not_to_be_visible()
+    expect(desktop_nav.get_by_test_id("signup-link")).not_to_be_visible()
     print("Desktop checks passed.")
 
-    # --- Mobile checks ---
     print(f"--- Running Authenticated Mobile Nav Checks (User: {admin_user}) ---")
     page.set_viewport_size(MOBILE_VIEWPORT)
-    page.goto(home_url)  # Reload page in new viewport
+    page.reload()
     page.wait_for_load_state("networkidle")
 
-    mobile_menu_button = page.locator("div.md\\:hidden > button")
+    mobile_menu_button = page.get_by_test_id("mobile-menu-toggle")
     expect(mobile_menu_button).to_be_visible(timeout=5000)
     mobile_menu_button.click()
 
-    mobile_nav = page.locator("nav[x-show='open']")
+    mobile_nav = page.locator("nav[data-testid='mobile-nav']")
     expect(mobile_nav).to_be_visible(timeout=2000)
 
-    profile_link_mobile = mobile_nav.get_by_role(
-        "link", name=re.compile(f"Profile \\({admin_user}\\)")
+    profile_link_anchor_mobile = mobile_nav.get_by_test_id("profile-link")
+    expect(profile_link_anchor_mobile).to_be_visible()
+    expect(profile_link_anchor_mobile).to_have_attribute(
+        "href", reverse("pages:profile")
     )
-    expect(profile_link_mobile).to_be_visible()
-    expect(profile_link_mobile).to_have_attribute("href", reverse("pages:profile"))
 
-    logout_button_mobile = mobile_nav.locator(
-        "form[action*='logout'] > button:has-text('Logout')"
-    )
+    # --- MODIFIED AVATAR SPAN LOCATOR (Mobile) ---
+    avatar_span_mobile = profile_link_anchor_mobile.locator("span").nth(0)
+    expect(avatar_span_mobile).to_be_visible()
+    expect(avatar_span_mobile).to_have_text(admin_user[0].upper())
+    # --- END MODIFIED ---
+
+    profile_link_anchor_mobile.hover()
+    page.wait_for_timeout(250)
+    tooltip_span_mobile = profile_link_anchor_mobile.locator("span").nth(1)
+    expect(tooltip_span_mobile).to_be_visible()
+    expect(tooltip_span_mobile).to_have_text(admin_user)
+
+    logout_button_mobile = mobile_nav.get_by_test_id("logout-button")
     expect(logout_button_mobile).to_be_visible()
 
-    expect(mobile_nav.get_by_role("link", name="Login")).not_to_be_visible()
-    expect(mobile_nav.get_by_role("link", name="Sign Up")).not_to_be_visible()
+    expect(mobile_nav.get_by_test_id("login-link")).not_to_be_visible()
+    expect(mobile_nav.get_by_test_id("signup-link")).not_to_be_visible()
     print("Mobile checks passed.")
 
 

@@ -38,6 +38,11 @@ ADMIN_FIXTURE_USER = "admin_fixture_user"
 ADMIN_FIXTURE_PASS = "password123_fixture"
 
 
+# src/conftest.py
+
+# ... (other code) ...
+
+
 @pytest.fixture(scope="function")
 def admin_logged_in_page(page: Page, live_server):
     """
@@ -79,7 +84,6 @@ def admin_logged_in_page(page: Page, live_server):
             f"[Fixture] Failed to ensure test user '{admin_user_username}' or collection: {e}"
         )
 
-    # --- MODIFIED LOGIN PROCESS: Log in via frontend login page ---
     frontend_login_url = f"{live_server.url}{reverse('login')}"
     print(f"[Fixture] Navigating page to frontend login: {frontend_login_url}")
     page.goto(frontend_login_url)
@@ -92,16 +96,33 @@ def admin_logged_in_page(page: Page, live_server):
     page.get_by_role("button", name="Login").click()
 
     try:
-        # --- MODIFIED VERIFICATION ---
-        # Target the profile link specifically within the desktop navigation,
-        # as this is what's likely to be visible immediately after login on Playwright's default viewport.
-        desktop_nav_profile_link = page.locator(
-            "nav[data-testid='desktop-nav']"
-        ).get_by_test_id("profile-link")
-        expect(desktop_nav_profile_link).to_be_visible(timeout=10000)
-        # --- END MODIFIED VERIFICATION ---
+        desktop_nav_container = page.locator("nav[data-testid='desktop-nav']")
+        profile_link_anchor = desktop_nav_container.get_by_test_id("profile-link")
+
+        expect(profile_link_anchor).to_be_visible(timeout=10000)
+        print("[Fixture] Profile link anchor is visible.")
+
+        # --- MODIFIED AVATAR SPAN LOCATOR ---
+        avatar_span = profile_link_anchor.locator("span").nth(0)
+        expect(avatar_span).to_be_visible(timeout=5000)
+        expect(avatar_span).to_have_text(admin_user_username[0].upper(), timeout=1000)
+        # --- END MODIFIED AVATAR SPAN LOCATOR ---
         print(
-            f"[Fixture] Successfully logged in as {admin_user_username} via frontend login. Desktop profile link visible."
+            f"[Fixture] Avatar span with initial '{admin_user_username[0].upper()}' is visible."
+        )
+
+        profile_link_anchor.hover()
+        page.wait_for_timeout(250)
+
+        tooltip_actual_span = profile_link_anchor.locator("span").nth(1)
+        expect(tooltip_actual_span).to_be_visible(timeout=5000)
+        expect(tooltip_actual_span).to_have_text(admin_user_username, timeout=5000)
+        print(
+            f"[Fixture] Tooltip with username '{admin_user_username}' is visible on hover."
+        )
+
+        print(
+            f"[Fixture] Successfully logged in as {admin_user_username} via frontend login. Desktop profile avatar and tooltip verified."
         )
     except Exception as e:
         try:
@@ -118,7 +139,6 @@ def admin_logged_in_page(page: Page, live_server):
         pytest.fail(
             f"[Fixture] Frontend login verification failed after submit. Current URL: {page.url}. Error: {e}"
         )
-    # --- END MODIFIED LOGIN PROCESS ---
 
     yield page, admin_user_username
 

@@ -365,7 +365,7 @@ def import_questions_by_chapter(
     df: pd.DataFrame,
     questions_per_quiz: int = 20,
     quizzes_per_chapter: int = 2,
-    max_quizzes_per_chapter: int = 5,
+    max_quizzes_per_chapter: int = 8,
     min_coverage_percentage: int = 40,
     single_quiz_threshold: float = 1.3,  # If questions < questions_per_quiz * threshold, create 1 quiz
     use_descriptive_titles: bool = True,

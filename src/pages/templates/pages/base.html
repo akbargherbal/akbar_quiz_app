@@ -126,7 +126,9 @@
                             <a href="{% url 'pages:profile' %}" 
                                class="relative group flex items-center text-text-secondary hover:text-accent-heading transition-colors px-3 py-2 rounded-md text-sm font-medium" 
                                data-testid="profile-link">
-                                <span class="flex items-center justify-center h-7 w-7 rounded-full bg-accent-primary text-white text-sm font-semibold">
+                                <span class="flex items-center justify-center h-8 w-8 
+                                lg:h-10 lg:w-10 lg:text-lg
+                                rounded-full bg-accent-primary text-white text-md font-bold">
                                     {{ user.username|first|upper }}
                                 </span>
                                 <!-- Tooltip for username, appears on hover -->

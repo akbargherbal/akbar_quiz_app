@@ -835,3 +835,48 @@
 4.  **Re-evaluate and Plan for Phase 11:**
     - Once the "Performance Refactoring" phase is fully complete (including at least a discussion/decision on PERF.2), switch back to (or recreate from main) the `feature/phase11-mistake-analysis` branch.
     - Begin implementation of **Phase 11: Advanced Mistake Analysis & Quiz Suggestion**, starting with **Step 11.1: Backend Analysis Logic** as detailed in the Iteration Guide.
+
+
+## Session 17 Summary (Date: 2025-05-14)
+
+**Input:**
+
+*   Session 16 Context.
+*   Codebase snapshot (with `bulk_create` refactoring completed and merged).
+*   `Project_Requirements.md` (v2.6).
+*   `Profile_and_CoreFeatures_Iteration_Guide.md` (updated for Phase 11).
+
+**Key Activities & Outcomes:**
+
+1.  **(Git Workflow):**
+    *   Confirmed `main` branch was up-to-date.
+    *   Created and switched to a new feature branch: `feature/phase11-ui-ux-tweaks`.
+2.  **Began Implementation of Phase 11: Post-Phase 10 UI/UX Tweaking.**
+3.  **Implemented Phase 11, Step 11.1 (Navbar Enhancement - Profile Link Text & Avatar Placeholder):**
+    *   Modified `pages/templates/pages/base.html` to:
+        *   Remove the explicit "Profile" text from the authenticated user's navbar link.
+        *   Add a circular avatar placeholder displaying the user's first initial.
+        *   Implement a CSS-based tooltip to show the full username on hover over the avatar/link.
+        *   Adjusted avatar size for different breakpoints (desktop vs. mobile).
+    *   **Verification (E2E Test Updates):**
+        *   Updated `src/conftest.py`: Modified the `admin_logged_in_page` fixture's verification logic to correctly identify the new avatar span (using `.nth(0)`) and the username tooltip on hover.
+        *   Updated `src/pages/tests/test_templates.py`: Modified `test_authenticated_user_navigation` to assert the new avatar/tooltip structure in both desktop and mobile navigation menus, using `.nth(0)` for the avatar and checking the tooltip text on hover.
+        *   Confirmed all tests in `pages/tests/test_templates.py -k "test_authenticated_user_navigation"` (1 passed) and the full `pages/tests/test_responsive.py` suite (66 passed) are passing after these changes.
+    *   Step 11.1 is now considered **COMPLETE** and verified.
+
+**Current LGID Stage:**
+
+*   **Phase 11 (Post-Phase 10 UI/UX Tweaking): In Progress.**
+    *   Step 11.1: **COMPLETE**.
+
+**Plan for Next Session (Session 18):**
+
+1.  Continue with **Phase 11: Post-Phase 10 UI/UX Tweaking**.
+2.  Implement **Step 11.2: Fix Quiz Collection Redirection** as detailed in the `Profile_and_CoreFeatures_Iteration_Guide.md`.
+    *   **Task 11.2.1:** Update `pages/templates/pages/quizzes.html` and `pages/templates/pages/home.html` to pass the current path as a `next` query parameter to the `select_collection_for_quiz_view`.
+    *   **Task 11.2.2:** Update `pages/views.py::select_collection_for_quiz_view` to receive the `next` parameter and pass it to its template's context.
+    *   **Task 11.2.3:** Update `pages/templates/pages/select_collection_for_quiz.html` to include the `next` URL as a hidden input in its forms.
+    *   **Task 11.2.4:** Update `pages/views.py::add_quiz_to_selected_collection_view` to read the `next` parameter from POST data and use it for redirection, falling back to the profile page if `next` is invalid or missing.
+    *   Verify with unit tests for view logic and manual E2E checks.
+
+---
