@@ -1,4 +1,4 @@
-# src/pages/tests/test_views.py (Cleaned up test_home_page_loads)
+# src/pages/tests/test_views.py
 
 import re
 from django.test import TestCase, Client
@@ -19,7 +19,6 @@ class PagesViewTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        # ... (setUpTestData remains the same) ...
         # --- Users ---
         cls.user_with_data = User.objects.create_user(
             username="profiletester",
@@ -165,7 +164,6 @@ class PagesViewTests(TestCase):
         self.assertIn(f">{popular[2].num_active_quizzes} quiz</p>", content)
         self.assertNotIn(self.cat_art.name, content)
 
-    # ... (rest of the test methods remain unchanged)
     def test_quizzes_page_loads_and_filters_by_category(self):
         """Test the quizzes page loads, displays categories, and filters correctly."""
         all_quizzes_url = reverse("pages:quizzes")
@@ -330,3 +328,111 @@ class PagesViewTests(TestCase):
         stats_in_context = response.context["stats"]
         self.assertEqual(stats_in_context.get("total_taken"), 0)
         self.assertEqual(stats_in_context.get("avg_score_percent"), 0)
+
+    # --- START: New tests for Step 11.2 ---
+    def test_select_collection_for_quiz_view_context_with_next_param(self):
+        """Test 'next_url' is in context when 'next' GET param is provided."""
+        self.client.login(username="profiletester", password="password123")
+        quiz_id = self.quiz_t1.id
+        next_path = "/some/previous/path/"
+        url = f"{reverse('pages:select_collection_for_quiz', args=[quiz_id])}?next={next_path}"
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("next_url", response.context)
+        self.assertEqual(response.context["next_url"], next_path)
+        logger.info(f"Context 'next_url' verified: {response.context['next_url']}")
+
+    def test_select_collection_for_quiz_view_context_without_next_param(self):
+        """Test 'next_url' is None in context when 'next' GET param is not provided."""
+        self.client.login(username="profiletester", password="password123")
+        quiz_id = self.quiz_t1.id
+        url = reverse("pages:select_collection_for_quiz", args=[quiz_id])
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("next_url", response.context)
+        self.assertIsNone(response.context["next_url"])
+        logger.info("Context 'next_url' correctly None when no GET param.")
+
+    def test_add_quiz_to_selected_collection_redirects_to_next_param(self):
+        """Test view redirects to valid 'next' URL from POST data."""
+        self.client.login(username="profiletester", password="password123")
+        quiz_id = self.quiz_t2.id  # A quiz not yet in collection2
+        collection_id = self.collection2.id  # User's empty collection
+
+        # Ensure quiz_t2 is not in collection2 initially
+        self.assertNotIn(self.quiz_t2, self.collection2.quizzes.all())
+
+        next_path = (
+            reverse("pages:quizzes") + "?category=technology"
+        )  # A valid local path
+        url = reverse(
+            "pages:add_quiz_to_selected_collection", args=[quiz_id, collection_id]
+        )
+
+        post_data = {"next": next_path}
+        response = self.client.post(url, post_data)
+
+        self.assertEqual(
+            response.status_code,
+            302,
+            f"Expected redirect, got {response.status_code}. Errors: {response.context.get('form', {}).errors if response.context else 'No context'}",
+        )
+        self.assertRedirects(
+            response, next_path, msg_prefix=f"Should redirect to '{next_path}'"
+        )
+
+        self.collection2.refresh_from_db()
+        self.assertIn(self.quiz_t2, self.collection2.quizzes.all())
+        logger.info(f"Successfully redirected to 'next' path: {next_path}")
+
+    def test_add_quiz_to_selected_collection_redirects_to_profile_if_next_invalid(self):
+        """Test view redirects to profile if 'next' URL in POST is invalid/external."""
+        self.client.login(username="profiletester", password="password123")
+        quiz_id = self.quiz_t2.id
+        collection_id = self.collection2.id
+
+        next_path_invalid = "http://external.com/bad"
+        url = reverse(
+            "pages:add_quiz_to_selected_collection", args=[quiz_id, collection_id]
+        )
+
+        post_data = {"next": next_path_invalid}
+        response = self.client.post(url, post_data)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(
+            response,
+            reverse("pages:profile"),
+            msg_prefix="Should redirect to profile for invalid 'next'",
+        )
+        logger.info("Correctly redirected to profile for invalid 'next' path.")
+
+    def test_add_quiz_to_selected_collection_redirects_to_profile_if_next_missing(self):
+        """Test view redirects to profile if 'next' URL is missing from POST."""
+        self.client.login(username="profiletester", password="password123")
+        quiz_id = self.quiz_t3.id  # Another quiz not in collection2
+        collection_id = self.collection2.id
+
+        self.assertNotIn(self.quiz_t3, self.collection2.quizzes.all())
+
+        url = reverse(
+            "pages:add_quiz_to_selected_collection", args=[quiz_id, collection_id]
+        )
+
+        post_data = {}  # No 'next' parameter
+        response = self.client.post(url, post_data)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(
+            response,
+            reverse("pages:profile"),
+            msg_prefix="Should redirect to profile if 'next' is missing",
+        )
+
+        self.collection2.refresh_from_db()
+        self.assertIn(self.quiz_t3, self.collection2.quizzes.all())
+        logger.info("Correctly redirected to profile when 'next' path was missing.")
+
+    # --- END: New tests for Step 11.2 ---

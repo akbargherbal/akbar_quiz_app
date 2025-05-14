@@ -44,6 +44,10 @@
                             {# Form to add the current quiz to this specific collection #}
                             <form method="POST" action="{% url 'pages:add_quiz_to_selected_collection' quiz_id=quiz.id collection_id=collection.id %}">
                                 {% csrf_token %}
+                                {# --- Hidden input for next_url --- #}
+                                {% if next_url %}
+                                    <input type="hidden" name="next" value="{{ next_url }}">
+                                {% endif %}
                                 <button type="submit"
                                         class="w-full sm:w-auto bg-accent-primary hover:bg-accent-hover text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors whitespace-nowrap">
                                     Add to this Collection
@@ -62,9 +66,13 @@
         {% endif %}
 
         <div class="mt-8 text-center">
-            <a href="{% url 'pages:quizzes' %}" class="text-accent-heading hover:text-accent-primary font-medium">
-                « Back to Quizzes
+            {# --- CORRECTED "Back" Link using firstof with pre-resolved URL --- #}
+            {% url 'pages:quizzes' as default_quizzes_url %} {# Resolve the URL first #}
+            {% firstof next_url request.META.HTTP_REFERER default_quizzes_url as back_url %}
+            <a href="{{ back_url }}" class="text-accent-heading hover:text-accent-primary font-medium">
+                « Back
             </a>
+            {# --- END CORRECTION --- #}
             <span class="text-text-muted mx-2">|</span>
             <a href="{% url 'pages:profile' %}" class="text-accent-heading hover:text-accent-primary font-medium">
                 Back to Profile

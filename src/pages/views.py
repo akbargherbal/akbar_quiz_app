@@ -1,9 +1,9 @@
 # src/pages/views.py
 
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib import messages
-from django.views.generic import TemplateView, ListView
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Count, Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -13,17 +13,20 @@ from django.views.decorators.http import require_POST
 from multi_choice_quiz.models import Quiz, Question, QuizAttempt
 from .models import UserCollection, SystemCategory
 from .forms import SignUpForm, EditProfileForm, UserCollectionForm
-import logging
+from django.utils.http import (
+    url_has_allowed_host_and_scheme,
+)  # For security if we validate next
 
 
 # Attempt to import test-specific logging, fall back if not found (e.g., in production)
 try:
     from multi_choice_quiz.tests.test_logging import setup_test_logging
+
     # Assuming setup_test_logging returns a logger instance or configures the root logger.
     # If it configures a specific logger, you might want to get it by name here.
     # For example, if setup_test_logging configures a logger named 'pages.views':
     # setup_test_logging(__name__, "your_log_file_for_pages_views.log") # If it configures and you get it later
-    logger = logging.getLogger(__name__) # Get the logger for the current module
+    logger = logging.getLogger(__name__)  # Get the logger for the current module
     # If setup_test_logging directly returns the logger:
     # logger = setup_test_logging(__name__, "your_log_file_for_pages_views.log")
     logger.info("Successfully initialized test-specific logging for pages.views.")
@@ -31,10 +34,9 @@ try:
 except (ImportError, ModuleNotFoundError):
     # Fallback to standard logging if the test module isn't found
     logger = logging.getLogger(__name__)
-    logger.info("Test logging module not found. Using standard logging for pages.views.")
-
-
-
+    logger.info(
+        "Test logging module not found. Using standard logging for pages.views."
+    )
 
 
 # ... (home, about, signup_view, quizzes, profile_view, edit_profile_view, create_collection_view, remove_quiz_from_collection_view, select_collection_for_quiz_view views remain the same) ...
@@ -227,7 +229,6 @@ def remove_quiz_from_collection_view(request, collection_id, quiz_id):
 
 @login_required
 def select_collection_for_quiz_view(request, quiz_id):
-    # ... (select_collection_for_quiz_view remains the same) ...
     quiz = get_object_or_404(Quiz, id=quiz_id, is_active=True)
     user_collections = UserCollection.objects.filter(user=request.user).order_by("name")
 
@@ -236,16 +237,19 @@ def select_collection_for_quiz_view(request, quiz_id):
             request,
             "You don't have any collections yet. Please create one first to add quizzes.",
         )
+
         return redirect("pages:create_collection")
+
+    next_url = request.GET.get("next")
 
     context = {
         "quiz": quiz,
         "collections": user_collections,
+        "next_url": next_url,  # Pass the 'next' URL to the template
     }
     return render(request, "pages/select_collection_for_quiz.html", context)
 
 
-# --- NEW VIEW for adding a quiz to a specific collection ---
 @login_required
 @require_POST  # This action modifies data, so it should be POST
 def add_quiz_to_selected_collection_view(request, quiz_id, collection_id):
@@ -270,8 +274,17 @@ def add_quiz_to_selected_collection_view(request, quiz_id, collection_id):
             f"User {request.user.username} tried to add quiz ID {quiz_id} to collection ID {collection_id}, but it was already there."
         )
 
-    # Redirect back to the page where the user can select another collection for the same quiz,
-    # or to their profile, or to the quiz page. Redirecting to profile is simple.
-    # Redirecting back to select_collection_for_quiz_view might be good if they want to add to multiple.
-    # For now, let's redirect to profile.
-    return redirect("pages:profile")
+    # --- START MODIFICATION: Handle 'next' URL for redirection ---
+    next_url = request.POST.get("next")
+    # Validate the next_url to prevent open redirect vulnerabilities
+    if next_url and url_has_allowed_host_and_scheme(next_url, request.get_host()):
+        logger.info(f"Redirecting to 'next' URL: {next_url}")
+        return redirect(next_url)
+    elif next_url:  # Log if it was provided but invalid
+        logger.warning(
+            f"Invalid 'next' URL provided: {next_url}. Defaulting to profile."
+        )
+
+    logger.info("No valid 'next' URL. Redirecting to profile page.")
+    return redirect("pages:profile")  # Default redirect
+    # --- END MODIFICATION ---
