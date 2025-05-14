@@ -879,4 +879,46 @@
     *   **Task 11.2.4:** Update `pages/views.py::add_quiz_to_selected_collection_view` to read the `next` parameter from POST data and use it for redirection, falling back to the profile page if `next` is invalid or missing.
     *   Verify with unit tests for view logic and manual E2E checks.
 
+
+---
+
+## Session 18 Summary (Date: 2025-05-14)
+
+**Input:**
+
+*   Session 17 Context.
+*   Codebase snapshot (with Phase 11, Step 11.1 completed).
+*   `Project_Requirements.md` (v2.6).
+*   `Profile_and_CoreFeatures_Iteration_Guide.md` (updated for Phase 11).
+
+**Key Activities & Outcomes:**
+
+1.  **Continued Implementation of Phase 11: Post-Phase 10 UI/UX Tweaking.**
+2.  **Implemented Phase 11, Step 11.2 (Fix Quiz Collection Redirection):**
+    *   **Task 11.2.1:** Updated `pages/templates/pages/quizzes.html` and `pages/templates/pages/home.html` to pass `request.get_full_path|urlencode` as the `next` query parameter to `select_collection_for_quiz_view`.
+    *   **Task 11.2.2:** Updated `pages/views.py::select_collection_for_quiz_view` to receive the `next` GET parameter and pass it into the template context as `next_url`.
+    *   **Task 11.2.3:** Updated `pages/templates/pages/select_collection_for_quiz.html`:
+        *   Included `next_url` (if present) as a hidden input field in the "Add to this Collection" forms.
+        *   Corrected a `TemplateSyntaxError` in the "Back" link by using `{% raw %}{% firstof %}{% endraw %}` with a pre-resolved default URL: `{% raw %}{% url 'pages:quizzes' as default_quizzes_url %}{% firstof next_url request.META.HTTP_REFERER default_quizzes_url as back_url %}<a href="{{ back_url }}">{% endraw %}`.
+    *   **Task 11.2.4:** Updated `pages/views.py::add_quiz_to_selected_collection_view` to retrieve the `next` URL from POST data, validate it using `url_has_allowed_host_and_scheme`, and use it for redirection. If `next` is missing or invalid, it defaults to redirecting to the profile page.
+    *   **Verification:**
+        *   Added 5 new unit tests to `pages/tests/test_views.py` to cover the `next` parameter handling in `select_collection_for_quiz_view` (context passing) and `add_quiz_to_selected_collection_view` (redirection logic for valid, invalid, and missing `next` URL). All 14 tests in the file now pass.
+        *   Addressed a UI bug where success messages from adding a quiz to a collection would persist on the `select_collection_for_quiz.html` page. This was fixed by adding a standard Django messages display block to `pages/templates/pages/base.html` to ensure messages are consumed on the intermediate redirect target page.
+        *   Manually E2E tested the redirection flow from `/quizzes/` and `/` (homepage), confirming correct redirection back to the originating page.
+    *   Step 11.2 is now considered **COMPLETE** and verified.
+
+**Current LGID Stage:**
+
+*   **Phase 11 (Post-Phase 10 UI/UX Tweaking): In Progress.**
+    *   Step 11.1: Navbar Enhancement - **COMPLETE**.
+    *   Step 11.2: Fix Quiz Collection Redirection - **COMPLETE**.
+
+**Plan for Next Session (Session 19):**
+
+1.  Continue with **Phase 11: Post-Phase 10 UI/UX Tweaking**.
+2.  Implement **Step 11.3: Reorder Attempted Quizzes & Refine Featured Quizzes** as detailed in the `Profile_and_CoreFeatures_Iteration_Guide.md`.
+    *   Modify `pages/views.py::quizzes` view logic.
+    *   Modify `pages/views.py::home` view logic for featured quizzes.
+    *   Verify with unit tests and manual E2E checks.
+
 ---
