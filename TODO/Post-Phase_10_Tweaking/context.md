@@ -836,49 +836,47 @@
     - Once the "Performance Refactoring" phase is fully complete (including at least a discussion/decision on PERF.2), switch back to (or recreate from main) the `feature/phase11-mistake-analysis` branch.
     - Begin implementation of **Phase 11: Advanced Mistake Analysis & Quiz Suggestion**, starting with **Step 11.1: Backend Analysis Logic** as detailed in the Iteration Guide.
 
-
 ## Session 17 Summary (Date: 2025-05-14)
 
 **Input:**
 
-*   Session 16 Context.
-*   Codebase snapshot (with `bulk_create` refactoring completed and merged).
-*   `Project_Requirements.md` (v2.6).
-*   `Profile_and_CoreFeatures_Iteration_Guide.md` (updated for Phase 11).
+- Session 16 Context.
+- Codebase snapshot (with `bulk_create` refactoring completed and merged).
+- `Project_Requirements.md` (v2.6).
+- `Profile_and_CoreFeatures_Iteration_Guide.md` (updated for Phase 11).
 
 **Key Activities & Outcomes:**
 
 1.  **(Git Workflow):**
-    *   Confirmed `main` branch was up-to-date.
-    *   Created and switched to a new feature branch: `feature/phase11-ui-ux-tweaks`.
+    - Confirmed `main` branch was up-to-date.
+    - Created and switched to a new feature branch: `feature/phase11-ui-ux-tweaks`.
 2.  **Began Implementation of Phase 11: Post-Phase 10 UI/UX Tweaking.**
 3.  **Implemented Phase 11, Step 11.1 (Navbar Enhancement - Profile Link Text & Avatar Placeholder):**
-    *   Modified `pages/templates/pages/base.html` to:
-        *   Remove the explicit "Profile" text from the authenticated user's navbar link.
-        *   Add a circular avatar placeholder displaying the user's first initial.
-        *   Implement a CSS-based tooltip to show the full username on hover over the avatar/link.
-        *   Adjusted avatar size for different breakpoints (desktop vs. mobile).
-    *   **Verification (E2E Test Updates):**
-        *   Updated `src/conftest.py`: Modified the `admin_logged_in_page` fixture's verification logic to correctly identify the new avatar span (using `.nth(0)`) and the username tooltip on hover.
-        *   Updated `src/pages/tests/test_templates.py`: Modified `test_authenticated_user_navigation` to assert the new avatar/tooltip structure in both desktop and mobile navigation menus, using `.nth(0)` for the avatar and checking the tooltip text on hover.
-        *   Confirmed all tests in `pages/tests/test_templates.py -k "test_authenticated_user_navigation"` (1 passed) and the full `pages/tests/test_responsive.py` suite (66 passed) are passing after these changes.
-    *   Step 11.1 is now considered **COMPLETE** and verified.
+    - Modified `pages/templates/pages/base.html` to:
+      - Remove the explicit "Profile" text from the authenticated user's navbar link.
+      - Add a circular avatar placeholder displaying the user's first initial.
+      - Implement a CSS-based tooltip to show the full username on hover over the avatar/link.
+      - Adjusted avatar size for different breakpoints (desktop vs. mobile).
+    - **Verification (E2E Test Updates):**
+      - Updated `src/conftest.py`: Modified the `admin_logged_in_page` fixture's verification logic to correctly identify the new avatar span (using `.nth(0)`) and the username tooltip on hover.
+      - Updated `src/pages/tests/test_templates.py`: Modified `test_authenticated_user_navigation` to assert the new avatar/tooltip structure in both desktop and mobile navigation menus, using `.nth(0)` for the avatar and checking the tooltip text on hover.
+      - Confirmed all tests in `pages/tests/test_templates.py -k "test_authenticated_user_navigation"` (1 passed) and the full `pages/tests/test_responsive.py` suite (66 passed) are passing after these changes.
+    - Step 11.1 is now considered **COMPLETE** and verified.
 
 **Current LGID Stage:**
 
-*   **Phase 11 (Post-Phase 10 UI/UX Tweaking): In Progress.**
-    *   Step 11.1: **COMPLETE**.
+- **Phase 11 (Post-Phase 10 UI/UX Tweaking): In Progress.**
+  - Step 11.1: **COMPLETE**.
 
 **Plan for Next Session (Session 18):**
 
 1.  Continue with **Phase 11: Post-Phase 10 UI/UX Tweaking**.
 2.  Implement **Step 11.2: Fix Quiz Collection Redirection** as detailed in the `Profile_and_CoreFeatures_Iteration_Guide.md`.
-    *   **Task 11.2.1:** Update `pages/templates/pages/quizzes.html` and `pages/templates/pages/home.html` to pass the current path as a `next` query parameter to the `select_collection_for_quiz_view`.
-    *   **Task 11.2.2:** Update `pages/views.py::select_collection_for_quiz_view` to receive the `next` parameter and pass it to its template's context.
-    *   **Task 11.2.3:** Update `pages/templates/pages/select_collection_for_quiz.html` to include the `next` URL as a hidden input in its forms.
-    *   **Task 11.2.4:** Update `pages/views.py::add_quiz_to_selected_collection_view` to read the `next` parameter from POST data and use it for redirection, falling back to the profile page if `next` is invalid or missing.
-    *   Verify with unit tests for view logic and manual E2E checks.
-
+    - **Task 11.2.1:** Update `pages/templates/pages/quizzes.html` and `pages/templates/pages/home.html` to pass the current path as a `next` query parameter to the `select_collection_for_quiz_view`.
+    - **Task 11.2.2:** Update `pages/views.py::select_collection_for_quiz_view` to receive the `next` parameter and pass it to its template's context.
+    - **Task 11.2.3:** Update `pages/templates/pages/select_collection_for_quiz.html` to include the `next` URL as a hidden input in its forms.
+    - **Task 11.2.4:** Update `pages/views.py::add_quiz_to_selected_collection_view` to read the `next` parameter from POST data and use it for redirection, falling back to the profile page if `next` is invalid or missing.
+    - Verify with unit tests for view logic and manual E2E checks.
 
 ---
 
@@ -886,39 +884,83 @@
 
 **Input:**
 
-*   Session 17 Context.
-*   Codebase snapshot (with Phase 11, Step 11.1 completed).
-*   `Project_Requirements.md` (v2.6).
-*   `Profile_and_CoreFeatures_Iteration_Guide.md` (updated for Phase 11).
+- Session 17 Context.
+- Codebase snapshot (with Phase 11, Step 11.1 completed).
+- `Project_Requirements.md` (v2.6).
+- `Profile_and_CoreFeatures_Iteration_Guide.md` (updated for Phase 11).
 
 **Key Activities & Outcomes:**
 
 1.  **Continued Implementation of Phase 11: Post-Phase 10 UI/UX Tweaking.**
 2.  **Implemented Phase 11, Step 11.2 (Fix Quiz Collection Redirection):**
-    *   **Task 11.2.1:** Updated `pages/templates/pages/quizzes.html` and `pages/templates/pages/home.html` to pass `request.get_full_path|urlencode` as the `next` query parameter to `select_collection_for_quiz_view`.
-    *   **Task 11.2.2:** Updated `pages/views.py::select_collection_for_quiz_view` to receive the `next` GET parameter and pass it into the template context as `next_url`.
-    *   **Task 11.2.3:** Updated `pages/templates/pages/select_collection_for_quiz.html`:
-        *   Included `next_url` (if present) as a hidden input field in the "Add to this Collection" forms.
-        *   Corrected a `TemplateSyntaxError` in the "Back" link by using `{% raw %}{% firstof %}{% endraw %}` with a pre-resolved default URL: `{% raw %}{% url 'pages:quizzes' as default_quizzes_url %}{% firstof next_url request.META.HTTP_REFERER default_quizzes_url as back_url %}<a href="{{ back_url }}">{% endraw %}`.
-    *   **Task 11.2.4:** Updated `pages/views.py::add_quiz_to_selected_collection_view` to retrieve the `next` URL from POST data, validate it using `url_has_allowed_host_and_scheme`, and use it for redirection. If `next` is missing or invalid, it defaults to redirecting to the profile page.
-    *   **Verification:**
-        *   Added 5 new unit tests to `pages/tests/test_views.py` to cover the `next` parameter handling in `select_collection_for_quiz_view` (context passing) and `add_quiz_to_selected_collection_view` (redirection logic for valid, invalid, and missing `next` URL). All 14 tests in the file now pass.
-        *   Addressed a UI bug where success messages from adding a quiz to a collection would persist on the `select_collection_for_quiz.html` page. This was fixed by adding a standard Django messages display block to `pages/templates/pages/base.html` to ensure messages are consumed on the intermediate redirect target page.
-        *   Manually E2E tested the redirection flow from `/quizzes/` and `/` (homepage), confirming correct redirection back to the originating page.
-    *   Step 11.2 is now considered **COMPLETE** and verified.
+    - **Task 11.2.1:** Updated `pages/templates/pages/quizzes.html` and `pages/templates/pages/home.html` to pass `request.get_full_path|urlencode` as the `next` query parameter to `select_collection_for_quiz_view`.
+    - **Task 11.2.2:** Updated `pages/views.py::select_collection_for_quiz_view` to receive the `next` GET parameter and pass it into the template context as `next_url`.
+    - **Task 11.2.3:** Updated `pages/templates/pages/select_collection_for_quiz.html`:
+      - Included `next_url` (if present) as a hidden input field in the "Add to this Collection" forms.
+      - Corrected a `TemplateSyntaxError` in the "Back" link by using `{% raw %}{% firstof %}{% endraw %}` with a pre-resolved default URL: `{% raw %}{% url 'pages:quizzes' as default_quizzes_url %}{% firstof next_url request.META.HTTP_REFERER default_quizzes_url as back_url %}<a href="{{ back_url }}">{% endraw %}`.
+    - **Task 11.2.4:** Updated `pages/views.py::add_quiz_to_selected_collection_view` to retrieve the `next` URL from POST data, validate it using `url_has_allowed_host_and_scheme`, and use it for redirection. If `next` is missing or invalid, it defaults to redirecting to the profile page.
+    - **Verification:**
+      - Added 5 new unit tests to `pages/tests/test_views.py` to cover the `next` parameter handling in `select_collection_for_quiz_view` (context passing) and `add_quiz_to_selected_collection_view` (redirection logic for valid, invalid, and missing `next` URL). All 14 tests in the file now pass.
+      - Addressed a UI bug where success messages from adding a quiz to a collection would persist on the `select_collection_for_quiz.html` page. This was fixed by adding a standard Django messages display block to `pages/templates/pages/base.html` to ensure messages are consumed on the intermediate redirect target page.
+      - Manually E2E tested the redirection flow from `/quizzes/` and `/` (homepage), confirming correct redirection back to the originating page.
+    - Step 11.2 is now considered **COMPLETE** and verified.
 
 **Current LGID Stage:**
 
-*   **Phase 11 (Post-Phase 10 UI/UX Tweaking): In Progress.**
-    *   Step 11.1: Navbar Enhancement - **COMPLETE**.
-    *   Step 11.2: Fix Quiz Collection Redirection - **COMPLETE**.
+- **Phase 11 (Post-Phase 10 UI/UX Tweaking): In Progress.**
+  - Step 11.1: Navbar Enhancement - **COMPLETE**.
+  - Step 11.2: Fix Quiz Collection Redirection - **COMPLETE**.
 
 **Plan for Next Session (Session 19):**
 
 1.  Continue with **Phase 11: Post-Phase 10 UI/UX Tweaking**.
 2.  Implement **Step 11.3: Reorder Attempted Quizzes & Refine Featured Quizzes** as detailed in the `Profile_and_CoreFeatures_Iteration_Guide.md`.
-    *   Modify `pages/views.py::quizzes` view logic.
-    *   Modify `pages/views.py::home` view logic for featured quizzes.
-    *   Verify with unit tests and manual E2E checks.
+    - Modify `pages/views.py::quizzes` view logic.
+    - Modify `pages/views.py::home` view logic for featured quizzes.
+    - Verify with unit tests and manual E2E checks.
+
+---
+
+## Session 19 Summary (Date: 2025-05-14)
+
+**Input:**
+
+- Session 18 Context.
+- Codebase snapshot (with Phase 11, Steps 11.1 and 11.2 completed).
+- `Project_Requirements.md` (v2.6).
+- `Profile_and_CoreFeatures_Iteration_Guide.md` (updated for Phase 11).
+
+**Key Activities & Outcomes:**
+
+1.  **Continued Implementation of Phase 11: Post-Phase 10 UI/UX Tweaking.**
+2.  **Implemented Phase 11, Step 11.3 (Reorder Attempted Quizzes & Refine Featured Quizzes):**
+    - **`pages/views.py::home` (Featured Quizzes):**
+      - Modified logic for authenticated users to fetch and prioritize unattempted quizzes. If fewer than 3 unattempted quizzes are available, the list is supplemented with the most recent overall quizzes (which may include attempted ones).
+      - Anonymous users continue to see the 3 most recent quizzes.
+    - **`pages/views.py::quizzes` (Quiz Listing):**
+      - Ensured `questions__isnull=False` and `distinct()` are applied to the base query.
+      - For authenticated users, annotated the queryset with `has_attempted=Exists(...)` and then ordered by `('has_attempted', '-created_at', '-id')` to list unattempted quizzes first, followed by attempted ones, with recency sorting within each group.
+      - Anonymous users see quizzes ordered by recency.
+    - **Verification:**
+      - Iteratively debugged and refined `setUpTestData` in `src/pages/tests/test_views.py` to ensure precise `created_at` values for predictable ordering.
+      - Fixed an `AttributeError` in `test_quizzes_page_ordering_for_authenticated_user` by ensuring the `has_attempted` annotation was correctly applied by the view and accessible in the test.
+      - Corrected assertions in `test_home_page_loads`, `test_home_page_featured_quizzes_authenticated_user`, `test_home_page_featured_quizzes_not_enough_unattempted`, `test_quizzes_page_loads_and_filters_by_category`, and `test_quizzes_page_ordering_for_authenticated_user` to align with the refined view logic and test data.
+      - All 17 tests in `src/pages/tests/test_views.py` passed successfully.
+      - User confirmed successful manual E2E testing of the new ordering and featured quiz logic.
+    - Step 11.3 is now considered **COMPLETE** and verified.
+
+**Current LGID Stage:**
+
+- **Phase 11 (Post-Phase 10 UI/UX Tweaking): In Progress.**
+  - Step 11.1: Navbar Enhancement - **COMPLETE**.
+  - Step 11.2: Fix Quiz Collection Redirection - **COMPLETE**.
+  - Step 11.3: Reorder Attempted Quizzes & Refine Featured Quizzes - **COMPLETE**.
+
+**Plan for Next Session (Session 20):**
+
+1.  Continue with **Phase 11: Post-Phase 10 UI/UX Tweaking**.
+2.  Implement **Step 11.4: Make Profile Collections Collapsible/Expandable** as detailed in the `Profile_and_CoreFeatures_Iteration_Guide.md`.
+    - Modify `pages/templates/pages/profile.html` to add Alpine.js for collapsible sections.
+    - Verify with manual E2E checks and optionally update Playwright tests.
 
 ---
