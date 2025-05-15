@@ -25,6 +25,9 @@ django.setup()
 # --- Model Imports for Test Data ---
 from multi_choice_quiz.models import Quiz as MCQQuiz, Question as MCQQuestion
 
+# --- Import UserCollection for fixture verification (optional, but good for context) ---
+from pages.models import UserCollection
+
 User = get_user_model()
 
 # --- Configuration Constants ---
@@ -36,12 +39,12 @@ ANONYMOUS_PAGES_TO_TEST = [
     (reverse("pages:signup"), "signup"),
 ]
 
-AUTH_PAGES_TO_TEST_NAMES = [  # Just names, URL resolved in test
+AUTH_PAGES_TO_TEST_NAMES = [
     "edit_profile",
     "create_collection",
-    "select_collection_for_quiz",  # Will need special handling for quiz_id
-    "home",  # Re-test home page as authenticated user
-    "quizzes",  # Re-test quizzes page as authenticated user
+    "select_collection_for_quiz",
+    "home",
+    "quizzes",
 ]
 
 
@@ -160,7 +163,7 @@ def test_responsive_layout_anonymous_pages(
         mobile_toggle_button = page.get_by_test_id("mobile-menu-toggle")
         desktop_nav_container = page.get_by_test_id("desktop-nav")
         mobile_nav_container = page.get_by_test_id("mobile-nav")
-        expected_nav_items = 5
+        expected_nav_items = 5  # Home, Quizzes, About, Login, Sign Up
 
         is_mobile_breakpoint = viewport["width"] < 768
         if is_mobile_breakpoint:
@@ -298,9 +301,7 @@ def test_responsive_layout_anonymous_pages(
 
 # --- Test Function for AUTHENTICATED standard pages ---
 @pytest.mark.django_db(transaction=True)
-@pytest.mark.parametrize(
-    "page_name", AUTH_PAGES_TO_TEST_NAMES
-)  # Make sure this list is still correct
+@pytest.mark.parametrize("page_name", AUTH_PAGES_TO_TEST_NAMES)
 @pytest.mark.parametrize("bp_name, viewport", BREAKPOINTS.items())
 def test_responsive_layout_auth_pages(
     admin_logged_in_page,
@@ -313,9 +314,8 @@ def test_responsive_layout_auth_pages(
 
     quiz_for_select_page = None
 
-    # --- Test-specific data setup ---
     if page_name == "select_collection_for_quiz":
-        quiz_for_select_page, _ = MCQQuiz.objects.get_or_create(  # Use get_or_create
+        quiz_for_select_page, _ = MCQQuiz.objects.get_or_create(
             id=9997, defaults={"title": "Select Collection Test Quiz"}
         )
         if not quiz_for_select_page.questions.exists():
@@ -324,17 +324,14 @@ def test_responsive_layout_auth_pages(
             "pages:select_collection_for_quiz", args=[quiz_for_select_page.id]
         )
     elif page_name == "home":
-        # Ensure a featured quiz exists for the home page test (auth user)
-        featured_quiz_auth, _ = MCQQuiz.objects.get_or_create(  # Use get_or_create
+        featured_quiz_auth, _ = MCQQuiz.objects.get_or_create(
             id=9996, defaults={"title": "Auth Home Featured Quiz", "is_active": True}
         )
         if not featured_quiz_auth.questions.exists():
             MCQQuestion.objects.create(quiz=featured_quiz_auth, text="Auth Home Q1")
         page_path = reverse("pages:home")
     elif page_name == "quizzes":
-        # Ensure at least one quiz exists for the quizzes page test (auth user)
-        # This helps the "Add to Collection" button check.
-        quizzes_page_test_quiz, _ = MCQQuiz.objects.get_or_create(  # Use get_or_create
+        quizzes_page_test_quiz, _ = MCQQuiz.objects.get_or_create(
             id=9995,
             defaults={"title": "Auth Quizzes Page Test Quiz", "is_active": True},
         )
@@ -348,11 +345,14 @@ def test_responsive_layout_auth_pages(
 
     full_page_url = f"{live_server.url}{page_path}"
 
-    # ... (locators remain the same) ...
     login_link_locator = page.get_by_test_id("login-link")
     signup_link_locator = page.get_by_test_id("signup-link")
-    profile_link_locator = page.get_by_test_id("profile-link")
-    logout_button_locator = page.get_by_test_id("logout-button")
+    profile_link_locator = page.get_by_test_id(
+        "profile-link"
+    )  # Used for both desktop and mobile
+    logout_button_locator = page.get_by_test_id(
+        "logout-button"
+    )  # Used for both desktop and mobile
     add_to_collection_link_locator = page.locator('a[title="Add to Collection"]')
 
     try:
@@ -370,7 +370,9 @@ def test_responsive_layout_auth_pages(
     page.set_viewport_size(viewport)
     page.wait_for_timeout(300)
 
-    # ... (screenshot, header, main, footer, nav checks remain the same) ...
+    screenshot_path = get_screenshot_path(page_name, bp_name, f"_auth_{admin_user}")
+    page.screenshot(path=screenshot_path, full_page=True)
+
     header = page.locator("header").first
     main_content = page.locator("main").first
     footer = page.locator("footer").first
@@ -379,32 +381,91 @@ def test_responsive_layout_auth_pages(
         expect(
             header, f"Header visible on auth {page_name} at {bp_name}"
         ).to_be_visible()
-        # ... (other visibility checks for header, main, footer) ...
+        expect(
+            main_content, f"Main content visible on auth {page_name} at {bp_name}"
+        ).to_be_visible()
+        expect(
+            footer, f"Footer visible on auth {page_name} at {bp_name}"
+        ).to_be_visible()
+        expect(main_content, "Main content not empty").not_to_be_empty()
+
     except (PlaywrightError, AssertionError) as e:
-        # ... (failure handling) ...
-        pass  # Placeholder for brevity
+        fail_screenshot_path = get_screenshot_path(
+            page_name, bp_name, f"_auth_{admin_user}_visibility_fail"
+        )
+        page.screenshot(path=fail_screenshot_path, full_page=True)
+        pytest.fail(
+            f"Auth page core layout visibility/content check failed. Error: {e}. Screenshot: {fail_screenshot_path}"
+        )
 
     try:
         mobile_toggle_button = page.get_by_test_id("mobile-menu-toggle")
-        # ... (rest of nav checks) ...
-    except (PlaywrightError, AssertionError) as e:
-        # ... (failure handling) ...
-        pass  # Placeholder for brevity
+        desktop_nav_container = page.get_by_test_id("desktop-nav")
+        mobile_nav_container = page.get_by_test_id("mobile-nav")
 
-    # Page-specific content checks for authenticated pages
+        # Home, Quizzes, About, Profile Link, Logout Button
+        expected_nav_items_auth = 5
+
+        is_mobile_breakpoint = viewport["width"] < 768
+        if is_mobile_breakpoint:
+            target_nav = mobile_nav_container
+            expect(mobile_toggle_button, "Mobile toggle visible (auth)").to_be_visible()
+            expect(desktop_nav_container, "Desktop nav hidden (auth)").to_be_hidden()
+            expect(
+                mobile_nav_container, "Mobile nav initially hidden (auth)"
+            ).to_be_hidden()
+            mobile_toggle_button.click()
+            page.wait_for_timeout(300)
+            expect(
+                mobile_nav_container, "Mobile nav visible after toggle (auth)"
+            ).to_be_visible()
+            nav_items_count = target_nav.locator("a, form > button").count()
+            assert (
+                nav_items_count == expected_nav_items_auth
+            ), f"Mobile nav item count mismatch (auth). Expected {expected_nav_items_auth}, Found {nav_items_count}. Page: {page_name}, BP: {bp_name}"
+        else:
+            target_nav = desktop_nav_container
+            expect(mobile_toggle_button, "Mobile toggle hidden (auth)").to_be_hidden()
+            expect(desktop_nav_container, "Desktop nav visible (auth)").to_be_visible()
+            expect(
+                mobile_nav_container, "Mobile nav container hidden (auth)"
+            ).to_be_hidden()
+            nav_items_count = target_nav.locator("a, form > button").count()
+            assert (
+                nav_items_count == expected_nav_items_auth
+            ), f"Desktop nav item count mismatch (auth). Expected {expected_nav_items_auth}, Found {nav_items_count}. Page: {page_name}, BP: {bp_name}"
+
+        # Common assertions for authenticated nav state
+        expect(target_nav.get_by_test_id("profile-link")).to_be_visible()
+        expect(target_nav.get_by_test_id("logout-button")).to_be_visible()
+        expect(target_nav.get_by_test_id("login-link")).to_be_hidden()
+        expect(target_nav.get_by_test_id("signup-link")).to_be_hidden()
+
+        if is_mobile_breakpoint:  # Close menu
+            mobile_toggle_button.click()
+            page.wait_for_timeout(300)
+            expect(
+                mobile_nav_container, "Mobile nav hidden after closing (auth)"
+            ).to_be_hidden()
+
+    except (PlaywrightError, AssertionError) as e:
+        fail_screenshot_path = get_screenshot_path(
+            page_name, bp_name, f"_auth_{admin_user}_nav_check_fail"
+        )
+        page.screenshot(path=fail_screenshot_path, full_page=True)
+        pytest.fail(
+            f"Auth page navigation check failed. Error: {e}. Screenshot: {fail_screenshot_path}"
+        )
+
     try:
         content_timeout = 5000
         if page_name == "home":
-            # Basic heading checks
             expect(
                 page.get_by_role("heading", name="Challenge Your Knowledge")
             ).to_be_visible(timeout=content_timeout)
             expect(page.get_by_role("heading", name="Featured Quizzes")).to_be_visible(
                 timeout=content_timeout
             )
-
-            # Check for "Add to Collection" button visibility
-            # Now that we ensure 'Auth Home Featured Quiz' (ID 9996) is created, it should be on the page.
             featured_quiz_card = (
                 page.locator(f"div:has-text('{MCQQuiz.objects.get(id=9996).title}')")
                 .locator('xpath=ancestor::div[contains(@class, "bg-surface")]')
@@ -413,13 +474,10 @@ def test_responsive_layout_auth_pages(
             expect(featured_quiz_card.get_by_title("Add to Collection")).to_be_visible(
                 timeout=content_timeout
             )
-
         elif page_name == "quizzes":
             expect(page.get_by_role("heading", name="Browse Quizzes")).to_be_visible(
                 timeout=content_timeout
             )
-            # Check for "Add to Collection" button visibility
-            # Now that we ensure 'Auth Quizzes Page Test Quiz' (ID 9995) is created, it should be on the page.
             quiz_card_on_list = (
                 page.locator(f"div:has-text('{MCQQuiz.objects.get(id=9995).title}')")
                 .locator('xpath=ancestor::div[contains(@class, "bg-surface")]')
@@ -428,9 +486,7 @@ def test_responsive_layout_auth_pages(
             expect(quiz_card_on_list.get_by_title("Add to Collection")).to_be_visible(
                 timeout=content_timeout
             )
-
         elif page_name == "edit_profile":
-            # ... (checks remain the same) ...
             expect(page.get_by_role("heading", name="Edit Your Profile")).to_be_visible(
                 timeout=content_timeout
             )
@@ -441,7 +497,6 @@ def test_responsive_layout_auth_pages(
                 timeout=content_timeout
             )
         elif page_name == "create_collection":
-            # ... (checks remain the same) ...
             expect(
                 page.get_by_role("heading", name="Create a New Collection")
             ).to_be_visible(timeout=content_timeout)
@@ -452,7 +507,6 @@ def test_responsive_layout_auth_pages(
                 timeout=content_timeout
             )
         elif page_name == "select_collection_for_quiz":
-            # ... (checks remain the same) ...
             expect(
                 page.get_by_role("heading", name="Add Quiz to Collection")
             ).to_be_visible(timeout=content_timeout)
@@ -460,11 +514,9 @@ def test_responsive_layout_auth_pages(
             expect(
                 page.locator(f"strong:has-text('{quiz_for_select_page.title}')")
             ).to_be_visible(timeout=content_timeout)
-            # Additional check: an "Add to this Collection" button should be visible since the fixture creates a collection.
             expect(
                 page.get_by_role("button", name="Add to this Collection").first
             ).to_be_visible(timeout=content_timeout)
-
     except (PlaywrightError, AssertionError) as e:
         fail_screenshot_path = get_screenshot_path(
             page_name, bp_name, f"_auth_{admin_user}_specific_content_fail"
@@ -533,16 +585,13 @@ def test_profile_responsive_layout(
     except PlaywrightError as e:
         print(f"WARN: Failed to take profile page screenshot {screenshot_path}: {e}")
 
-    # Simplified core layout and nav checks (assuming they are covered well in other tests)
     header = page.locator("header").first
     main_content = page.locator("main").first
     footer = page.locator("footer").first
     expect(header).to_be_visible()
     expect(main_content).to_be_visible()
     expect(footer).to_be_visible()
-    # Width and overflow checks could also be here if desired for profile page specifically
 
-    # Profile Page-Specific Structure & Content Checks
     try:
         content_timeout = 5000
         expect(
@@ -575,6 +624,59 @@ def test_profile_responsive_layout(
         expect(collections_content_area).to_be_visible(timeout=content_timeout)
         expect(collections_heading).to_be_visible(timeout=content_timeout)
         expect(create_new_collection_button).to_be_visible(timeout=content_timeout)
+
+        # --- START: New tests for collapsible collections ---
+        # Assuming "Admin Fixture Collection" is the first/only one due to fixture setup
+        # And it has "Fixture Test Quiz for Collection"
+        collection_name_from_fixture = "Admin Fixture Collection"
+        quiz_title_in_fixture_collection = "Fixture Test Quiz for Collection"
+
+        # Locate the specific collection by its data-testid or name
+        # The profile.html now wraps each collection in a div with x-data and data-testid
+        fixture_collection_container = collections_content_area.locator(
+            f"div[data-testid^='collection-'] >> text='{collection_name_from_fixture}'"
+        ).locator(
+            "xpath=ancestor::div[contains(@class, 'border-border rounded-lg overflow-hidden')]"
+        )
+        expect(fixture_collection_container).to_be_visible(timeout=content_timeout)
+
+        collection_header_button = fixture_collection_container.locator(
+            "button"
+        ).first  # The button to toggle
+        collection_content_div = fixture_collection_container.locator(
+            "div[x-show='open']"
+        )
+        quiz_in_collection_locator = collection_content_div.locator(
+            f"h4:has-text('{quiz_title_in_fixture_collection}')"
+        )
+
+        # 1. Initial state: Collapsed
+        expect(collection_header_button).to_be_visible()
+        expect(
+            collection_content_div, "Collection content initially hidden"
+        ).to_be_hidden()
+        expect(quiz_in_collection_locator, "Quiz title initially hidden").to_be_hidden()
+
+        # 2. Expand
+        collection_header_button.click()
+        page.wait_for_timeout(300)  # For Alpine transition
+        expect(
+            collection_content_div, "Collection content visible after expand"
+        ).to_be_visible(timeout=content_timeout)
+        expect(
+            quiz_in_collection_locator, "Quiz title visible after expand"
+        ).to_be_visible(timeout=content_timeout)
+
+        # 3. Collapse
+        collection_header_button.click()
+        page.wait_for_timeout(300)  # For Alpine transition
+        expect(
+            collection_content_div, "Collection content hidden after collapse"
+        ).to_be_hidden(timeout=content_timeout)
+        expect(
+            quiz_in_collection_locator, "Quiz title hidden after collapse"
+        ).to_be_hidden(timeout=content_timeout)
+        # --- END: New tests for collapsible collections ---
 
         history_tab_button.click()
         page.wait_for_timeout(300)

@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg, Count, Q, Exists, OuterRef  # Added Exists, OuterRef
+from django.db.models import Avg, Count, Q, Exists, OuterRef
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
 from django.views.decorators.http import require_POST
@@ -30,13 +30,11 @@ except (ImportError, ModuleNotFoundError):
 
 
 def home(request):
-    # Using the logic that was failing the home tests (oldest quizzes shown)
     base_quizzes_qs = (
         Quiz.objects.filter(is_active=True, questions__isnull=False)
         .distinct()
         .select_related()
         .prefetch_related("system_categories")
-        # .order_by("-created_at", "-id") # NO initial order_by from the version that had 5 errors
     )
 
     featured_quizzes_list = []
@@ -48,23 +46,17 @@ def home(request):
             .distinct()
         )
 
-        unattempted_qs = base_quizzes_qs.exclude(
-            id__in=attempted_quiz_ids
-        )  # No order_by before slice
-        unattempted_featured = list(
-            unattempted_qs.order_by("-created_at", "-id")[:3]
-        )  # Order then slice
+        unattempted_qs = base_quizzes_qs.exclude(id__in=attempted_quiz_ids)
+        unattempted_featured = list(unattempted_qs.order_by("-created_at", "-id")[:3])
         featured_quizzes_list.extend(unattempted_featured)
 
         if len(featured_quizzes_list) < 3:
             num_needed = 3 - len(featured_quizzes_list)
             selected_ids = [q.id for q in featured_quizzes_list]
-            additional_qs = base_quizzes_qs.exclude(
-                id__in=selected_ids
-            )  # No order_by before slice
+            additional_qs = base_quizzes_qs.exclude(id__in=selected_ids)
             additional_featured = list(
                 additional_qs.order_by("-created_at", "-id")[:num_needed]
-            )  # Order then slice
+            )
             featured_quizzes_list.extend(additional_featured)
     else:
         featured_quizzes_list = list(base_quizzes_qs.order_by("-created_at", "-id")[:3])
@@ -77,9 +69,7 @@ def home(request):
             )
         )
         .filter(num_active_quizzes__gt=0)
-        .order_by("-num_active_quizzes", "name")[
-            :16
-        ]  # experimental; originally 5; but let's make it 16!
+        .order_by("-num_active_quizzes", "name")[:16]
     )
     context = {
         "featured_quizzes": featured_quizzes_list,
@@ -88,7 +78,6 @@ def home(request):
     return render(request, "pages/home.html", context)
 
 
-# ... (about, signup_view are fine) ...
 def about(request):
     return render(request, "pages/about.html")
 
@@ -109,7 +98,6 @@ def signup_view(request):
 
 
 def quizzes(request):
-    # Start with base filters
     quiz_list_query = (
         Quiz.objects.filter(is_active=True, questions__isnull=False)
         .distinct()
@@ -117,7 +105,6 @@ def quizzes(request):
         .prefetch_related("system_categories", "questions")
     )
 
-    # Apply category filter
     categories = SystemCategory.objects.all().order_by("name")
     selected_category = None
     category_slug = request.GET.get("category")
@@ -130,20 +117,14 @@ def quizzes(request):
             )
         except SystemCategory.DoesNotExist:
             selected_category = None
-            # quiz_list_query remains as is
 
-    # Apply final ordering *after* all filtering and *then* annotate if needed
     if request.user.is_authenticated:
-        # Annotate the (potentially category-filtered) queryset
-        # This is the key change: annotate *before* list conversion for ordering
         quiz_list_annotated_and_ordered = quiz_list_query.annotate(
             has_attempted=Exists(
                 QuizAttempt.objects.filter(quiz_id=OuterRef("pk"), user=request.user)
             )
         ).order_by("has_attempted", "-created_at", "-id")
-        final_quiz_list_for_pagination = list(
-            quiz_list_annotated_and_ordered
-        )  # Now this list contains annotated objects
+        final_quiz_list_for_pagination = list(quiz_list_annotated_and_ordered)
     else:
         final_quiz_list_for_pagination = list(
             quiz_list_query.order_by("-created_at", "-id")
@@ -166,11 +147,10 @@ def quizzes(request):
     return render(request, "pages/quizzes.html", context)
 
 
-# ... (rest of the views remain the same as the version that passed 13/17 tests) ...
 @login_required
 def profile_view(request):
     user = request.user
-    user_attempts = (
+    user_attempts_qs = (  # Changed variable name to indicate it's a queryset initially
         QuizAttempt.objects.filter(user=user)
         .order_by("-end_time")
         .select_related("quiz")
@@ -180,19 +160,48 @@ def profile_view(request):
         .prefetch_related("quizzes__questions")
         .order_by("name")
     )
-    stats = user_attempts.aggregate(
+    stats = user_attempts_qs.aggregate(  # Use the queryset for aggregate
         total_attempts=Count("id"), average_score=Avg("percentage")
     )
     average_score = stats.get("average_score")
     if average_score is None:
         average_score = 0
+
+    # --- START: Calculate attempt counts per quiz for this user ---
+    quiz_attempt_counts_raw = (
+        QuizAttempt.objects.filter(user=user)
+        .values("quiz_id")
+        .annotate(count=Count("id"))
+        .order_by("quiz_id")
+    )
+
+    quiz_attempt_counts_dict = {
+        item["quiz_id"]: item["count"] for item in quiz_attempt_counts_raw
+    }
+    logger.debug(
+        f"Quiz attempt counts for user {user.username}: {quiz_attempt_counts_dict}"
+    )
+    # --- END: Calculate attempt counts per quiz ---
+
+    # Attach the count to each attempt object for easier template access
+    # This is one way; another is to pass quiz_attempt_counts_dict directly
+    # and look up in the template. For simplicity in the template, let's try attaching.
+    # Note: This modifies the queryset results in memory.
+    user_attempts_list = []
+    for attempt in user_attempts_qs:  # Iterate over the original queryset
+        attempt.individual_quiz_attempt_count = quiz_attempt_counts_dict.get(
+            attempt.quiz.id, 0
+        )
+        user_attempts_list.append(attempt)
+
     context = {
-        "quiz_attempts": user_attempts,
+        "quiz_attempts": user_attempts_list,  # Pass the modified list
         "user_collections": user_collections,
         "stats": {
             "total_taken": stats.get("total_attempts", 0),
             "avg_score_percent": round(average_score),
         },
+        "quiz_attempt_counts": quiz_attempt_counts_dict,  # Also pass the dict for flexibility or alternative use
     }
     return render(request, "pages/profile.html", context)
 

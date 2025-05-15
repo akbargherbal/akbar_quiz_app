@@ -11,6 +11,12 @@ from django.conf import settings
 # --- Import UserCollection for the fixture ---
 from pages.models import UserCollection
 
+# --- Import Quiz model for adding to collection ---
+from multi_choice_quiz.models import (
+    Quiz,
+    Question,
+    Option,
+)  # Ensure Option is imported if creating full quiz
 
 # --- Import the standardized logging setup ---
 try:
@@ -48,7 +54,7 @@ def admin_logged_in_page(page: Page, live_server):
     """
     Pytest fixture that:
     1. Ensures a specific admin user exists in the test database.
-    2. Ensures a default collection exists for that user.
+    2. Ensures a default collection exists for that user and adds a test quiz to it.
     3. Logs that user in via the Django frontend login page using Playwright.
     4. Yields the logged-in Playwright Page object and the username.
     """
@@ -71,17 +77,44 @@ def admin_logged_in_page(page: Page, live_server):
             f"\n[Fixture] Ensured admin user '{admin_user_username}' exists ({'created' if created else 'updated'})."
         )
 
-        UserCollection.objects.get_or_create(
+        # Ensure the collection exists
+        collection, coll_created = UserCollection.objects.get_or_create(
             user=user,
-            name="Admin Fixture Collection",  # Default collection name
+            name="Admin Fixture Collection",
             defaults={"description": "A default collection for admin_fixture_user."},
         )
         print(
-            f"[Fixture] Ensured 'Admin Fixture Collection' exists for user '{admin_user_username}'."
+            f"[Fixture] Ensured 'Admin Fixture Collection' (ID: {collection.id}) exists for user '{admin_user_username}' ({'created' if coll_created else 'updated'})."
         )
+
+        # --- START: Add a test quiz to the collection ---
+        test_quiz_title = "Fixture Test Quiz for Collection"
+        quiz_in_collection, quiz_created = Quiz.objects.get_or_create(
+            title=test_quiz_title,
+            defaults={
+                "description": "A quiz created by the admin_logged_in_page fixture."
+            },
+        )
+        # Ensure the quiz has at least one question to be considered "active" by some views
+        if not quiz_in_collection.questions.exists():
+            q = Question.objects.create(quiz=quiz_in_collection, text="Fixture Q1?")
+            Option.objects.create(question=q, text="Opt A", position=1, is_correct=True)
+            print(f"[Fixture] Added a question to '{test_quiz_title}'.")
+
+        if not collection.quizzes.filter(id=quiz_in_collection.id).exists():
+            collection.quizzes.add(quiz_in_collection)
+            print(
+                f"[Fixture] Added quiz '{test_quiz_title}' (ID: {quiz_in_collection.id}) to 'Admin Fixture Collection'."
+            )
+        else:
+            print(
+                f"[Fixture] Quiz '{test_quiz_title}' (ID: {quiz_in_collection.id}) already in 'Admin Fixture Collection'."
+            )
+        # --- END: Add a test quiz to the collection ---
+
     except Exception as e:
         pytest.fail(
-            f"[Fixture] Failed to ensure test user '{admin_user_username}' or collection: {e}"
+            f"[Fixture] Failed to ensure test user '{admin_user_username}', collection, or quiz: {e}"
         )
 
     frontend_login_url = f"{live_server.url}{reverse('login')}"
@@ -112,7 +145,7 @@ def admin_logged_in_page(page: Page, live_server):
         )
 
         profile_link_anchor.hover()
-        page.wait_for_timeout(250)
+        page.wait_for_timeout(250)  # Give tooltip time to appear
 
         tooltip_actual_span = profile_link_anchor.locator("span").nth(1)
         expect(tooltip_actual_span).to_be_visible(timeout=5000)

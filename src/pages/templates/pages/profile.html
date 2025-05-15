@@ -8,7 +8,6 @@
 <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
     <!-- Profile Header -->
     <div class="bg-surface rounded-xl p-6 shadow-lg border border-border mb-8 lg:mb-10">
-        {# ... (profile header remains the same) ... #}
         <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
             <div class="flex-shrink-0">
                 <div class="w-24 h-24 lg:w-28 lg:h-28 bg-accent-primary rounded-full flex items-center justify-center text-white text-3xl lg:text-4xl font-bold">
@@ -32,7 +31,6 @@
 
     <!-- Stats Cards (Now Dynamic) -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 lg:mb-10">
-        {# ... (stats cards remain the same) ... #}
         <div class="bg-surface rounded-xl p-4 md:p-6 border border-border shadow-md text-center">
             <h3 class="text-text-muted text-xs sm:text-sm mb-2 uppercase tracking-wider">Quizzes Taken</h3>
             <div class="text-3xl lg:text-4xl font-bold text-accent-heading" data-testid="stat-quizzes-taken">{{ stats.total_taken|default:"0" }}</div>
@@ -43,11 +41,11 @@
         </div>
         <div class="bg-surface rounded-xl p-4 md:p-6 border border-border shadow-md text-center">
             <h3 class="text-text-muted text-xs sm:text-sm mb-2 uppercase tracking-wider">Strongest Topic</h3>
-            <div class="text-lg lg:text-xl font-bold text-tag-teal truncate" title="Not Implemented Yet">--</div>
+            <div class="text-lg lg:text-xl font-bold text-tag-teal truncate" title="Feature in development">Analysis Coming Soon!</div>
         </div>
         <div class="bg-surface rounded-xl p-4 md:p-6 border border-border shadow-md text-center">
             <h3 class="text-text-muted text-xs sm:text-sm mb-2 uppercase tracking-wider">Needs Review</h3>
-             <div class="text-lg lg:text-xl font-bold text-yellow-500 truncate" title="Not Implemented Yet">--</div>
+             <div class="text-lg lg:text-xl font-bold text-yellow-500 truncate" title="Feature in development">More data needed</div>
         </div>
     </div>
 
@@ -55,7 +53,6 @@
     <div x-data="{ activeTab: 'history' }" class="bg-surface rounded-xl border border-border shadow-lg overflow-hidden">
         <!-- Tab Navigation -->
         <nav class="flex border-b border-border overflow-x-auto">
-            {# ... (tab buttons remain the same) ... #}
             <button @click="activeTab = 'history'"
                     :class="{ 'border-accent-primary text-accent-heading bg-tag-bg/30': activeTab === 'history', 'border-transparent text-text-muted hover:text-text-secondary hover:border-border': activeTab !== 'history' }"
                     class="flex-1 whitespace-nowrap py-3 px-4 sm:px-6 text-center font-medium text-sm sm:text-base border-b-2 transition-colors">
@@ -73,13 +70,21 @@
 
             <!-- History Tab -->
             <div x-show="activeTab === 'history'" x-cloak class="space-y-4 md:space-y-6">
-                {# ... (history tab content remains the same) ... #}
                 <h2 class="text-xl lg:text-2xl font-bold text-text-secondary mb-4">Your Quiz History</h2>
                 <div class="space-y-4">
                     {% for attempt in quiz_attempts %}
                     <div class="border border-border rounded-lg p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4" data-testid="history-attempt-{{ attempt.id }}">
                         <div class="flex-grow">
-                            <h3 class="font-bold text-text-secondary mb-1">{{ attempt.quiz.title }}</h3>
+                            <h3 class="font-bold text-text-secondary mb-1">
+                                {{ attempt.quiz.title }}
+                                {# --- START: Display Attempt Count --- #}
+                                {% if attempt.individual_quiz_attempt_count > 0 %}
+                                    <span class="text-xs text-text-muted ml-1">
+                                        (Taken {{ attempt.individual_quiz_attempt_count }} time{{ attempt.individual_quiz_attempt_count|pluralize }})
+                                    </span>
+                                {% endif %}
+                                {# --- END: Display Attempt Count --- #}
+                            </h3>
                             <p class="text-sm text-text-muted">Completed: {{ attempt.end_time|date:"F j, Y, P" }}</p>
                         </div>
                         <div class="flex-shrink-0 w-full md:w-auto flex items-center justify-between md:justify-start gap-4 mt-3 md:mt-0">
@@ -120,51 +125,67 @@
 
                  {% if user_collections %}
                     {% for collection in user_collections %}
-                        <div data-testid="collection-{{ collection.id }}">
-                            <div class="flex justify-between items-baseline mb-3 border-b border-border pb-1">
-                                <h3 class="text-lg font-semibold text-accent-heading truncate" title="{{ collection.name }}">
-                                    {{ collection.name }}
-                                </h3>
-                                <span class="text-xs text-text-muted">
-                                    {{ collection.quizzes.count }} quiz{{ collection.quizzes.count|pluralize }}
-                                </span>
-                            </div>
-
-                            {% if collection.description %}
-                            <p class="text-sm text-text-muted mb-3">{{ collection.description }}</p>
-                            {% endif %}
-
-                            {% if collection.quizzes.all %}
-                                <div class="space-y-2"> {# Changed grid to space-y for better vertical listing #}
-                                    {% for quiz in collection.quizzes.all %}
-                                        <div class="border border-border rounded-lg p-3 flex justify-between items-center gap-2" data-testid="collection-{{ collection.id }}-quiz-{{ quiz.id }}">
-                                            <div class="flex-grow min-w-0"> {# Added min-w-0 for better truncation #}
-                                                <h4 class="font-medium text-text-secondary truncate">{{ quiz.title }}</h4>
-                                                <p class="text-xs text-text-muted">{{ quiz.questions.count }} Questions</p>
-                                            </div>
-                                            <div class="flex items-center gap-2 flex-shrink-0">
-                                                <a href="{% url 'multi_choice_quiz:quiz_detail' quiz.id %}" class="text-accent-heading hover:text-accent-primary text-xs font-medium whitespace-nowrap">Start Quiz »</a>
-                                                {# --- START NEW FORM FOR REMOVE BUTTON --- #}
-                                                <form method="POST" action="{% url 'pages:remove_quiz_from_collection' collection_id=collection.id quiz_id=quiz.id %}" class="inline">
-                                                    {% csrf_token %}
-                                                    <button type="submit"
-                                                            class="p-1.5 rounded-md text-red-500 hover:bg-red-500/10 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-surface transition-colors"
-                                                            aria-label="Remove {{ quiz.title }} from {{collection.name}}"
-                                                            title="Remove Quiz"
-                                                            onclick="return confirm('Are you sure you want to remove \'{{ quiz.title|escapejs }}\' from this collection?');">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
-                                                </form>
-                                                {# --- END NEW FORM FOR REMOVE BUTTON --- #}
-                                            </div>
-                                        </div>
-                                    {% endfor %}
+                        <div x-data="{ open: false }" class="border border-border rounded-lg overflow-hidden" data-testid="collection-{{ collection.id }}">
+                            <button @click="open = !open" 
+                                    class="w-full flex justify-between items-center p-3 sm:p-4 bg-tag-bg/20 hover:bg-tag-bg/40 transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent-primary">
+                                <div class="text-left">
+                                    <h3 class="text-lg font-semibold text-accent-heading truncate" title="{{ collection.name }}">
+                                        {{ collection.name }}
+                                    </h3>
+                                    <span class="text-xs text-text-muted">
+                                        {{ collection.quizzes.count }} quiz{{ collection.quizzes.count|pluralize }}
+                                    </span>
                                 </div>
-                            {% else %}
-                                <p class="text-sm text-text-muted italic">This collection is empty.</p>
-                            {% endif %}
+                                <div class="flex-shrink-0">
+                                    <svg class="w-5 h-5 text-text-muted transform transition-transform duration-200" :class="{'rotate-180': open, 'rotate-0': !open}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </button>
+                        
+                            <div x-show="open" 
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 -translate-y-1 scale-95"
+                                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                 x-transition:leave-end="opacity-0 -translate-y-1 scale-95"
+                                 class="p-3 sm:p-4 border-t border-border bg-surface">
+                                
+                                {% if collection.description %}
+                                <p class="text-sm text-text-muted mb-3">{{ collection.description }}</p>
+                                {% endif %}
+                        
+                                {% if collection.quizzes.all %}
+                                    <div class="space-y-2">
+                                        {% for quiz in collection.quizzes.all %}
+                                            <div class="border border-border rounded-lg p-3 flex justify-between items-center gap-2" data-testid="collection-{{ collection.id }}-quiz-{{ quiz.id }}">
+                                                <div class="flex-grow min-w-0">
+                                                    <h4 class="font-medium text-text-secondary truncate">{{ quiz.title }}</h4>
+                                                    <p class="text-xs text-text-muted">{{ quiz.questions.count }} Questions</p>
+                                                </div>
+                                                <div class="flex items-center gap-2 flex-shrink-0">
+                                                    <a href="{% url 'multi_choice_quiz:quiz_detail' quiz.id %}" class="text-accent-heading hover:text-accent-primary text-xs font-medium whitespace-nowrap">Start Quiz »</a>
+                                                    <form method="POST" action="{% url 'pages:remove_quiz_from_collection' collection_id=collection.id quiz_id=quiz.id %}" class="inline">
+                                                        {% csrf_token %}
+                                                        <button type="submit"
+                                                                class="p-1.5 rounded-md text-red-500 hover:bg-red-500/10 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-surface transition-colors"
+                                                                aria-label="Remove {{ quiz.title }} from {{collection.name}}"
+                                                                title="Remove Quiz"
+                                                                onclick="return confirm('Are you sure you want to remove \'{{ quiz.title|escapejs }}\' from this collection?');">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="text-sm text-text-muted italic">This collection is empty.</p>
+                                {% endif %}
+                            </div>
                         </div>
                     {% endfor %}
                  {% else %}
