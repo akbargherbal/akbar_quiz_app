@@ -87,13 +87,16 @@ This guide outlines the development steps for enhancing the user profile and imp
 ---
 ---
 
+---
+---
+
 ## Phase 11: Post-Phase 10 UI/UX Tweaking (NEW)
 
 **Version:** 1.0
-**Date:** 2025-05-12
+**Date:** 2025-05-14
 **Phase Objective:** Enhance the user interface and user experience based on observations and priorities identified after the completion of core collection management features. These are primarily template and view modifications without DB schema changes.
 **Related Requirements:** 11.a, 11.b, 11.c, 11.d, 11.e (from Project_Requirements.md v2.6)
-**Phase Status:** Planned 📝
+**Phase Status:** In Progress 🟡
 
 ---
 
@@ -102,69 +105,38 @@ This guide outlines the development steps for enhancing the user profile and imp
 #### Step 11.1: Navbar Enhancement - Profile Link Text & Avatar Placeholder
 
 *   **Objective:** Clean up navbar and improve visual identity (Req 11.a; UI/UX Ref #1, #7).
-*   **Key Tasks:**
-    1.  Modify `pages/templates/pages/base.html`:
-        *   Change the "Profile (username)" link text to just display the username (e.g., `({{ user.username }})`) or an alternative concise format.
-        *   Add markup for a circular avatar placeholder (e.g., a `div` with user's initial) next to the username link. Apply Tailwind CSS for styling.
 *   **Deliverables:** Updated `pages/templates/pages/base.html`.
 *   **Verification Checklist:**
-    *   `[ ]` **Manual E2E Check:** Verify navbar shows concise username and avatar placeholder for logged-in users on desktop and mobile.
-    *   `[ ]` **Playwright (Optional):** Update snapshot tests or add specific locators if existing E2E tests for navigation are affected.
-*   **Status:** To Do ⏳
+    *   `[✅]` **Manual E2E Check:** Verified.
+    *   `[✅]` **Playwright:** `admin_logged_in_page` fixture and `test_authenticated_user_navigation` updated and passing.
+*   **Status:** Done ✅
 
 #### Step 11.2: Fix Quiz Collection Redirection
 
 *   **Objective:** Improve user flow when adding quizzes to collections by redirecting to the previous page (Req 11.b; UI/UX Ref #3).
-*   **Key Tasks:**
-    1.  Modify `pages/views.py::add_quiz_to_selected_collection_view`:
-        *   Update the view to accept a `next` URL parameter.
-        *   If `next` is provided and safe, redirect to it. Otherwise, fall back to `pages:profile`.
-    2.  Modify `pages/templates/pages/select_collection_for_quiz.html`:
-        *   Ensure the "Add to this Collection" forms pass the current page's path (or a desired `next` path) as a hidden input or query parameter to `add_quiz_to_selected_collection_view`.
-    3.  Modify `pages/templates/pages/quizzes.html` and `pages/templates/pages/home.html`:
-        *   When generating the link to `select_collection_for_quiz_view`, include the current page's path as a `next` query parameter (e.g., `?next={{ request.get_full_path|urlencode }}`).
 *   **Deliverables:** Updated `pages/views.py`, `select_collection_for_quiz.html`, `quizzes.html`, `home.html`.
 *   **Verification Checklist:**
-    *   `[ ]` **Unit Tests:** For `add_quiz_to_selected_collection_view` to check `next` parameter handling.
-    *   `[ ]` **Manual E2E Check:**
-        *   Add quiz from `/quizzes/` -> verify redirect back to `/quizzes/` (with filters if any).
-        *   Add quiz from `/` (homepage) -> verify redirect back to `/`.
-        *   If `next` is invalid/missing, verify redirect to profile.
-*   **Status:** To Do ⏳
+    *   `[✅]` **Unit Tests:** For `add_quiz_to_selected_collection_view` `next` parameter handling passed.
+    *   `[✅]` **Manual E2E Check:** Redirection flows verified.
+*   **Status:** Done ✅
 
 #### Step 11.3: Reorder Attempted Quizzes & Refine Featured Quizzes
 
 *   **Objective:** Improve content discovery by reordering attempted quizzes and refining featured quiz logic (Req 11.c; UI/UX Ref #4, #8).
-*   **Key Tasks:**
-    1.  Modify `pages/views.py::quizzes` view:
-        *   If user is authenticated, fetch IDs of quizzes they've attempted.
-        *   Annotate the main quiz queryset with a boolean indicating if it's been attempted.
-        *   Adjust `order_by` to sort by `attempted` (False first), then by existing criteria (e.g., `-created_at`).
-    2.  Modify `pages/views.py::home` view (for featured quizzes):
-        *   If user is authenticated, fetch IDs of quizzes they've attempted.
-        *   Exclude attempted quizzes from the initial pool for featured quizzes, or heavily down-rank them. Ensure enough non-attempted quizzes are available to feature.
 *   **Deliverables:** Updated `pages/views.py`.
 *   **Verification Checklist:**
-    *   `[ ]` **Unit Tests:** For view logic changes verifying correct ordering and exclusion.
-    *   `[ ]` **Manual E2E Check:**
-        *   As a logged-in user, take a quiz. Verify it moves to the end of the list on `/quizzes/`.
-        *   Verify featured quizzes on homepage prioritize unattempted ones.
-*   **Status:** To Do ⏳
+    *   `[✅]` **Unit Tests:** View logic changes for ordering and exclusion verified in `pages/tests/test_views.py`.
+    *   `[✅]` **Manual E2E Check:** New ordering and featured quiz logic verified.
+*   **Status:** Done ✅
 
 #### Step 11.4: Make Profile Collections Collapsible/Expandable
 
 *   **Objective:** Improve organization on the profile page for users with many collections (Req 11.d; UI/UX Ref #4).
-*   **Key Tasks:**
-    1.  Modify `pages/templates/pages/profile.html`:
-        *   For each collection in the "Collections" tab, add Alpine.js `x-data="{ open: false }"`.
-        *   Add a button/clickable header to toggle `open`.
-        *   Wrap the list of quizzes within that collection in an element with `x-show="open"`.
-        *   Style the toggle and collapsed/expanded states.
 *   **Deliverables:** Updated `pages/templates/pages/profile.html`.
 *   **Verification Checklist:**
-    *   `[ ]` **Manual E2E Check:** Verify collections are collapsible/expandable. Test with multiple collections and quizzes.
-    *   `[ ]` **Playwright (Optional):** Add tests to `test_profile_responsive_layout` in `pages/tests/test_responsive.py` to check collapse/expand functionality.
-*   **Status:** To Do ⏳
+    *   `[✅]` **Manual E2E Check:** Collections are collapsible/expandable.
+    *   `[✅]` **Playwright:** `admin_logged_in_page` fixture updated to ensure collection has content. `test_profile_responsive_layout` in `pages/tests/test_responsive.py` updated to verify collapse/expand functionality and is passing.
+*   **Status:** Done ✅
 
 #### Step 11.5: Profile Page Polish (Stat Placeholders & Attempt Counts)
 
@@ -192,6 +164,7 @@ This guide outlines the development steps for enhancing the user profile and imp
 *   **Status:** To Do ⏳
 
 ---
+
 ---
 
 ## Phase 12: Advanced Mistake Analysis & Quiz Suggestion (Future) (Previously Phase 11)
