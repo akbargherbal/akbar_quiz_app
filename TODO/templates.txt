@@ -1,0 +1,3 @@
+whitespace-nowrap
+<span class="bg-tag-bg text-tag-teal text-xs px-2 py-1 rounded-full break-words max-w-[200px] text-center">
+

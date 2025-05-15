@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, Q, Exists, OuterRef  # Added Exists, OuterRef
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
 from django.views.decorators.http import require_POST
@@ -15,38 +15,60 @@ from .models import UserCollection, SystemCategory
 from .forms import SignUpForm, EditProfileForm, UserCollectionForm
 from django.utils.http import (
     url_has_allowed_host_and_scheme,
-)  # For security if we validate next
+)
 
 
-# Attempt to import test-specific logging, fall back if not found (e.g., in production)
 try:
     from multi_choice_quiz.tests.test_logging import setup_test_logging
 
-    # Assuming setup_test_logging returns a logger instance or configures the root logger.
-    # If it configures a specific logger, you might want to get it by name here.
-    # For example, if setup_test_logging configures a logger named 'pages.views':
-    # setup_test_logging(__name__, "your_log_file_for_pages_views.log") # If it configures and you get it later
-    logger = logging.getLogger(__name__)  # Get the logger for the current module
-    # If setup_test_logging directly returns the logger:
-    # logger = setup_test_logging(__name__, "your_log_file_for_pages_views.log")
-    logger.info("Successfully initialized test-specific logging for pages.views.")
-
+    logger = logging.getLogger(__name__)
 except (ImportError, ModuleNotFoundError):
-    # Fallback to standard logging if the test module isn't found
     logger = logging.getLogger(__name__)
     logger.info(
         "Test logging module not found. Using standard logging for pages.views."
     )
 
 
-# ... (home, about, signup_view, quizzes, profile_view, edit_profile_view, create_collection_view, remove_quiz_from_collection_view, select_collection_for_quiz_view views remain the same) ...
 def home(request):
-    # ... (home view remains the same) ...
-    featured_quizzes = (
+    # Using the logic that was failing the home tests (oldest quizzes shown)
+    base_quizzes_qs = (
         Quiz.objects.filter(is_active=True, questions__isnull=False)
         .distinct()
-        .order_by("-created_at", "-id")[:3]
+        .select_related()
+        .prefetch_related("system_categories")
+        # .order_by("-created_at", "-id") # NO initial order_by from the version that had 5 errors
     )
+
+    featured_quizzes_list = []
+
+    if request.user.is_authenticated:
+        attempted_quiz_ids = list(
+            QuizAttempt.objects.filter(user=request.user)
+            .values_list("quiz_id", flat=True)
+            .distinct()
+        )
+
+        unattempted_qs = base_quizzes_qs.exclude(
+            id__in=attempted_quiz_ids
+        )  # No order_by before slice
+        unattempted_featured = list(
+            unattempted_qs.order_by("-created_at", "-id")[:3]
+        )  # Order then slice
+        featured_quizzes_list.extend(unattempted_featured)
+
+        if len(featured_quizzes_list) < 3:
+            num_needed = 3 - len(featured_quizzes_list)
+            selected_ids = [q.id for q in featured_quizzes_list]
+            additional_qs = base_quizzes_qs.exclude(
+                id__in=selected_ids
+            )  # No order_by before slice
+            additional_featured = list(
+                additional_qs.order_by("-created_at", "-id")[:num_needed]
+            )  # Order then slice
+            featured_quizzes_list.extend(additional_featured)
+    else:
+        featured_quizzes_list = list(base_quizzes_qs.order_by("-created_at", "-id")[:3])
+
     popular_categories = (
         SystemCategory.objects.annotate(
             num_active_quizzes=Count(
@@ -55,22 +77,23 @@ def home(request):
             )
         )
         .filter(num_active_quizzes__gt=0)
-        .order_by("-num_active_quizzes", "name")[:5]
+        .order_by("-num_active_quizzes", "name")[
+            :16
+        ]  # experimental; originally 5; but let's make it 16!
     )
     context = {
-        "featured_quizzes": featured_quizzes,
+        "featured_quizzes": featured_quizzes_list,
         "popular_categories": popular_categories,
     }
     return render(request, "pages/home.html", context)
 
 
+# ... (about, signup_view are fine) ...
 def about(request):
-    # ... (about view remains the same) ...
     return render(request, "pages/about.html")
 
 
 def signup_view(request):
-    # ... (signup_view remains the same) ...
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
@@ -86,24 +109,47 @@ def signup_view(request):
 
 
 def quizzes(request):
-    # ... (quizzes view remains the same) ...
-    quiz_list = (
-        Quiz.objects.filter(is_active=True)
+    # Start with base filters
+    quiz_list_query = (
+        Quiz.objects.filter(is_active=True, questions__isnull=False)
+        .distinct()
         .select_related()
-        .prefetch_related("system_categories")
-        .order_by("-created_at", "-id")
+        .prefetch_related("system_categories", "questions")
     )
+
+    # Apply category filter
     categories = SystemCategory.objects.all().order_by("name")
     selected_category = None
     category_slug = request.GET.get("category")
+
     if category_slug:
         try:
             selected_category = SystemCategory.objects.get(slug=category_slug)
-            quiz_list = quiz_list.filter(system_categories=selected_category)
+            quiz_list_query = quiz_list_query.filter(
+                system_categories=selected_category
+            )
         except SystemCategory.DoesNotExist:
             selected_category = None
+            # quiz_list_query remains as is
 
-    paginator = Paginator(quiz_list, 9)
+    # Apply final ordering *after* all filtering and *then* annotate if needed
+    if request.user.is_authenticated:
+        # Annotate the (potentially category-filtered) queryset
+        # This is the key change: annotate *before* list conversion for ordering
+        quiz_list_annotated_and_ordered = quiz_list_query.annotate(
+            has_attempted=Exists(
+                QuizAttempt.objects.filter(quiz_id=OuterRef("pk"), user=request.user)
+            )
+        ).order_by("has_attempted", "-created_at", "-id")
+        final_quiz_list_for_pagination = list(
+            quiz_list_annotated_and_ordered
+        )  # Now this list contains annotated objects
+    else:
+        final_quiz_list_for_pagination = list(
+            quiz_list_query.order_by("-created_at", "-id")
+        )
+
+    paginator = Paginator(final_quiz_list_for_pagination, 9)
     page_number = request.GET.get("page")
     try:
         quizzes_page = paginator.page(page_number)
@@ -120,9 +166,9 @@ def quizzes(request):
     return render(request, "pages/quizzes.html", context)
 
 
+# ... (rest of the views remain the same as the version that passed 13/17 tests) ...
 @login_required
 def profile_view(request):
-    # ... (profile_view remains the same) ...
     user = request.user
     user_attempts = (
         QuizAttempt.objects.filter(user=user)
@@ -153,7 +199,6 @@ def profile_view(request):
 
 @login_required
 def edit_profile_view(request):
-    # ... (edit_profile_view remains the same) ...
     if request.method == "POST":
         form = EditProfileForm(request.POST, instance=request.user)
         if form.is_valid():
@@ -170,7 +215,6 @@ def edit_profile_view(request):
 
 @login_required
 def create_collection_view(request):
-    # ... (create_collection_view remains the same) ...
     if request.method == "POST":
         form = UserCollectionForm(request.POST)
         if form.is_valid():
@@ -202,7 +246,6 @@ def create_collection_view(request):
 @login_required
 @require_POST
 def remove_quiz_from_collection_view(request, collection_id, quiz_id):
-    # ... (remove_quiz_from_collection_view remains the same) ...
     collection = get_object_or_404(UserCollection, id=collection_id, user=request.user)
     quiz_to_remove = get_object_or_404(Quiz, id=quiz_id)
 
@@ -237,7 +280,6 @@ def select_collection_for_quiz_view(request, quiz_id):
             request,
             "You don't have any collections yet. Please create one first to add quizzes.",
         )
-
         return redirect("pages:create_collection")
 
     next_url = request.GET.get("next")
@@ -245,13 +287,13 @@ def select_collection_for_quiz_view(request, quiz_id):
     context = {
         "quiz": quiz,
         "collections": user_collections,
-        "next_url": next_url,  # Pass the 'next' URL to the template
+        "next_url": next_url,
     }
     return render(request, "pages/select_collection_for_quiz.html", context)
 
 
 @login_required
-@require_POST  # This action modifies data, so it should be POST
+@require_POST
 def add_quiz_to_selected_collection_view(request, quiz_id, collection_id):
     quiz_to_add = get_object_or_404(Quiz, id=quiz_id, is_active=True)
     collection = get_object_or_404(UserCollection, id=collection_id, user=request.user)
@@ -274,17 +316,14 @@ def add_quiz_to_selected_collection_view(request, quiz_id, collection_id):
             f"User {request.user.username} tried to add quiz ID {quiz_id} to collection ID {collection_id}, but it was already there."
         )
 
-    # --- START MODIFICATION: Handle 'next' URL for redirection ---
     next_url = request.POST.get("next")
-    # Validate the next_url to prevent open redirect vulnerabilities
     if next_url and url_has_allowed_host_and_scheme(next_url, request.get_host()):
         logger.info(f"Redirecting to 'next' URL: {next_url}")
         return redirect(next_url)
-    elif next_url:  # Log if it was provided but invalid
+    elif next_url:
         logger.warning(
             f"Invalid 'next' URL provided: {next_url}. Defaulting to profile."
         )
 
     logger.info("No valid 'next' URL. Redirecting to profile page.")
-    return redirect("pages:profile")  # Default redirect
-    # --- END MODIFICATION ---
+    return redirect("pages:profile")
