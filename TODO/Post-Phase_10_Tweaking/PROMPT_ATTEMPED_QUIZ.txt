@@ -1,0 +1,58 @@
+Please implement a feature in the provided Django codebase to visually distinguish quizzes that an authenticated user has already attempted.
+
+The goal is to:
+1.  Modify the appearance of quiz cards on the **Home page (featured quizzes)** and the **Quizzes page (full list)**.
+2.  If a quiz has been attempted by the logged-in user:
+    a.  Change the border color of the quiz card.
+    b.  Change the "Start Quiz" button's background color and text to "Retake Quiz".
+3.  This visual distinction should only apply to authenticated users. Anonymous users should see the default styling.
+
+**Instructions & File Locations:**
+
+**1. Backend Modification (pages/views.py):**
+
+*   In the `home` view within `src/pages/views.py`:
+    *   After the `featured_quizzes_list` is finalized, and *if the user is authenticated*, iterate through this list.
+    *   For each `quiz_obj` in `featured_quizzes_list`, set a new attribute `quiz_obj.has_attempted = True` if `quiz_obj.id` is in the `attempted_quiz_ids` list (which is already fetched in the view). Otherwise, set it to `False`.
+
+**2. Frontend Template Modifications:**
+
+*   **File: `src/pages/home.html` (Featured Quizzes Section)**
+    *   Locate the loop: `{% for quiz in featured_quizzes %}`.
+    *   Find the main `div` for the quiz card (currently has classes like `bg-surface rounded-xl ...`).
+    *   **Conditionally change its border:**
+        *   If `quiz.has_attempted` is true, add `border-purple-500 hover:border-purple-400`.
+        *   Else (not attempted or user not authenticated), keep the existing `border-border hover:border-accent-primary`.
+    *   Find the "Start Quiz" `<a>` tag.
+    *   **Conditionally change its background color:**
+        *   If `quiz.has_attempted` is true, change its background classes to `bg-indigo-600 hover:bg-indigo-700`.
+        *   Else, keep `bg-accent-primary hover:bg-accent-hover`.
+    *   **Conditionally change its text:**
+        *   If `quiz.has_attempted` is true, change the text to "Retake Quiz".
+        *   Else, keep "Start Quiz".
+
+*   **File: `src/pages/quizzes.html` (Quizzes Grid Section)**
+    *   Locate the loop: `{% for quiz in quizzes %}`.
+    *   Find the main `div` for the quiz card (similar structure to `home.html`).
+    *   **Conditionally change its border** (same logic as `home.html`):
+        *   If `quiz.has_attempted` is true, add `border-purple-500 hover:border-purple-400`.
+        *   Else, keep `border-border hover:border-accent-primary`.
+        *   *(The `quizzes` view already provides the `has_attempted` attribute on `quiz` objects for authenticated users, so no extra backend logic is needed for this page.)*
+    *   Find the "Start Quiz" `<a>` tag.
+    *   **Conditionally change its background color** (same logic as `home.html`):
+        *   If `quiz.has_attempted` is true, change its background classes to `bg-indigo-600 hover:bg-indigo-700`.
+        *   Else, keep `bg-accent-primary hover:bg-accent-hover`.
+    *   **Conditionally change its text** (same logic as `home.html`):
+        *   If `quiz.has_attempted` is true, change the text to "Retake Quiz".
+        *   Else, keep "Start Quiz".
+
+**Styling Notes:**
+*   The Tailwind CSS classes `border-purple-500`, `hover:border-purple-400`, `bg-indigo-600`, and `hover:bg-indigo-700` should be used for the "attempted" state.
+*   Ensure the existing hover effects for non-attempted quizzes remain functional.
+
+**Context from Codebase:**
+*   The `pages/views.py` `quizzes` view already annotates quiz objects with `has_attempted` for authenticated users.
+*   Quiz attempt data is stored in the `QuizAttempt` model in `multi_choice_quiz/models.py`.
+*   Relevant Tailwind color definitions can be found in `pages/templates/pages/base.html` if needed for reference (e.g., `accent-primary`, `border-border`).
+
+Please provide the modified code for the specified files.

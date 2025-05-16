@@ -964,3 +964,57 @@
     - Verify with manual E2E checks and optionally update Playwright tests.
 
 ---
+
+## Session 20 Summary (Date: 2025-05-15)
+
+**Input:**
+
+- Session 19 Context.
+- Codebase snapshot (with Phase 11, Steps 11.1, 11.2, and 11.3 completed).
+- `Project_Requirements.md` (v2.6).
+- `Profile_and_CoreFeatures_Iteration_Guide.md` (updated for Phase 11).
+- `UI_UX_TODOs.md` (for reference).
+
+**Key Activities & Outcomes:**
+
+1.  **Continued Implementation of Phase 11: Post-Phase 10 UI/UX Tweaking.**
+2.  **Implemented Phase 11, Step 11.4 (Make Profile Collections Collapsible/Expandable):**
+    - Modified `pages/templates/pages/profile.html` to add Alpine.js (`x-data`, `@click`, `x-show`, transitions) for collapsible/expandable collection sections in the "Collections" tab.
+    - Updated `src/conftest.py`: Enhanced `admin_logged_in_page` fixture to ensure the "Admin Fixture Collection" contains a test quiz.
+    - Updated `src/pages/tests/test_responsive.py::test_profile_responsive_layout` to include assertions verifying the initial collapsed state, expansion on click, and subsequent collapse of the collection item.
+    - Confirmed all 6 parameterizations of `test_profile_responsive_layout` passed.
+    - Step 11.4 marked as **COMPLETE**.
+3.  **Implemented Phase 11, Step 11.5 (Profile Page Polish - Stat Placeholders & Attempt Counts):**
+    - **Task 11.5.1:** Updated `pages/templates/pages/profile.html` to change placeholder text for "Strongest Topic" to "Analysis Coming Soon!" and "Needs Review" to "More data needed".
+    - **Task 11.5.2:** Modified `pages/views.py::profile_view` to calculate and pass total attempt counts per quiz for the logged-in user. This involved a new query to count attempts grouped by `quiz_id` and then attaching this count information to the `quiz_attempts` list passed to the context.
+    - **Task 11.5.3:** Updated `pages/templates/pages/profile.html` (Quiz History tab) to display the fetched attempt count next to each quiz title (e.g., "(Taken 3 times)").
+    - **Verification:** Added `test_profile_page_context_attempt_counts` to `src/pages/tests/test_views.py` to verify the new context data for attempt counts; this test passed.
+    - Step 11.5 marked as **COMPLETE**.
+4.  **Conducted Phase 11, Step 11.6 (Phase 11 Verification):**
+    - Reviewed the verification plan, deciding to run the full `pytest -s -v` suite.
+    - Identified and fixed a failing test: `pages/tests/collections_mgmt/test_phase10_verification.py::test_add_to_collection_button_on_quiz_pages_for_auth_user`. The failure was due to the "Add to Collection" link's `href` now including a `?next=` parameter, making the previous exact match assertion outdated. The assertion was updated to check for the base URL and the presence of `?next=`.
+    - After the fix, the full test suite (`pytest -s -v`) of 125 tests passed.
+    - Step 11.6 marked as **COMPLETE**.
+5.  **Phase 11 Conclusion:** All steps for Phase 11 are now **COMPLETE** and verified.
+6.  **Clarified Definitions (Detour):** Briefly discussed the potential definitions and complexities of "Strongest Topic" and "Needs Review" stats, reaffirming they are part of Phase 12 and that the current placeholders are temporary. Also clarified the role of signals vs. ORM calculations in the context of pre-calculated vs. dynamic stats.
+
+**Current LGID Stage:**
+
+- **Phase 11 (Post-Phase 10 UI/UX Tweaking): COMPLETE.** All implementation steps verified. Changes committed and pushed.
+
+**Plan for Next Session (Session 21):**
+
+1.  **(Git Workflow):**
+    - Ensure all Phase 11 changes are merged into the main development branch.
+    - Create a new feature branch for Phase 12 (e.g., `feature/phase12-advanced-analysis`).
+2.  **Begin Implementation of Phase 12: Advanced Mistake Analysis & Quiz Suggestion.**
+    - **Step 12.1 (Define & Plan Backend Analysis Logic):**
+      - Collaboratively define the precise logic for:
+        - "Strongest Topic" (e.g., highest average percentage on quizzes within a `SystemCategory` or by `Question.topic`).
+        - "Needs Review" (e.g., `SystemCategory` or `Question.topic` with lowest average percentage, or most frequently incorrect individual questions).
+      - Decide on the scope (e.g., analyze by `SystemCategory`, `Topic`, or `Question.tag`).
+      - Outline the Django ORM queries and Python logic needed.
+      - Decide whether these stats will be calculated dynamically (and loaded via HTMX as previously discussed) or if a pre-calculation/caching strategy (with potential new model) is now preferred for Phase 12.
+3.  Based on decisions in 12.1, proceed to implement the backend logic.
+
+---
