@@ -196,36 +196,51 @@
 {% endblock %}
 
 {% block extra_js_body %}
-    <script>
-        // Get all buttons that should be in the tab cycle
-        const tabbableButtons = document.querySelectorAll('button[tabindex="0"]');
-        
-        // Set up the tab trap to cycle only through our buttons
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Tab') {
-                // Find currently focused element
-                const focusedElement = document.activeElement;
-                
-                // Find index of current button in our list
-                let currentIndex = Array.from(tabbableButtons).indexOf(focusedElement);
-                
-                // Only trap Tab if we're already focused on one of our buttons
-                if (currentIndex !== -1) {
-                    e.preventDefault(); // Prevent default tab behavior
-                    
-                    // Calculate next button index (with wraparound)
-                    let nextIndex;
-                    if (e.shiftKey) { // Shift+Tab goes backward
-                        nextIndex = (currentIndex - 1 + tabbableButtons.length) % tabbableButtons.length;
-                    } else { // Tab goes forward
-                        nextIndex = (currentIndex + 1) % tabbableButtons.length;
-                    }
-                    
-                    // Focus the next button
-                    tabbableButtons[nextIndex].focus();
-                }
-            }
-        });
-    </script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const container = document.getElementById("quiz-app-container");
+
+    function trapFocus(container) {
+      const focusableSelectors = 'button.option-button:not([disabled])';
+      let optionButtons = [];
+
+      function updateFocusable() {
+        optionButtons = Array.from(container.querySelectorAll(focusableSelectors));
+      }
+
+      updateFocusable();
+
+      container.addEventListener('keydown', function (e) {
+        if (e.key !== 'Tab' || optionButtons.length === 0) return;
+
+        const first = optionButtons[0];
+        const last = optionButtons[optionButtons.length - 1];
+        const active = document.activeElement;
+
+        if (e.shiftKey) {
+          // Shift+Tab
+          if (active === first || !container.contains(active)) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          // Tab
+          if (active === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      });
+
+      // In case DOM updates dynamically
+      const observer = new MutationObserver(() => updateFocusable());
+      observer.observe(container, { childList: true, subtree: true });
+    }
+
+    trapFocus(container);
+  });
+</script>
+
 
 {% endblock extra_js_body %}
