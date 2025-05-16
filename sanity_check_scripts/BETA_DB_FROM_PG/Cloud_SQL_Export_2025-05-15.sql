@@ -6602,6 +6602,9 @@ COPY public.multi_choice_quiz_quizattempt (id, score, total_questions, percentag
 3	12	12	100	2025-05-14 21:08:38.81858+00	2025-05-14 21:08:37.408+00	\N	54	1
 4	11	11	100	2025-05-14 21:15:15.501465+00	2025-05-14 21:15:14.024+00	\N	52	1
 5	16	20	80	2025-05-15 06:16:18.549518+00	2025-05-15 06:16:14.968+00	{"841": {"user_answer_idx": 2, "correct_answer_idx": 0}, "842": {"user_answer_idx": 1, "correct_answer_idx": 3}, "845": {"user_answer_idx": 3, "correct_answer_idx": 1}, "846": {"user_answer_idx": 3, "correct_answer_idx": 4}}	48	1
+6	18	20	90	2025-05-15 17:06:20.256305+00	2025-05-15 17:06:19.516+00	{"116": {"user_answer_idx": 4, "correct_answer_idx": 1}, "117": {"user_answer_idx": 3, "correct_answer_idx": 4}}	7	1
+7	18	20	90	2025-05-16 06:20:41.109095+00	2025-05-16 06:20:40.854+00	{"934": {"user_answer_idx": 0, "correct_answer_idx": 1}, "935": {"user_answer_idx": 1, "correct_answer_idx": 3}}	53	1
+8	20	20	100	2025-05-16 07:39:28.335251+00	2025-05-16 07:39:28.026+00	\N	51	1
 \.
 
 
@@ -6849,7 +6852,7 @@ SELECT pg_catalog.setval('public.multi_choice_quiz_quiz_topics_id_seq', 55, true
 -- Name: multi_choice_quiz_quizattempt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.multi_choice_quiz_quizattempt_id_seq', 5, true);
+SELECT pg_catalog.setval('public.multi_choice_quiz_quizattempt_id_seq', 8, true);
 
 
 --
