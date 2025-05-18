@@ -18,10 +18,6 @@ from .transform import (
     quiz_bank_to_models,
 )  # This line might seem circular now, but it's if other parts of transform.py were to call this file.
 
-# Given the current structure, quiz_bank_to_models is defined below.
-# If quiz_bank_to_models was *only* in transform.py previously,
-# and we are moving its *definition* here, then this import in utils.py
-# for itself is not needed. We'll define it fresh below.
 
 logger = logging.getLogger(__name__)
 
@@ -56,11 +52,6 @@ def quiz_bank_to_models(
             quiz_instance.topics.add(topic_instance)
 
         questions_to_create = []
-        # Store a mapping: (original question text, original position in quiz_data) -> prepared Question object (before saving)
-        # This helps map back to the original data structure when creating options.
-        # We use a tuple of (text, index) as a key assuming question text within a single quiz_data batch is unique enough for this.
-        # A more robust key might be needed if question texts can be identical within the same import batch.
-        # For now, using original index in quiz_data for disambiguation if needed.
         prepared_questions_map = {}
 
         for i, item_data in enumerate(quiz_data):
@@ -103,16 +94,10 @@ def quiz_bank_to_models(
                 f"Expected {len(questions_to_create)} questions, "
                 f"fetched {len(created_questions_from_db)} from DB. Aborting option creation for this quiz."
             )
-            # This state is problematic, raising an error or returning early might be best.
-            # For now, we'll log and continue, which means options might not be created correctly.
-            # A more robust solution might raise an exception here.
-            # raise Exception(f"Question count mismatch after bulk_create for quiz {quiz_title}")
             return quiz_instance  # Or handle error more gracefully
 
         options_to_create = []
         for i, original_item_data in enumerate(quiz_data):
-            # Find the corresponding question from the database using its position.
-            # This relies on 'position' being correctly set and unique within the quiz during creation.
             db_question = None
             for q_from_db in created_questions_from_db:
                 if q_from_db.position == (i + 1):  # Match by 1-based position
@@ -166,10 +151,6 @@ def quiz_bank_to_models(
 # --- END REFACTORED FUNCTION ---
 
 
-# Keep other functions in utils.py as they are, they should call the refactored quiz_bank_to_models
-# For example, import_from_dataframe, curate_data, load_quiz_bank, import_questions_by_chapter
-
-
 def import_from_dataframe(
     df: pd.DataFrame,
     quiz_title: str,
@@ -183,7 +164,6 @@ def import_from_dataframe(
     column_mapping = {
         "question_text": "text",
         "correct_answer": "answerIndex",
-        # Add other potential mappings here
     }
     df.rename(columns=column_mapping, inplace=True)
 
@@ -578,9 +558,6 @@ def import_questions_by_chapter(
                     available_indices_in_chapter_df
                 ]
 
-                # Determine sample size for current quiz
-                # If it's a single quiz due to low question count, actual_questions_per_quiz_for_this_chapter_calc was already set to num_chapter_questions
-                # Otherwise, it's the standard questions_per_quiz
                 current_quiz_sample_size = min(
                     actual_questions_per_quiz_for_this_chapter_calc,
                     len(available_for_sampling_df),
@@ -611,17 +588,10 @@ def import_questions_by_chapter(
                     n=current_quiz_sample_size, random_state=quiz_num
                 )  # random_state for some consistency
 
-                # Record the chapter_df indices that were just sampled
-                # Need to map quiz_sample_df.index back to the original chapter_df indices
                 original_indices_for_sample = [
                     chapter_df.index.get_loc(idx) for idx in quiz_sample_df.index
                 ]
                 used_question_indices_in_chapter_df.update(original_indices_for_sample)
-
-                # --- Determine quiz title and topic for quiz_bank_to_models ---
-                # The topic_name passed to quiz_bank_to_models will associate all questions in *this specific quiz* to that one topic.
-                # If quiz_sample_df has a 'topic' column, we might use its most common value for this quiz.
-                # Otherwise, we use the primary_topic_name_for_chapter.
 
                 topic_for_this_quiz = primary_topic_name_for_chapter  # Default
                 if (

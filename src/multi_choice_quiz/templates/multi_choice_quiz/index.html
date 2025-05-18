@@ -17,7 +17,7 @@
 {% block content %}
 <div
     id="quiz-app-container"
-    class="max-w-2xl mx-auto w-11/12 px-4 py-5 sm:px-6 md:py-8 flex-grow flex flex-col justify-start"
+    class="flex flex-col justify-start flex-grow w-11/12 max-w-2xl px-4 py-5 mx-auto sm:px-6 md:py-8"
     x-data="quizApp()"
     x-init="init()"
     x-cloak
@@ -28,10 +28,10 @@
   <template x-if="!quizCompleted">
     <div>
       <!-- Progress Bar, Stars, Counter, Home Button -->
-      <div class="sticky top-0 z-10 bg-slate-900 py-4 flex items-center relative min-h-[40px] gap-3" id="status-bar">
+      <div aria-hidden="true" class="sticky top-0 z-10 bg-slate-900 py-4 flex items-center relative min-h-[40px] gap-3" id="status-bar">
         <!-- Progress Bar -->
         <div class="flex justify-center items-center flex-grow flex-basis-0 min-w-[50px]">
-            <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden shadow-inner">
+            <div class="w-full h-2 overflow-hidden rounded-full shadow-inner bg-slate-700">
                 <div
                     class="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full transition-all duration-400 ease-in-out shadow-[0_0_8px_rgba(124,58,237,0.5)]"
                     :style="`width: ${Math.max(5, (currentQuestionIndex / Math.max(1, questions.length -1)) * 100)}%`"
@@ -40,18 +40,18 @@
             </div>
         </div>
         <!-- Star Rating -->
-        <div class="text-yellow-400 leading-none flex-shrink-0 whitespace-nowrap"
+        <div class="flex-shrink-0 leading-none text-yellow-400 whitespace-nowrap"
              x-html="starRatingDisplay"
              title="Your performance rating">
         </div>
         <!-- Question Counter -->
         <div
-            class="bg-slate-800 text-gray-200 rounded-full px-3 py-1 md:px-4 font-bold font-mono flex-shrink-0"
+            class="flex-shrink-0 px-3 py-1 font-mono font-bold text-gray-200 rounded-full bg-slate-800 md:px-4"
             x-text="questions.length > 0 ? `${currentQuestionIndex + 1}/${questions.length}` : '0/0'"
         ></div>
         <!-- Home Button -->
-        <div class="w-10 h-10 md:w-12 md:h-12 bg-slate-800 rounded-full flex items-center justify-center cursor-pointer transition duration-200 text-gray-200 shadow-md hover:bg-slate-700 hover:scale-105 ml-auto flex-shrink-0">
-            <a href="{% url 'pages:home' %}" class="text-gray-200 no-underline flex items-center justify-center w-full h-full">
+        <div class="flex items-center justify-center flex-shrink-0 w-10 h-10 ml-auto text-gray-200 transition duration-200 rounded-full shadow-md cursor-pointer md:w-12 md:h-12 bg-slate-800 hover:bg-slate-700 hover:scale-105">
+            <a href="{% url 'pages:home' %}" class="flex items-center justify-center w-full h-full text-gray-200 no-underline">
                 <span>🏠</span>
             </a>
         </div>
@@ -59,7 +59,7 @@
 
       <!-- Question Text Container -->
       <div
-        class="sticky top-0 z-8 bg-slate-800/80 rounded-2xl p-2 sm:p-6 md:p-8 relative mt-px mb-4 sm:mb-6 backdrop-blur-sm border border-slate-700 shadow-lg flex items-center justify-center"
+        class="relative sticky top-0 flex items-center justify-center p-2 mt-px mb-4 border shadow-lg z-8 bg-slate-800/80 rounded-2xl sm:p-6 md:p-8 sm:mb-6 backdrop-blur-sm border-slate-700"
         x-show="!quizCompleted && currentQuestion"
         x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 transform scale-95"
@@ -68,7 +68,7 @@
         x-transition:leave-start="opacity-100 transform scale-100"
         x-transition:leave-end="opacity-0 transform scale-95"
       >
-              <div class="text-center leading-normal text-gray-200" id="question-text">
+              <div class="leading-normal text-center text-gray-200" id="question-text">
                    <div x-html="currentQuestion.text"></div>
           </div>
       </div>
@@ -106,70 +106,70 @@
   <template x-if="quizCompleted">
     <div
         id="quiz-results-panel"
-        class="bg-slate-800 rounded-2xl p-5 md:p-7 lg:p-8 text-gray-300 my-5 mx-auto border border-slate-700 shadow-lg w-full"
+        class="w-full p-5 mx-auto my-5 text-gray-300 border shadow-lg bg-slate-800 rounded-2xl md:p-7 lg:p-8 border-slate-700"
         x-transition:enter="transition ease-out duration-500"
         x-transition:enter-start="opacity-0 transform scale-95"
         x-transition:enter-end="opacity-100 transform scale-100"
     >
       {# <<< START ADDITION: Display Quiz Title in Results >>> #}
       {% if quiz %} {# Check if quiz object exists in context #}
-      <h2 class="text-xl md:text-2xl font-semibold text-center text-purple-300 mb-2">{{ quiz.title }}</h2>
-      <hr class="border-slate-600 mb-5"> {# Optional separator #}
+      <h2 class="mb-2 text-xl font-semibold text-center text-purple-300 md:text-2xl">{{ quiz.title }}</h2>
+      <hr class="mb-5 border-slate-600"> {# Optional separator #}
       {% endif %}
       {# <<< END ADDITION >>> #}
 
-      <h3 class="text-gray-200 text-2xl md:text-3xl lg:text-4xl text-center mt-0 mb-6 font-bold">Quiz Results</h3>
+      <h3 class="mt-0 mb-6 text-2xl font-bold text-center text-gray-200 md:text-3xl lg:text-4xl">Quiz Results</h3>
 
       <!-- Results Content (Stats and Mistakes) -->
       <div class="md:flex md:gap-8">
           <!-- Stats Section -->
-          <div class="pb-5 border-b border-slate-700 mb-5 md:border-b-0 md:border-r md:pr-6 md:pb-0 md:mb-0 md:w-48 md:flex-shrink-0">
+          <div class="pb-5 mb-5 border-b border-slate-700 md:border-b-0 md:border-r md:pr-6 md:pb-0 md:mb-0 md:w-48 md:flex-shrink-0">
             <div class="flex flex-wrap justify-around gap-y-4 md:flex-col md:items-start md:gap-y-5">
               <!-- Rating -->
-              <div class="flex flex-col items-center text-center w-1/2 md:w-full md:items-start md:text-left">
-                  <span class="text-gray-400 text-sm mb-1">Rating</span>
-                  <span class="text-yellow-400 text-2xl md:text-2xl leading-none" x-html="starRatingDisplay"></span>
+              <div class="flex flex-col items-center w-1/2 text-center md:w-full md:items-start md:text-left">
+                  <span class="mb-1 text-sm text-gray-400">Rating</span>
+                  <span class="text-2xl leading-none text-yellow-400 md:text-2xl" x-html="starRatingDisplay"></span>
               </div>
               <!-- Score -->
-              <div class="flex flex-col items-center text-center w-1/2 md:w-full md:items-start md:text-left">
-                  <span class="text-gray-400 text-sm mb-1">Score</span>
-                  <span class="text-gray-200 text-xl md:text-2xl font-semibold"><span class="text-purple-400" x-text="score"></span> / <span x-text="questions.length"></span></span>
+              <div class="flex flex-col items-center w-1/2 text-center md:w-full md:items-start md:text-left">
+                  <span class="mb-1 text-sm text-gray-400">Score</span>
+                  <span class="text-xl font-semibold text-gray-200 md:text-2xl"><span class="text-purple-400" x-text="score"></span> / <span x-text="questions.length"></span></span>
               </div>
               <!-- Percentage -->
-              <div class="flex flex-col items-center text-center w-1/2 md:w-full md:items-start md:text-left">
-                  <span class="text-gray-400 text-sm mb-1">Percentage</span>
-                  <span class="text-purple-400 text-xl md:text-2xl font-semibold" x-text="calculatePercentage() + '%'"></span>
+              <div class="flex flex-col items-center w-1/2 text-center md:w-full md:items-start md:text-left">
+                  <span class="mb-1 text-sm text-gray-400">Percentage</span>
+                  <span class="text-xl font-semibold text-purple-400 md:text-2xl" x-text="calculatePercentage() + '%'"></span>
               </div>
               <!-- Time -->
-              <div class="flex flex-col items-center text-center w-1/2 md:w-full md:items-start md:text-left">
-                  <span class="text-gray-400 text-sm mb-1">Time</span>
-                  <span class="text-gray-200 text-xl md:text-2xl font-semibold" x-text="formatTime(quizTime)"></span>
+              <div class="flex flex-col items-center w-1/2 text-center md:w-full md:items-start md:text-left">
+                  <span class="mb-1 text-sm text-gray-400">Time</span>
+                  <span class="text-xl font-semibold text-gray-200 md:text-2xl" x-text="formatTime(quizTime)"></span>
               </div>
             </div>
           </div>
 
           <!-- Mistakes Review Section -->
-          <div class="mt-5 md:mt-0 md:flex-grow min-w-0">
-            <h4 class="text-lg text-center text-gray-200 mb-4 pb-2 border-b border-dashed border-slate-600 md:text-left">Mistakes Review</h4>
-            <ul class="mistakes-review-list list-none p-0 m-0 max-h-60 md:max-h-72 lg:max-h-80 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-700">
+          <div class="min-w-0 mt-5 md:mt-0 md:flex-grow">
+            <h4 class="pb-2 mb-4 text-lg text-center text-gray-200 border-b border-dashed border-slate-600 md:text-left">Mistakes Review</h4>
+            <ul class="p-0 pr-2 m-0 overflow-y-auto list-none mistakes-review-list max-h-60 md:max-h-72 lg:max-h-80 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-700">
                 <!-- No mistakes message -->
                 <template x-if="questions.length === 0">
-                     <li class="text-center text-gray-400 py-4">No questions were loaded for this quiz.</li>
+                     <li class="py-4 text-center text-gray-400">No questions were loaded for this quiz.</li>
                 </template>
                 <!-- Perfect score message -->
                 <template x-if="score === questions.length && questions.length > 0">
-                     <li class="text-center text-gray-400 py-4">🎉 No mistakes! Well done!</li>
+                     <li class="py-4 text-center text-gray-400">🎉 No mistakes! Well done!</li>
                 </template>
                 <!-- Loop through mistakes -->
                 <template x-for="(question, index) in questions" :key="index">
                   <template x-if="userAnswers[index] !== question.answerIndex">
                     <li class="flex items-start mb-4 pb-2.5 md:mb-5 md:pb-3.5 border-b border-slate-700 last:border-b-0 last:mb-0">
                       <span class="text-red-600 mr-2.5 md:mr-3 text-lg md:text-xl flex-shrink-0 mt-0.5">❌</span>
-                      <div class="mistake-content-wrapper flex-1 min-w-0 break-words" data-testid="mistake-item-content">
-                        <div class="font-medium text-gray-200 mb-1 leading-snug text-sm md:text-base">
+                      <div class="flex-1 min-w-0 break-words mistake-content-wrapper" data-testid="mistake-item-content">
+                        <div class="mb-1 text-sm font-medium leading-snug text-gray-200 md:text-base">
                            <div x-html="`Q${index + 1}. ${question.text}`"></div>
                         </div>
-                        <div class="text-gray-400 text-xs md:text-sm">
+                        <div class="text-xs text-gray-400 md:text-sm">
                           <strong class="!text-green-600 font-semibold">Correct:</strong>
                           <span x-html="question.options[question.answerIndex]"></span>
                         </div>
@@ -182,7 +182,7 @@
       </div>
 
       <!-- Action Buttons -->
-      <div class="mt-6 flex flex-col sm:flex-row justify-center sm:justify-end gap-3 pt-4 border-t border-slate-700">
+      <div class="flex flex-col justify-center gap-3 pt-4 mt-6 border-t sm:flex-row sm:justify-end border-slate-700">
         <a href="{% url 'pages:home' %}" class="py-2.5 px-5 rounded-lg text-base font-bold cursor-pointer text-center transition duration-200 shadow-md no-underline w-full sm:w-auto bg-slate-600 text-gray-200 border-none hover:bg-slate-700 hover:-translate-y-0.5 hover:shadow-lg">
           Go Home
         </a>

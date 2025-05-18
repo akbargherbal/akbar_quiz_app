@@ -27,7 +27,6 @@ from .transform import models_to_frontend
 logger = logging.getLogger(__name__)
 
 
-# --- home and quiz_detail views remain unchanged ---
 def home(request):
     try:
         quiz = (
@@ -106,9 +105,6 @@ def quiz_detail(request, quiz_id):
         return render(request, "multi_choice_quiz/error.html", context, status=500)
 
 
-# --- End unchanged views ---
-
-
 @csrf_exempt
 @require_POST
 def submit_quiz_attempt(request):
@@ -130,7 +126,6 @@ def submit_quiz_attempt(request):
             "percentage",
             "end_time",
         ]
-        # attempt_details is now expected but handled if missing for compatibility
         missing_fields = [field for field in required_fields if field not in data]
         if missing_fields:
             logger.warning(
@@ -147,29 +142,22 @@ def submit_quiz_attempt(request):
             percentage = float(data["percentage"])
             end_time_str = str(data["end_time"])
             end_time_dt = datetime.fromisoformat(end_time_str.replace("Z", "+00:00"))
-            # --- START STEP 6.3: Extract attempt_details ---
-            # Use .get() to handle cases where it might be missing (e.g., older JS)
             received_attempt_details = data.get("attempt_details", {})
             if not isinstance(received_attempt_details, dict):
                 logger.warning(
                     f"Received non-dict attempt_details: {type(received_attempt_details)}. Ignoring."
                 )
                 received_attempt_details = {}  # Treat as empty if invalid type
-            # --- END STEP 6.3: Extract attempt_details ---
         except (ValueError, TypeError) as e:
             logger.warning(f"Invalid data type or format received: {e}. Data: {data}")
             return HttpResponseBadRequest(f"Invalid data type or format for field: {e}")
 
         try:
             quiz = Quiz.objects.get(id=quiz_id)
-            # --- START STEP 6.3: Fetch Correct Answers ---
-            # Fetch all questions for this quiz and their correct answer index (0-based)
             correct_answers = {
                 q.id: q.correct_option_index()
                 for q in Question.objects.filter(quiz=quiz)
-                # Ensure correct_option_index() handles cases with no correct option gracefully (returns None)
             }
-            # --- END STEP 6.3: Fetch Correct Answers ---
         except ObjectDoesNotExist:
             logger.warning(f"Quiz with ID {quiz_id} not found during submission.")
             return HttpResponseBadRequest("Quiz not found.")
@@ -265,8 +253,6 @@ def attempt_mistake_review(request, attempt_id):
             )
             # Option 1: Return 404 (as if it doesn't exist for them)
             raise Http404("Quiz attempt not found.")
-            # Option 2: Return 403 Forbidden (clearer, but reveals attempt exists)
-            # return HttpResponseForbidden("You do not have permission to view this attempt.")
 
         # --- Check if there are mistakes to review ---
         if not attempt.attempt_details or not isinstance(attempt.attempt_details, dict):
@@ -360,9 +346,6 @@ def attempt_mistake_review(request, attempt_id):
             request, "An error occurred while trying to load the mistake review."
         )
         return redirect("pages:profile")
-
-
-# <<< END NEW VIEW FUNCTION >>>
 
 
 # --- get_demo_questions remains unchanged ---

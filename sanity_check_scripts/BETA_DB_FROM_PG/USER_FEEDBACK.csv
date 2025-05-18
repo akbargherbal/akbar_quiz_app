@@ -1,0 +1,29 @@
+id,text,chapter_no,tag,quiz_id,topic_id,created_at
+116,"When using the JavaScript `fetch` API to make a POST request with a JSON payload, which of the following `headers` is typically required for the server to correctly interpret the body?",3,Fetch API,7,4,2025-05-14 11:16:21.164723+00:00
+117,"What is the purpose of the `x-init` directive in Alpine.js, as seen in `multi_choice_quiz/templates/multi_choice_quiz/index.html`?",3,x-init,7,4,2025-05-14 11:16:21.164739+00:00
+812,How can an HTMX AJAX request be programmatically cancelled using JavaScript and HTMX events?,7,htmx:beforeRequest preventDefault,47,40,2025-05-14 11:17:34.363186+00:00
+813,What is the main function of the `hx-sync` attribute in HTMX?,7,hx-sync purpose,47,40,2025-05-14 11:17:34.363202+00:00
+817,"If an inline edit form, submitted via HTMX, fails server-side validation in Django, what is the recommended response from the server?",7,Validation Error Response,47,40,2025-05-14 11:17:34.363266+00:00
+819,"When using `hx-ws=""send""` on an HTML form element, what does HTMX typically do upon form submission?",7,hx-ws send,47,40,2025-05-14 11:17:34.363298+00:00
+822,"After a user successfully saves changes through an inline edit form submitted via HTMX, what should the Django server typically return?",7,Save Success Response,47,40,2025-05-14 11:17:34.363345+00:00
+825,What is generally the recommended and more robust approach for including the HTMX JavaScript library in a production Django project?,7,CDN vs Static Files,47,40,2025-05-14 11:17:34.363391+00:00
+826,What critical server-side requirement must be met when using `hx-push-url` for HTMX-driven navigation?,7,hx-push-url server-side,47,40,2025-05-14 11:17:34.363408+00:00
+841,"If an element has `hx-sync=""this:drop""`, how does it affect new HTMX requests if a request from this element is already in flight?",7,hx-sync drop,48,41,2025-05-14 11:17:36.176159+00:00
+842,"What is a common and effective HTMX pattern for closing a modal whose content is loaded into a `div` with `id=""modal-wrapper""`?",7,Modals Closing,48,41,2025-05-14 11:17:36.176174+00:00
+845,"When implementing inline editing with HTMX, what is the typical server response when an ""Edit"" button is clicked for a piece of content?",7,Edit Flow,48,41,2025-05-14 11:17:36.176222+00:00
+846,"When implementing dynamic tabs with HTMX, what is a common setup for the <code>hx-target</code> attribute on the tab buttons?",7,Dynamic Tabs Targeting,48,41,2025-05-14 11:17:36.176237+00:00
+851,"Which of the following settings is essential for `django-allauth` due to its use of `django.contrib.sites`?\n<pre><code class=""language-python"">\n# project/settings.py\n# ??? = 1\n</code></pre>",8,django-allauth SITE_ID,49,42,2025-05-14 11:17:37.991906+00:00
+853,"Consider the following Django settings snippet:\n<pre><code class=""language-python"">\nINSTALLED_APPS = [\n    # ... other apps ...\n    'django.contrib.auth',\n    'django.contrib.contenttypes',\n    'django.contrib.sessions',\n    # ...\n]\n</code></pre>\nWhy is `'django.contrib.contenttypes'` essential for Django's authentication system?",8,INSTALLED_APPS ContentTypes,49,42,2025-05-14 11:17:37.991946+00:00
+861,"How can you check for a user's permission within a Django template, for example, to conditionally display an ""Edit"" button if the user has the `'myapp.change_post'` permission?",8,Template Permissions,49,42,2025-05-14 11:17:37.992086+00:00
+862,What is the primary purpose of the `django.contrib.contenttypes` framework in relation to Django's permission system?,8,ContentType Framework,49,42,2025-05-14 11:17:37.992103+00:00
+866,"If you create a custom User model named `MyUser` in an app called `accounts`, what should the `AUTH_USER_MODEL` setting in `settings.py` be?",8,AUTH_USER_MODEL,49,42,2025-05-14 11:17:37.992168+00:00
+870,What is the primary purpose of the `SOCIALACCOUNT_PROVIDERS` setting in `django-allauth`?,8,SOCIALACCOUNT_PROVIDERS,50,43,2025-05-14 11:17:39.802032+00:00
+871,What is Django's primary defense mechanism against Cross-Site Scripting (XSS) vulnerabilities within its template system?,8,XSS Auto-escaping,50,43,2025-05-14 11:17:39.802067+00:00
+876,How can you display a calculated value or the result of a model method as a column in the Django admin's change list view?,8,list_display Methods,50,43,2025-05-14 11:17:39.802153+00:00
+878,"How should you reference the active User model when defining a `ForeignKey` in another model (e.g., a `Post` model with an `author` field)?",8,Referencing User Model,50,43,2025-05-14 11:17:39.802184+00:00
+879,"When using `django-allauth`, where do you typically configure the Client ID and Client Secret for a social provider like Google?",8,django-allauth Configuration,50,43,2025-05-14 11:17:39.802200+00:00
+880,"In Django's typical request-response cycle for a protected resource, which process must occur first?",8,Process Order,50,43,2025-05-14 11:17:39.802216+00:00
+885,How does Django's <code>CsrfViewMiddleware</code> primarily protect against Cross-Site Request Forgery attacks?,8,CSRF Protection,50,43,2025-05-14 11:17:39.802294+00:00
+934,What is the purpose of HTTP Strict Transport Security (HSTS) and settings like `SECURE_HSTS_SECONDS`?,10,HSTS,53,46,2025-05-14 11:17:45.237918+00:00
+935,"When creating a simple read-only API endpoint using Django REST Framework to list all <code>Article</code> objects, which generic view is most commonly used?",10,ListAPIView,53,46,2025-05-14 11:17:45.237934+00:00
+956,"If multiple decorators are applied to a single Django view function, in what order are they typically applied and executed?",11,Decorator Order,55,48,2025-05-14 11:17:48.863916+00:00

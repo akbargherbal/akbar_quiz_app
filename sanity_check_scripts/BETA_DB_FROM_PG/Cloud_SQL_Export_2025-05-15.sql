@@ -6605,6 +6605,9 @@ COPY public.multi_choice_quiz_quizattempt (id, score, total_questions, percentag
 6	18	20	90	2025-05-15 17:06:20.256305+00	2025-05-15 17:06:19.516+00	{"116": {"user_answer_idx": 4, "correct_answer_idx": 1}, "117": {"user_answer_idx": 3, "correct_answer_idx": 4}}	7	1
 7	18	20	90	2025-05-16 06:20:41.109095+00	2025-05-16 06:20:40.854+00	{"934": {"user_answer_idx": 0, "correct_answer_idx": 1}, "935": {"user_answer_idx": 1, "correct_answer_idx": 3}}	53	1
 8	20	20	100	2025-05-16 07:39:28.335251+00	2025-05-16 07:39:28.026+00	\N	51	1
+9	13	20	65	2025-05-16 13:00:44.607419+00	2025-05-16 13:00:44.001+00	{"870": {"user_answer_idx": 3, "correct_answer_idx": 1}, "871": {"user_answer_idx": 0, "correct_answer_idx": 4}, "876": {"user_answer_idx": 2, "correct_answer_idx": 1}, "878": {"user_answer_idx": 1, "correct_answer_idx": 4}, "879": {"user_answer_idx": 3, "correct_answer_idx": 2}, "880": {"user_answer_idx": 2, "correct_answer_idx": 3}, "885": {"user_answer_idx": 3, "correct_answer_idx": 2}}	50	1
+10	15	20	75	2025-05-16 15:49:24.521798+00	2025-05-16 15:49:19.534+00	{"851": {"user_answer_idx": 3, "correct_answer_idx": 0}, "853": {"user_answer_idx": 0, "correct_answer_idx": 4}, "861": {"user_answer_idx": 4, "correct_answer_idx": 3}, "862": {"user_answer_idx": 1, "correct_answer_idx": 2}, "866": {"user_answer_idx": 3, "correct_answer_idx": 0}}	49	1
+11	13	20	65	2025-05-17 06:55:57.03839+00	2025-05-17 06:55:55.332+00	{"812": {"user_answer_idx": 1, "correct_answer_idx": 2}, "813": {"user_answer_idx": 4, "correct_answer_idx": 0}, "817": {"user_answer_idx": 2, "correct_answer_idx": 1}, "819": {"user_answer_idx": 2, "correct_answer_idx": 4}, "822": {"user_answer_idx": 3, "correct_answer_idx": 1}, "825": {"user_answer_idx": 2, "correct_answer_idx": 0}, "826": {"user_answer_idx": 3, "correct_answer_idx": 4}}	47	1
 \.
 
 
@@ -6852,7 +6855,7 @@ SELECT pg_catalog.setval('public.multi_choice_quiz_quiz_topics_id_seq', 55, true
 -- Name: multi_choice_quiz_quizattempt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.multi_choice_quiz_quizattempt_id_seq', 8, true);
+SELECT pg_catalog.setval('public.multi_choice_quiz_quizattempt_id_seq', 11, true);
 
 
 --

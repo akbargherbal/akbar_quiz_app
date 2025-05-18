@@ -15,6 +15,9 @@ QUESTIONS_FILE = "public_multi_choice_quiz_question.pkl"
 TARGET_USER_NAME = 'akbar' # Configurable user name
 
 OUTPUT_PKL_FILENAME = "USER_FEEDBACK.pkl" # Output file in the current working directory
+OUTPUT_CSV_FILENAME = OUTPUT_PKL_FILENAME.replace('.pkl', '.csv')
+
+
 LOG_FILE_NAME = "extract_revision_questions.log" # Log file in the current working directory
 
 # Columns to select from the questions_df
@@ -145,6 +148,8 @@ def main():
         # --- 5. Save the final DataFrame ---
         logger.info(f"Saving final {len(questions_df)} questions to: {OUTPUT_PKL_FILENAME}")
         questions_df.to_pickle(OUTPUT_PKL_FILENAME, protocol=4)
+        # save csv format too:
+        questions_df.to_csv(OUTPUT_CSV_FILENAME, index=False)
         logger.info("Successfully saved USER_FEEDBACK.pkl.")
 
     except FileNotFoundError as e:

@@ -1,4 +1,3 @@
-ISSUE 1:
-Quiz Bank; back tick could removing function might messed up this particular question:
-When integrating third-party libraries like Bootstrap or jQuery, where is the best place to include their CSS and JS files within your base template structure?
+ISSUE 2:
+We have duplicate views; home both in pages and multi_choice_quiz app; what's going on? 
 ---

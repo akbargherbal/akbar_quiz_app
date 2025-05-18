@@ -140,9 +140,7 @@ else:
             default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
         )
     }
-    # Optional: Proxy config for local testing (keep commented unless needed)
-    # if env('USE_PROXY_DB', cast=bool, default=False):
-    #     DATABASES = { ... proxy config ... }
+
 
 # --- AUTHENTICATION ---
 AUTH_PASSWORD_VALIDATORS = [

@@ -1,0 +1,6330 @@
+
+../src/conftest.py
+# src/conftest.py (Revised - django_server removed, admin_logged_in_page added, login verification updated)
+--------------------
+
+
+../src/conftest.py
+# --- Import UserCollection for the fixture ---
+--------------------
+
+
+../src/conftest.py
+# --- Import Quiz model for adding to collection ---
+--------------------
+
+
+../src/conftest.py
+# Ensure Option is imported if creating full quiz
+--------------------
+
+
+../src/conftest.py
+# --- Import the standardized logging setup ---
+--------------------
+
+
+../src/conftest.py
+# Configure Django settings before tests run
+--------------------
+
+
+../src/conftest.py
+# --- Text of the warning message to ignore ---
+--------------------
+
+
+../src/conftest.py
+# --- Get User Model ---
+--------------------
+
+
+../src/conftest.py
+# --- Constants for the admin login fixture ---
+--------------------
+
+
+../src/conftest.py
+# src/conftest.py
+--------------------
+
+
+../src/conftest.py
+# ... (other code) ...
+--------------------
+
+
+../src/conftest.py
+# Ensure the collection exists
+--------------------
+
+
+../src/conftest.py
+# --- START: Add a test quiz to the collection ---
+--------------------
+
+
+../src/conftest.py
+# Ensure the quiz has at least one question to be considered "active" by some views
+--------------------
+
+
+../src/conftest.py
+# --- END: Add a test quiz to the collection ---
+--------------------
+
+
+../src/conftest.py
+# --- MODIFIED AVATAR SPAN LOCATOR ---
+--------------------
+
+
+../src/conftest.py
+# --- END MODIFIED AVATAR SPAN LOCATOR ---
+--------------------
+
+
+../src/conftest.py
+# Give tooltip time to appear
+--------------------
+
+
+../src/conftest.py
+# --- Console Errors Fixture (REVISED - Only fail on Page Errors) ---
+--------------------
+
+
+../src/conftest.py
+# Fallback
+--------------------
+
+
+../src/conftest.py
+# Basic fallback logger setup
+--------------------
+
+
+../src/conftest.py
+# Avoid adding handlers multiple times
+--------------------
+
+
+../src/conftest.py
+# Only console issues, test passed
+--------------------
+
+
+../src/conftest.py
+# --- Pytest hook to capture test outcome ---
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+#!/usr/bin/env python
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# src/dir_import_chapter_quizzes.py
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Configure logging
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Different log file name
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Set up logging to both file and console
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# This logger is for this script's main() function and direct logging.
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Renamed logger
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Constants for formatting
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Set up Django
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# --- Import the refactored utility functions ---
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Models are used by print_database_summary
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# transaction, IntegrityError are used by the utility function
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# load_quiz_bank and import_questions_by_chapter are now imported from utils
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# ... (other logging) ...
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# --- NEW: For System Category ---
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# --- END NEW ---
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Parse all arguments
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# consume value
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# consume value
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# --- NEW: Parse --system-category ---
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# consume value
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# --- END NEW ---
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Sample data for testing
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# ... (sample data as before) ...
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Optionally add system_category here for test mode if desired
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# "system_category": ["Test SysCat"] * 6
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Pass CLI arg
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Pass CLI arg
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Collect all pkl files first to count them
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< CHANGE: Collect first
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< Use the collected list
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Consider it successful if it resulted in quizzes/questions
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# --- Log summary ---
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# <<< ADD
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Interactive mode (less common for this script)
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# Pass CLI arg
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# ... (log summary for interactive) ...
+--------------------
+
+
+../src/dir_import_chapter_quizzes.py
+# ... (exception handling and finally block) ...
+--------------------
+
+
+../src/import_chapter_quizzes.py
+#!/usr/bin/env python
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# src/import_chapter_quizzes.py
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# Keep Path if main() uses it, though it doesn't seem to here.
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# Configure logging
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# Set up logging to both file and console
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# This logger is for this script's main() function and direct logging.
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# The utility functions will use their own logger from utils.py.
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# Renamed to avoid conflict if utils logger was also "quiz_import"
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# Constants for formatting (used by main to pass to utility function)
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# Set up Django
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# --- Import the refactored utility functions ---
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# Models are used by print_database_summary and potentially by type hints if you add them.
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# The utility functions themselves handle their model imports.
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# transaction, IntegrityError are used by the utility function, no need to import here unless main uses them.
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# load_quiz_bank and import_questions_by_chapter are now imported from utils
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# ... (other logging) ...
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# --- NEW: For System Category ---
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# --- END NEW ---
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# Parse arguments
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# --- NEW: Parse --system-category ---
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# --- END NEW ---
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# ... (sample data as before) ...
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# Pass CLI arg
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# ... (log summary and return) ...
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# Pass CLI arg
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# ... (log summary and return) ...
+--------------------
+
+
+../src/import_chapter_quizzes.py
+# ... (exception handling and finally block) ...
+--------------------
+
+
+../src/manage.py
+#!/usr/bin/env python
+--------------------
+
+
+../src/core/settings.py
+# src/core/settings.py
+--------------------
+
+
+../src/core/settings.py
+# <-- Added import
+--------------------
+
+
+../src/core/settings.py
+# --- NEW: Define Project Root and Output Directories for logs and screenshots ---
+--------------------
+
+
+../src/core/settings.py
+# Directory containing 'src/'
+--------------------
+
+
+../src/core/settings.py
+# --- END NEW ---
+--------------------
+
+
+../src/core/settings.py
+# Initialize django-environ
+--------------------
+
+
+../src/core/settings.py
+# Set defaults for key configuration values
+--------------------
+
+
+../src/core/settings.py
+# Read .env file ONLY in development environment
+--------------------
+
+
+../src/core/settings.py
+# (Assuming .env is in BASE_DIR (src/), adjust if needed)
+--------------------
+
+
+../src/core/settings.py
+# --- SECURITY SETTINGS ---
+--------------------
+
+
+../src/core/settings.py
+# --- HOSTING SETTINGS (Option 2: Wildcard ALLOWED_HOSTS) ---
+--------------------
+
+
+../src/core/settings.py
+# Get Cloud Run specific variables if they exist
+--------------------
+
+
+../src/core/settings.py
+# Use a wildcard for Cloud Run's domain, plus localhost/127.0.0.1
+--------------------
+
+
+../src/core/settings.py
+# Allows any *.run.app domain (Note the leading dot)
+--------------------
+
+
+../src/core/settings.py
+# <<< ADD THIS LINE for Django test client
+--------------------
+
+
+../src/core/settings.py
+# Add internal IP for potential health checks when on Cloud Run
+--------------------
+
+
+../src/core/settings.py
+# Handle case where hostname might not be resolvable initially
+--------------------
+
+
+../src/core/settings.py
+# CSRF_TRUSTED_ORIGINS requires the specific URL scheme + hostname
+--------------------
+
+
+../src/core/settings.py
+# Use the exact URL from your deployment output
+--------------------
+
+
+../src/core/settings.py
+# Determine environment based on DEBUG for simplicity now
+--------------------
+
+
+../src/core/settings.py
+# Add local origins for development CSRF checks
+--------------------
+
+
+../src/core/settings.py
+# Assume non-DEBUG is production-like on Cloud Run
+--------------------
+
+
+../src/core/settings.py
+# --- APPLICATION DEFINITION ---
+--------------------
+
+
+../src/core/settings.py
+# Whitenoise added BEFORE staticfiles
+--------------------
+
+
+../src/core/settings.py
+# Only if using runserver with whitenoise in DEV
+--------------------
+
+
+../src/core/settings.py
+# Your apps
+--------------------
+
+
+../src/core/settings.py
+# --- MIDDLEWARE ---
+--------------------
+
+
+../src/core/settings.py
+# Whitenoise Middleware - place high up, right after SecurityMiddleware
+--------------------
+
+
+../src/core/settings.py
+# --- TEMPLATES ---
+--------------------
+
+
+../src/core/settings.py
+# --- DATABASE ---
+--------------------
+
+
+../src/core/settings.py
+# Keep the logic to differentiate database based on environment
+--------------------
+
+
+../src/core/settings.py
+# Using K_REVISION is a simple way to check if running on Cloud Run here
+--------------------
+
+
+../src/core/settings.py
+# Running on Cloud Run - build config using secrets/env vars
+--------------------
+
+
+../src/core/settings.py
+# Use the standard Cloud SQL socket path
+--------------------
+
+
+../src/core/settings.py
+# *** Confirm this matches your instance connection name ***
+--------------------
+
+
+../src/core/settings.py
+# Local development - use DATABASE_URL or fallback to SQLite
+--------------------
+
+
+../src/core/settings.py
+# Optional: Proxy config for local testing (keep commented unless needed)
+--------------------
+
+
+../src/core/settings.py
+# if env('USE_PROXY_DB', cast=bool, default=False):
+--------------------
+
+
+../src/core/settings.py
+#     DATABASES = { ... proxy config ... }
+--------------------
+
+
+../src/core/settings.py
+# --- AUTHENTICATION ---
+--------------------
+
+
+../src/core/settings.py
+# --- INTERNATIONALIZATION ---
+--------------------
+
+
+../src/core/settings.py
+# --- STATIC FILES ---
+--------------------
+
+
+../src/core/settings.py
+# Use Whitenoise storage for efficient serving in production
+--------------------
+
+
+../src/core/settings.py
+# Make sure 'whitenoise.storage.CompressedManifestStaticFilesStorage' is used
+--------------------
+
+
+../src/core/settings.py
+# If you want whitenoise to work with runserver in DEV, ensure middleware is configured correctly
+--------------------
+
+
+../src/core/settings.py
+# Added for PWA icons on mobile devices. release 0.0.2
+--------------------
+
+
+../src/core/settings.py
+# --- DEFAULTS ---
+--------------------
+
+
+../src/core/settings.py
+# Redirect to homepage after logout
+--------------------
+
+
+../src/core/settings.py
+# --- EMAIL SETTINGS (For Development - Console Output) ---
+--------------------
+
+
+../src/core/settings.py
+# --- PWA ---
+--------------------
+
+
+../src/core/settings.py
+# --- LOGGING ---
+--------------------
+
+
+../src/core/settings.py
+# Keep your existing logging configuration which outputs to console
+--------------------
+
+
+../src/core/settings.py
+# 'gunicorn.error': { ... },
+--------------------
+
+
+../src/core/settings.py
+# 'gunicorn.access': { ... },
+--------------------
+
+
+../src/core/settings_local.py
+# src/core/settings_local.py
+--------------------
+
+
+../src/core/settings_local.py
+# Imports base settings from core/settings.py
+--------------------
+
+
+../src/core/settings_local.py
+# --- Development Overrides ---
+--------------------
+
+
+../src/core/settings_local.py
+# Use SQLite for local development
+--------------------
+
+
+../src/core/settings_local.py
+# --- Dev-only Installed Apps ---
+--------------------
+
+
+../src/core/settings_local.py
+# Handy management commands and shell enhancements
+--------------------
+
+
+../src/core/settings_local.py
+# Django Debug Toolbar for profiling and debugging
+--------------------
+
+
+../src/core/settings_local.py
+# --- Dev-only Middleware ---
+--------------------
+
+
+../src/core/settings_local.py
+# Insert Debug Toolbar middleware just after CommonMiddleware
+--------------------
+
+
+../src/core/settings_local.py
+# --- Debug Toolbar Configuration ---
+--------------------
+
+
+../src/core/settings_local.py
+# Only show toolbar for these internal IPs
+--------------------
+
+
+../src/core/settings_local.py
+# Collapse panels by default
+--------------------
+
+
+../src/core/settings_local.py
+# Show toolbar when DEBUG is True
+--------------------
+
+
+../src/core/settings_local.py
+# --- Shell Plus Configuration ---
+--------------------
+
+
+../src/core/settings_local.py
+# Use IPython for `manage.py shell_plus`
+--------------------
+
+
+../src/core/urls.py
+# src/core/urls.py
+--------------------
+
+
+../src/core/urls.py
+# <-- Import settings
+--------------------
+
+
+../src/core/urls.py
+# If you need static/media in DEBUG
+--------------------
+
+
+../src/core/urls.py
+# No need to import auth_views if using the standard include below
+--------------------
+
+
+../src/core/urls.py
+# Django Admin Interface
+--------------------
+
+
+../src/core/urls.py
+# Your Applications
+--------------------
+
+
+../src/core/urls.py
+# Quiz app URLs
+--------------------
+
+
+../src/core/urls.py
+# Pages app URLs (handles root path '/')
+--------------------
+
+
+../src/core/urls.py
+# PWA app URLs (also at root)
+--------------------
+
+
+../src/core/urls.py
+# Django's Built-in Authentication URLs (Keep the simple include)
+--------------------
+
+
+../src/core/urls.py
+# This includes paths like:
+--------------------
+
+
+../src/core/urls.py
+# accounts/login/
+--------------------
+
+
+../src/core/urls.py
+# accounts/logout/
+--------------------
+
+
+../src/core/urls.py
+# accounts/password_change/
+--------------------
+
+
+../src/core/urls.py
+# accounts/password_change/done/
+--------------------
+
+
+../src/core/urls.py
+# accounts/password_reset/
+--------------------
+
+
+../src/core/urls.py
+# accounts/password_reset/done/
+--------------------
+
+
+../src/core/urls.py
+# accounts/reset/<uidb64>/<token>/
+--------------------
+
+
+../src/core/urls.py
+# accounts/reset/done/
+--------------------
+
+
+../src/core/urls.py
+# It uses the URL names like 'login', 'logout', 'password_reset', etc.
+--------------------
+
+
+../src/core/urls.py
+# --- Add this block for Django Debug Toolbar ---
+--------------------
+
+
+../src/core/urls.py
+# Optional: Serve static/media files locally during development
+--------------------
+
+
+../src/core/urls.py
+# urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+--------------------
+
+
+../src/core/urls.py
+# urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # If you use media files
+--------------------
+
+
+../src/core/urls.py
+# -----------------------------------------------
+--------------------
+
+
+../src/multi_choice_quiz/admin.py
+# src/multi_choice_quiz/admin.py
+--------------------
+
+
+../src/multi_choice_quiz/admin.py
+# Add QuizAttempt to the import
+--------------------
+
+
+../src/multi_choice_quiz/admin.py
+# ... (Keep OptionInline, QuestionAdmin, QuestionInline, QuizAdmin, TopicAdmin) ...
+--------------------
+
+
+../src/multi_choice_quiz/admin.py
+# Show 4 empty option forms by default
+--------------------
+
+
+../src/multi_choice_quiz/admin.py
+# Require at least 2 options
+--------------------
+
+
+../src/multi_choice_quiz/admin.py
+# <<< START NEW ADMIN CLASS >>>
+--------------------
+
+
+../src/multi_choice_quiz/admin.py
+# These are set programmatically
+--------------------
+
+
+../src/multi_choice_quiz/admin.py
+# Allows sorting by user
+--------------------
+
+
+../src/multi_choice_quiz/admin.py
+# <<< END NEW ADMIN CLASS >>>
+--------------------
+
+
+../src/multi_choice_quiz/admin.py
+# <<< Register the new model admin
+--------------------
+
+
+../src/multi_choice_quiz/admin.py
+# Options are managed through inline forms
+--------------------
+
+
+../src/multi_choice_quiz/models.py
+# src/multi_choice_quiz/models.py
+--------------------
+
+
+../src/multi_choice_quiz/models.py
+# <<< Add this import
+--------------------
+
+
+../src/multi_choice_quiz/models.py
+# <<< ADD THIS IMPORT
+--------------------
+
+
+../src/multi_choice_quiz/models.py
+# In case multiple options are marked as correct, return the first one
+--------------------
+
+
+../src/multi_choice_quiz/models.py
+# Convert to 0-based for JS
+--------------------
+
+
+../src/multi_choice_quiz/models.py
+# Include tag in the dictionary
+--------------------
+
+
+../src/multi_choice_quiz/models.py
+# Ensure each option has a unique position within a question
+--------------------
+
+
+../src/multi_choice_quiz/models.py
+# Keep attempt if user is deleted
+--------------------
+
+
+../src/multi_choice_quiz/models.py
+# Allow anonymous attempts
+--------------------
+
+
+../src/multi_choice_quiz/models.py
+# Allow blank in forms/admin
+--------------------
+
+
+../src/multi_choice_quiz/models.py
+# Timestamps
+--------------------
+
+
+../src/multi_choice_quiz/models.py
+# <<< START NEW FIELD ADDITION >>>
+--------------------
+
+
+../src/multi_choice_quiz/models.py
+# <<< END NEW FIELD ADDITION >>>
+--------------------
+
+
+../src/multi_choice_quiz/models.py
+# Show most recent attempts first
+--------------------
+
+
+../src/multi_choice_quiz/transform.py
+# Create or get the topic if provided
+--------------------
+
+
+../src/multi_choice_quiz/transform.py
+# Create the quiz
+--------------------
+
+
+../src/multi_choice_quiz/transform.py
+# Create questions and options
+--------------------
+
+
+../src/multi_choice_quiz/transform.py
+# Extract chapter_no and tag if available
+--------------------
+
+
+../src/multi_choice_quiz/transform.py
+# Use question_text if available, otherwise use text
+--------------------
+
+
+../src/multi_choice_quiz/transform.py
+# 1-based position
+--------------------
+
+
+../src/multi_choice_quiz/transform.py
+# Get the correct answer index (1-based in quiz bank)
+--------------------
+
+
+../src/multi_choice_quiz/transform.py
+# Create options
+--------------------
+
+
+../src/multi_choice_quiz/transform.py
+# 1-based position
+--------------------
+
+
+../src/multi_choice_quiz/transform.py
+# 1-based position
+--------------------
+
+
+../src/multi_choice_quiz/transform.py
+# Compare 1-based positions
+--------------------
+
+
+../src/multi_choice_quiz/transform.py
+# Convert 0-based answerIndex to 1-based for our models
+--------------------
+
+
+../src/multi_choice_quiz/transform.py
+# Create a copy to avoid modifying the original
+--------------------
+
+
+../src/multi_choice_quiz/transform.py
+# Convert 0-based answerIndex to 1-based
+--------------------
+
+
+../src/multi_choice_quiz/urls.py
+# src/multi_choice_quiz/urls.py
+--------------------
+
+
+../src/multi_choice_quiz/urls.py
+# <<< START NEW URL PATTERN (Step 7.1) >>>
+--------------------
+
+
+../src/multi_choice_quiz/urls.py
+# <<< END NEW URL PATTERN >>>
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# src/multi_choice_quiz/utils.py
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# --- SystemCategory IMPORT ---
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# --- END SystemCategory IMPORT ---
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# This line might seem circular now, but it's if other parts of transform.py were to call this file.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Given the current structure, quiz_bank_to_models is defined below.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# If quiz_bank_to_models was *only* in transform.py previously,
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# and we are moving its *definition* here, then this import in utils.py
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# for itself is not needed. We'll define it fresh below.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# --- REFACTORED FUNCTION ---
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Initialize quiz_instance
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Store a mapping: (original question text, original position in quiz_data) -> prepared Question object (before saving)
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# This helps map back to the original data structure when creating options.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# We use a tuple of (text, index) as a key assuming question text within a single quiz_data batch is unique enough for this.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# A more robust key might be needed if question texts can be identical within the same import batch.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# For now, using original index in quiz_data for disambiguation if needed.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Temporarily assign quiz_instance, will be set by bulk_create through quiz_id
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# 1-based position in the quiz
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Key by (text, original_index) to handle potential duplicate texts in the input batch
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Return the empty quiz
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Bulk create questions.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# For PostgreSQL, IDs will be set on instances. For SQLite, they might not be.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Re-fetch the questions to ensure we have their database IDs,
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# especially important for SQLite.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# We order by position to attempt a stable order for matching.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# This state is problematic, raising an error or returning early might be best.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# For now, we'll log and continue, which means options might not be created correctly.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# A more robust solution might raise an exception here.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# raise Exception(f"Question count mismatch after bulk_create for quiz {quiz_title}")
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Or handle error more gracefully
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Find the corresponding question from the database using its position.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# This relies on 'position' being correctly set and unique within the quiz during creation.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Match by 1-based position
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# This is 1-based from source
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Option position is 1-based
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Link to the question instance that has a DB ID
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# --- END REFACTORED FUNCTION ---
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Keep other functions in utils.py as they are, they should call the refactored quiz_bank_to_models
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# For example, import_from_dataframe, curate_data, load_quiz_bank, import_questions_by_chapter
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Try to map common alternative column names
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Add other potential mappings here
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Added random_state for reproducibility if needed
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Ensure options are lists (handle JSON strings or comma-separated strings)
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Attempt to parse as JSON first
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# If JSON parsed but not a list, fallback to comma-separated
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# If JSON parsing fails, assume comma-separated
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Ensure options key exists and is a list
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Call the (now refactored) quiz_bank_to_models
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# This now uses bulk_create
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Standardize column names for 'text' and 'answerIndex'
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Define base required columns and optional columns to preserve
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Check for missing base columns
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Determine which of the optional columns are actually present in the DataFrame
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Ensure we don't try to sample more than available rows
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# If no_questions is 0, but df has rows, sample 0.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# If df is empty, return empty list.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Log and raise FileNotFoundError to be caught by calling scripts
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Define required columns for a quiz bank .pkl file
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# These are typically expected by import_questions_by_chapter
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Log chapter titles if present
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Prefer "CHAPTER_TITLE" then "chapter_title"
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Log topics if present
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Log system_category if present
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# This is already logged above, re-raise to be handled by caller
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# This is already logged above, re-raise to be handled by caller
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Or re-raise, depending on desired strictness
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# If questions < questions_per_quiz * threshold, create 1 quiz
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# For CLI override
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Ensure 'question_text' exists, mapping from 'text' if necessary for this function's logic
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Validate required columns for this function's processing logic
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Use .copy() to avoid SettingWithCopyWarning
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# For logging
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Determine how many quizzes to create for this chapter
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# For a single quiz, use all available questions up to questions_per_quiz.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# If more than questions_per_quiz, it will be capped by questions_per_quiz.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# If less, it will use all available.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Start with default
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Adjust number of quizzes based on coverage percentage
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Final cap by max_quizzes_per_chapter
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Determine Chapter Title and Primary Topic for naming quizzes
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Attempt to zfill if chapter is numeric
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Otherwise, use as is
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Default base title
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Use the most common CHAPTER_TITLE for this chapter
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Fallback to 'chapter_title' if 'CHAPTER_TITLE' isn't there or all NaNs
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Default topic name if no 'topic' column
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Use the most common topic for this chapter as the primary topic for quiz naming
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Determine System Category for this chapter's quizzes
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# CLI override takes precedence
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# If no CLI override, try to get from DataFrame's 'system_category' column
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Log if CLI override is used
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# No category specified or found
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# --- Create quizzes for the chapter ---
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Track indices within the chapter_df
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Get questions not yet used in this chapter
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# DataFrame of questions still available in this chapter
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Determine sample size for current quiz
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# If it's a single quiz due to low question count, actual_questions_per_quiz_for_this_chapter_calc was already set to num_chapter_questions
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Otherwise, it's the standard questions_per_quiz
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Log if not enough questions, unless it's the single quiz scenario for low count
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Sample questions for the current quiz
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# random_state for some consistency
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Record the chapter_df indices that were just sampled
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Need to map quiz_sample_df.index back to the original chapter_df indices
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# --- Determine quiz title and topic for quiz_bank_to_models ---
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# The topic_name passed to quiz_bank_to_models will associate all questions in *this specific quiz* to that one topic.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# If quiz_sample_df has a 'topic' column, we might use its most common value for this quiz.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Otherwise, we use the primary_topic_name_for_chapter.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Default
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Simple title
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Now, call quiz_bank_to_models which uses bulk_create
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# It needs the raw data for questions (text, options, answerIndex, tag, chapter_no)
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Ensure the quiz_sample_df has the 'text' column expected by quiz_bank_to_models
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Atomic transaction for each quiz creation
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# If skipping, we need to ensure used_question_indices are not re-used by mistake later.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# However, the current logic samples from *available*, so this should be okay.
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# --- Call the refactored quiz_bank_to_models ---
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# This sets the Topic for the Quiz and all its Questions
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# --- End call ---
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Associate SystemCategory with the Quiz if specified
+--------------------
+
+
+../src/multi_choice_quiz/utils.py
+# Verify count from DB
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# src/multi_choice_quiz/views.py (Modified for Step 6.3)
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# <<< THIS LINE MUST BE PRESENT
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Added Http404, HttpResponseForbidden
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Added login_required
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Added Question
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# --- home and quiz_detail views remain unchanged ---
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# --- End unchanged views ---
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# attempt_details is now expected but handled if missing for compatibility
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# --- START STEP 6.3: Extract attempt_details ---
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Use .get() to handle cases where it might be missing (e.g., older JS)
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Treat as empty if invalid type
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# --- END STEP 6.3: Extract attempt_details ---
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# --- START STEP 6.3: Fetch Correct Answers ---
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Fetch all questions for this quiz and their correct answer index (0-based)
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Ensure correct_option_index() handles cases with no correct option gracefully (returns None)
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# --- END STEP 6.3: Fetch Correct Answers ---
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# --- START STEP 6.3: Process Mistakes ---
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Only process if we received details
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Check if the answer was incorrect
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Also handle cases where correct answer might be None (bad data) or user answer is None
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Use string ID as key in JSON
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Skip this detail entry
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# --- END STEP 6.3: Process Mistakes ---
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# --- START STEP 6.3: Save Attempt with Processed Mistakes ---
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Save processed mistakes, or None if empty
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# --- END STEP 6.3: Save Attempt ---
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# <<< START NEW VIEW FUNCTION (Step 7.1) >>>
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# --- Security Check: Ensure the user owns this attempt ---
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Option 1: Return 404 (as if it doesn't exist for them)
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Option 2: Return 403 Forbidden (clearer, but reveals attempt exists)
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# return HttpResponseForbidden("You do not have permission to view this attempt.")
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# --- Check if there are mistakes to review ---
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Optional message
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Redirect to profile page
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Fetch all relevant questions and their options in bulk to optimize DB access
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Prepare context for the template
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Get user answer text (0-based index from JSON -> 1-based position)
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Get correct answer text (0-based index from JSON -> 1-based position)
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Fallback if index missing but model has it
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Include tag if needed
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Log the 404 explicitly if needed, then re-raise or handle
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Let Django handle the 404 page rendering
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# Consider redirecting to an error page or profile page with a message
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# <<< END NEW VIEW FUNCTION >>>
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# --- get_demo_questions remains unchanged ---
+--------------------
+
+
+../src/multi_choice_quiz/views.py
+# ... demo questions ...
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_code_test_questions.py
+# src/multi_choice_quiz/management/commands/add_code_test_questions.py
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_code_test_questions.py
+# Check if we already have a test quiz
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_code_test_questions.py
+# Create the test questions
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_code_test_questions.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_code_test_questions.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_code_test_questions.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_code_test_questions.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_code_test_questions.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_code_test_questions.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_code_test_questions.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_code_test_questions.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_code_test_questions.py
+# Create a topic for the test quiz
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_code_test_questions.py
+# Create the quiz with the test questions
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# Create the quiz using our transform function
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# Check if we already have sample quizzes
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# Create sample topics
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# Sample Quiz 1: General Knowledge
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# Sample Quiz 2: Programming
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# Sample Quiz 3: Science
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/add_sample_quizzes.py
+# Create the quizzes using our transform function
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# src/multi_choice_quiz/management/commands/import_quiz_bank.py
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Configure logging
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Validate file path
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Load the data based on file extension
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Check if DataFrame has any data
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Map chapter column if it exists
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Get chapter title if available
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Get the most common chapter title
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Process the data based on the split option
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Create separate quizzes for each topic
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Create a single quiz with all questions
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Use provided title, chapter title, or default
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Use actual topic from data if available
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Get the most common topic
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Use import_from_dataframe to create the quiz
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# If the quiz has topics, log them
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Get unique topics
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Create a quiz for each topic
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Filter data for this topic
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Determine questions per topic
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Use all available questions if less than max
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Get chapter title if available
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Check for both upper and lowercase column names
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Get the most common chapter title for this topic
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Add this check
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Get the most common chapter title for this topic
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Generate quiz title based on topic and chapter title
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Import this topic's questions
+--------------------
+
+
+../src/multi_choice_quiz/management/commands/import_quiz_bank.py
+# Use the topic value as the topic name
+--------------------
+
+
+../src/multi_choice_quiz/migrations/0001_initial.py
+# Generated by Django 5.1.8 on 2025-05-14 08:23
+--------------------
+
+
+../src/multi_choice_quiz/tests/conftest.py
+# src/multi_choice_quiz/tests/conftest.py
+--------------------
+
+
+../src/multi_choice_quiz/tests/conftest.py
+# No shared fixtures here anymore. Add app-specific fixtures if needed.
+--------------------
+
+
+../src/multi_choice_quiz/tests/helpers.py
+# Import the standardized logging function
+--------------------
+
+
+../src/multi_choice_quiz/tests/helpers.py
+# Attempt to import test-specific logging, fall back if not found (e.g., in production)
+--------------------
+
+
+../src/multi_choice_quiz/tests/helpers.py
+# Assuming setup_test_logging returns a logger instance or configures the root logger.
+--------------------
+
+
+../src/multi_choice_quiz/tests/helpers.py
+# If it configures a specific logger, you might want to get it by name here.
+--------------------
+
+
+../src/multi_choice_quiz/tests/helpers.py
+# For example, if setup_test_logging configures a logger named 'pages.views':
+--------------------
+
+
+../src/multi_choice_quiz/tests/helpers.py
+# setup_test_logging(__name__, "your_log_file_for_pages_views.log") # If it configures and you get it later
+--------------------
+
+
+../src/multi_choice_quiz/tests/helpers.py
+# Get the logger for the current module
+--------------------
+
+
+../src/multi_choice_quiz/tests/helpers.py
+# If setup_test_logging directly returns the logger:
+--------------------
+
+
+../src/multi_choice_quiz/tests/helpers.py
+# logger = setup_test_logging(__name__, "your_log_file_for_pages_views.log")
+--------------------
+
+
+../src/multi_choice_quiz/tests/helpers.py
+# Fallback to standard logging if the test module isn't found
+--------------------
+
+
+../src/multi_choice_quiz/tests/helpers.py
+# All other helper functions can remain here
+--------------------
+
+
+../src/multi_choice_quiz/tests/helpers.py
+# Any code that used the old setup_test_logging should now use the imported version
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# src/multi_choice_quiz/tests/test_database_quiz.py
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# <<< ADD reverse import
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# <<< ADD re import
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# <<< Use Path
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Import our standardized logging setup
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# --- Setup Logging ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# --- Test Function ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# <<< ADD django_db marker if accessing DB directly too
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Use fixture from conftest.py
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# <<< CHANGE fixture name here
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Define the app name for logging/screenshots
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# --- Define Screenshot Dir Consistently --- # <<< NEW
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# NEW
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# --- END MODIFIED ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# --- End New Screenshot Dir ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# --- ADD Test Data Creation --- # <<< NEW - Quiz 1 must exist in test DB
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Import models here
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# --- End Test Data Creation ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Constants for waits
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Go to the page
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Wait for Alpine.js to initialize
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Get JSON data
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Get locators
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Verify first question display
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Interact with the first question
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Wait for progression
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Complete the rest of the quiz
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Wait for elements
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Click first option
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Wait for progression
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# --- Test the results screen ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Verify results title
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# --- START REVISED SCORE CHECK ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Locate the specific inner span holding the total questions count via x-text
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Check its text content matches the total
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Also verify the score part is visible (we know its value is dynamic via x-text)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# --- END REVISED SCORE CHECK ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Verify the restart button works
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# --- Verify quiz restart ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_database_quiz.py
+# Screenshot on failure
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# Import logging
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# Import the module
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# Store original Path methods carefully before any patching occurs per test method
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# Patch sys.argv for the script
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# Use self.assertLogs to capture logs from the script's logger
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# --- MODIFIED LOGGER NAME HERE ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# --- END MODIFICATION ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# Catch exceptions from main to ensure logs are processed
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# Assume error exit code
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# logger.debug(f"Script output captured by assertLogs:\n{output_text}") # For debugging test
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# This debug logging can be very verbose, enable if needed
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# logger.debug(f"SIDE_EFFECT: original_method={original_path_method.__name__}, path_instance='{path_instance}', method_args={method_args}")
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# logger.debug(f"Calling original Path.{original_path_method.__name__} for '{path_instance}'")
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# Call the original unbound method, passing the instance and other args
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# Check that the script logged the *actual path it believes it's using for QUIZ_COLLECTIONS*
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# --- MODIFIED ASSERTIONS FOR LOGS ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# --- END MODIFIED ASSERTIONS ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# ... (test_import_from_directory_success_multiple_files - can optionally add similar summary log checks) ...
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# path_instance_being_called_on is the Path object .is_dir() was called on.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# For any other Path.is_dir call, use original behavior
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# Should not be called if is_dir is False for target
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# Patch os.path.exists used by load_quiz_bank
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# load_quiz_bank calls os.path.exists(file_path)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# Ensure os.path.exists was called with the correct path
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# This mock might be less relevant now load_quiz_bank handles it
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# We need to ensure load_quiz_bank (from utils) sees the file as non-existent.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# The mock_os_exists here targets os.path.exists called *within* load_quiz_bank.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# If load_quiz_bank directly uses Path().exists(), this mock won't apply.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# Let's assume load_quiz_bank (in utils.py) correctly uses os.path.exists for this test's mock to work.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# If it uses Path.exists(), we might need a different patching strategy for this specific test case,
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# or rely on the fact that 'non_existent_file.pkl' truly doesn't exist in the temp dir.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# For now, the current `load_quiz_bank` in `utils.py` *does* use `os.path.exists`.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# --- MODIFIED ASSERTION FOR INTERACTIVE MODE MESSAGE ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# <<< UPDATED EXPECTED MESSAGE
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# --- END MODIFICATION ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# The `load_quiz_bank` in utils.py will log "File not found: non_existent_file.pkl"
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# The `main` in `dir_import_chapter_quizzes.py` will catch FileNotFoundError and log its own message.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# Let's assert the message logged by `main`.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# --- MODIFIED ASSERTION FOR FILE NOT FOUND MESSAGE ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# --- END MODIFICATION ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_dir_import_chapter_quizzes.py
+# Run the script with the --system-category argument
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# src/multi_choice_quiz/tests/test_import_chapter_script.py
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Needed to ensure models are ready
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Import the function directly from the utils module now
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# --- ADD SystemCategory import ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# <<< CORRECTED IMPORT for SystemCategory
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# --- END SystemCategory import ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Import our standardized test logging
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Set up logging for this specific test file
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Use app_name 'multi_choice_quiz'
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# --- Test Constants ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# These match the defaults in your function signature but are explicit here
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Note: In utils.py, it's 1.3. Let's use 1.3 to match utils.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Or update utils to use 1.5 if that's the actual intent.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# For now, assuming test should match utils' default if not overridden in call.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Let's use 1.3 to match default for now.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Default from utils.py
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Clean up relevant models before each test to ensure isolation
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Clear SystemCategory as well
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Added system_category
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Use "question_text" as per utils.py load_quiz_bank expectations
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Add system_category column if provided
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Use the default threshold from utils.py if not overriding in the call, or be explicit.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# The import_questions_by_chapter function uses 1.3 as its default.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# The test call below doesn't override single_quiz_threshold, so it will use 1.3
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# num_questions = int(q_per_quiz * 1.5) - 1 # OLD: 14, with 1.5
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Example: 10 * 1.3 = 13 -> 12 questions
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# ensure at least 1 question for the test's purpose
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Let's set num_questions to be between q_per_quiz and q_per_quiz * threshold
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# e.g. q_per_quiz=10, threshold=1.3. questions_per_quiz * threshold = 13.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# So, if num_questions is 12, it should create 1 quiz with 10 questions.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# If num_questions is 7, it should create 1 quiz with 7 questions.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Specifically set to test capping behavior
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# single_quiz_threshold parameter is NOT passed, so utils default of 1.3 is used.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Test setup has num_questions (12) < q_per_quiz (10) * 1.3 (utils default) -> 12 < 13, condition met.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# MODIFIED ASSERTION:
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# In this scenario, the single quiz should contain min(num_chapter_questions, questions_per_quiz)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# END MODIFIED ASSERTION
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# e.g., 25 questions
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# single_quiz_threshold=1.5, # Using default from utils.py (1.3)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Default starting point for calculation
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Wants to cover 40 questions
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Cap
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Expected: ceil(40 / 10) = 4 quizzes. 4 <= max_quizzes (5). So, 4.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# single_quiz_threshold=1.5, # Using default from utils.py (1.3)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# wants to cover 75 questions (50% coverage) -> 8 quizzes needed
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Cap at 5
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# single_quiz_threshold=1.5, # Using default from utils.py (1.3)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Create an empty DataFrame with the expected columns
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Add a row that would imply chapter 5 exists, but will be filtered out if num_questions = 0 for it.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Better: create a df for chapter 5 with 0 questions.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Test with prefix enabled (default zfill=2 from utils.py)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# single_quiz_threshold=1.5, # Using default from utils.py (1.3)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# chapter_zfill=2, # Using default from utils.py
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Test with prefix enabled (zfill=3)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# single_quiz_threshold=1.5, # Using default from utils.py (1.3)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Test with prefix disabled
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# single_quiz_threshold=1.5, # Using default from utils.py (1.3)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# single_quiz_threshold=1.5, # Using default from utils.py (1.3)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Explicitly True
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Disable prefix to isolate title check
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# single_quiz_threshold=1.5, # Using default from utils.py (1.3)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Prefix enabled
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# chapter_zfill=2, # Using default from utils.py
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# When chapter is not numeric, zfill won't apply, it's just "chapter_id_str "
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# --- NEW TEST CASES for SystemCategory ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# No 'system_category' column
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# The DF category might or might not be created depending on whether other quizzes used it.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# The key is that THIS quiz is NOT associated with it.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# All same chapter
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Corrected from "text"
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_chapter_script.py
+# Alpha is most common
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# --- Replace existing logger setup with this ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# --- End Replacement ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Create sample data as a pandas DataFrame
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# 1-based indices
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Create a temporary directory for test files
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Save the data in different formats
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Save as CSV
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Save as Excel
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Save as pickle
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Clear any existing data
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Run the command with CSV
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Verify command output indicates success
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Verify quiz was created with all 5 questions
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Clear any existing data
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Run the command with Excel
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Verify command output indicates success
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Verify quiz was created with all 5 questions
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Clear any existing data
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Run the command with pickle
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Verify command output indicates success
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Verify quiz was created with all 5 questions
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Clear any existing data
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Run the command
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Verify topic was created and associated with the quiz
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Clear any existing data
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Run the command
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Verify only 3 questions were imported
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Clear any existing data
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Run the command
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Verify output indicates multiple quizzes created
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Updated to expect 4 topics
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Verify correct number of quizzes created
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Verify topic association
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Verify correct question counts by topic
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Clear any existing data
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Run the command
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Verify chapter information was imported
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Add this test to the ImportQuizBankCommandTest class:
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Clear any existing data
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Create test data with chapter titles
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Save as CSV
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Run the command
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Verify output indicates quizzes created with better titles
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Check Geography quiz
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Check Chemistry quiz
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_import_quiz_bank.py
+# Check that actual topic names were used
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# src/multi_choice_quiz/tests/test_logging.py
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# Assumes settings are configured
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# Ensure the base logs directory exists
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# logs_base_dir = os.path.join(settings.BASE_DIR, "logs")
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# os.makedirs(logs_base_dir, exist_ok=True)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# NEW - uses Path object from settings
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# Create the app-specific directory if it doesn't exist
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# Create a logger instance
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# --- Important: Clear existing handlers to prevent duplicate logs ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# This is crucial if this function might be called multiple times for the same logger name
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# Set the logging level
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# Prevent logs from propagating to the root logger if it has handlers
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# Define the log file path within the app-specific directory
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# Uses the logger_name to create a specific file (e.g., test_views.log, playwright_homepage.log)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# Create File Handler (overwrite mode 'w')
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# Create Console Handler
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# Or match logger level
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# Create Formatter
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_logging.py
+# Add Handlers to the logger
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# src/multi_choice_quiz/tests/test_models.py
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# UPDATED based on Session 4 evaluation
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Needed for some tests
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< ADDED for test_unique_position
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Ensure QuizAttempt is imported
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< ADD THIS LINE
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# --- Replace existing logger setup with this ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# --- End Replacement ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Test topics relationship
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Test get_topics_display method
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Initially no questions
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Add questions
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Now should have 2 questions
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Only the test cases that need to be updated for the tag field:
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Added tag field
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Create options
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Add test for tag field
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Test blank tag is allowed
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# 0-based
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Check tag is included
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Test long option truncation
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Creating another option with the same position should raise an IntegrityError
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< UPDATED EXCEPTION TYPE >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< ADDED tag to input >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< ADDED chapter to input >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Verify quiz
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Verify question
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< VERIFY tag saved >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< VERIFY chapter saved >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< VERIFY topic linked to question >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Verify options
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# 1-based position
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< VERIFY text of correct option >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Create test data
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< ADDED tag >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< ADDED chapter >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Convert to frontend format
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Verify conversion
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# 0-based index
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< VERIFY tag included >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Chapter_no is not part of the frontend format per `Question.to_dict()`, so no need to check here.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Simulate potential ID from frontend (should be ignored)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# 0-based index (second option)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< ADDED tag >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# chapter_no is not typically sent from frontend, so not included here
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Verify question
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< VERIFY tag saved >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< VERIFY chapter is blank (not in input) >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< VERIFY topic linked >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Verify options
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Verify correct answer is position 2 (1-based, second option)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Start with quiz bank format
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# 1-based index (third option)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< ADDED tag >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< ADDED chapter >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# First transformation: quiz bank → models
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< ADDED asserts after first step >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< END Added asserts >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Second transformation: models → frontend
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Verify frontend data has 0-based index and tag
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# 0-based index
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< VERIFY tag included >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Third transformation: frontend → models
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Topic name passed here
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Verify final result matches original relevant fields
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< VERIFY tag survived >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# chapter_no won't survive round trip as it's not in frontend format
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< VERIFY chapter blank >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Topic association will be based on the name provided to frontend_to_models
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# <<< VERIFY topic association >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Add this test class or add the test method to an existing relevant class
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Test creation with null details (default)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# attempt_details is null by default
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Test saving valid JSON data
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Example mistake data
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# user=None, # Test anonymous
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Refresh from DB to be sure
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_models.py
+# Test updating details to None
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# src/multi_choice_quiz/tests/test_quiz_e2e.py (Refactored with Data Creation and re import)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# <<< ADD THIS IMPORT >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# Import our standardized test logging
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# Set up logging for this specific app/test file
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# Ensures DB access for ORM calls and live_server
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# --- NEW: Define Screenshot Dir Consistently ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# Specific sub-folder
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# --- END NEW ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# --- START: Create Test Data ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# --- END: Create Test Data ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# Use quiz1.id
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# NEW
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# <<< FIX: Correct the regex to remove the space after / >>>
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# No space after /
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# Raise the error correctly including the text we tried to parse
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# Include exception in fail message
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# Keep linters happy
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_quiz_e2e.py
+# NEW
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# src/multi_choice_quiz/tests/test_responsive.py # <<< CORRECT FILE PATH
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# <<< Import directly
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# <<< Rename expect
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# <<< Import settings
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# <<< Import reverse
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# <<< Use Path
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- Setup Logging ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# Use relative import if preferred within the same test dir
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# Use app name 'multi_choice_quiz'
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- Constants ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# BASE_URL = "http://127.0.0.1:8000" # <<< DELETE BASE_URL
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# QUIZ_URL = "/quiz/1/" # <<< DELETE QUIZ_URL
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- Screenshot Dir Setup --- # <<< NEW Consistent Setup
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# <<< Define App Name
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# SCREENSHOT_DIR = settings.BASE_DIR / "screenshots" / APP_NAME # OLD
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# NEW
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- END MODIFIED ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- End Screenshot Dir Setup ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# Timeouts (consider adjusting based on actual performance)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# ms for elements to become visible initially
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# ms to wait specifically for window.quizAppInstance
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# ms
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# ms
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- Helper Functions ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- Updated Locators based on template ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# More specific container for stats
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# Be more specific
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- Updated Button Locators ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# Links are usually enabled if visible
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- Helper Function for Screenshots --- # <<< NEW
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- End Helper Function ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- Test Function ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# <<< ADD django_db marker
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# <<< ADD live_server
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- ADDED: Set up listeners for browser console/errors ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- END OF ADDED LISTENERS ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- ADD Test Data Creation --- # <<< NEW - Quiz 1 must exist in test DB
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# Import here
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- End Test Data Creation ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- Use live_server.url --- # <<< NEW
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- End URL ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# page.goto(f"{BASE_URL}{QUIZ_URL}") # <<< OLD
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# <<< Use new target_url and networkidle
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- Wait for Quiz to Load & Alpine Instance ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# Also ensure TESTING_MODE is set for events to fire
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# TESTING_MODE should be set automatically in app.js init now.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# logger.info(f"Waiting up to 2000ms for window.TESTING_MODE === true...")
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# page.wait_for_function("() => window.TESTING_MODE === true", timeout=2000)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# logger.info("window.TESTING_MODE confirmed true.")
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- Determine Question Count (Robustly) ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# Prefer Alpine state
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- Click Through the Quiz Using Event Synchronization ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# Inject listener and wait for flag (Modified section from previous fix)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# End Modified Section
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# Wait for next UI state
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# --- Test the Results Panel Layout ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# Suffix results
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# Check Button Layout
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# Updated selector
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_responsive.py
+# Check breakpoint
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Import our standardized test logging
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Set up logging for this specific app
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Pass app_name
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Sample DataFrame with standard column names and tags
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Added tags
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Added chapter numbers
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# DataFrame with alternative column names
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# DataFrame with options as JSON string
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# DataFrame with options as comma-separated string
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# 1-based index
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# DataFrame missing required columns
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Verify first question details
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Verify second question details
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Verify question text and correct options were mapped
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Check questions also have the topic
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Sample DataFrame with standard column names and extra columns
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# 1-based indices
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Column to be ignored
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Verify we got 10 questions
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Verify structure and required keys of first item
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Verify optional keys are included if present in original DF
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Verify extra columns not included
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Should return all available questions (20 in this case)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# DataFrame with alternative column names
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# 1-based indices
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Different name for chapter_no
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Rename chapter_number to chapter_no for curate_data to pick it up
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Verify standard keys are present after mapping
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Check renamed column is included
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# DataFrame missing 'options' and 'answerIndex'
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# MODIFIED ASSERTIONS
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# END MODIFIED ASSERTIONS
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Note: curate_data itself doesn't parse JSON options; it expects lists.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# The import_from_dataframe function handles the parsing.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# This test just verifies curate_data passes the string through.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Should still be string here
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_utils.py
+# Should return empty list
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# src/multi_choice_quiz/tests/test_views.py
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# UPDATED (v3) based on Session 4 evaluation & test interference fix
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# <<< ADDED for checking messages
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# <<< ADD THIS LINE
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# --- Replace existing logger setup with this ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# --- End Replacement ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Only create data that won't be modified or deleted by individual tests
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# --- ARRANGE: Create quiz and questions needed ONLY for this test ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Use the shared topic from setUpTestData
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# --- END ARRANGE ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# ACT
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# ASSERT
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# --- ARRANGE: Create quizzes/questions needed ONLY for this test ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Use the shared topic
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Create an older, active quiz *with no questions*
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Create an older, *inactive* quiz with questions (should be ignored)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Create the newest, *active* quiz *with questions* - THIS is the one we expect
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# --- END ARRANGE ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# ACT
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# ASSERT
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# It should load the latest *active* quiz that *has questions*
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Demo check
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Check that the quiz data loaded corresponds to the expected quiz
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Only one question in quiz_expected
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# --- ARRANGE: Ensure no suitable quizzes exist ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Create an inactive quiz (should be ignored)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Create an active quiz *with no questions* (should be ignored)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Explicitly assert no *suitable* quizzes exist before acting
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# --- END ARRANGE ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# ACT
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# ASSERT
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Demo question
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Demo questions count
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# === Tests for submit_quiz_attempt view ===
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# This class remains unchanged as its setup is self-contained and doesn't delete quizzes.
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Tests for submit_quiz_attempt remain unchanged...
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# === Tests for attempt_mistake_review view ===
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Question 1: Correct=A(idx 0), User chose B(idx 1) -> MISTAKE
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Question 2: Correct=Y(idx 1), User chose Y(idx 1) -> CORRECT
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Question 3: Correct=3(idx 2), User chose 1(idx 0) -> MISTAKE
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Attempt WITH mistakes for user1
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Only Q2 correct
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Mistake
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Mistake
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Attempt with NO mistakes (perfect score, details=None) for user1
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Or {} - view should handle both
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Attempt belonging to user2 (for permission testing)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# View raises Http404
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Should redirect
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Check for optional message
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Check main context objects
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Check mistakes context data
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# q1 and q3 were mistakes
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Verify details for the first mistake (Q1)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# User chose index 1
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Correct is index 0
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Verify details for the second mistake (Q3)
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# User chose index 0
+--------------------
+
+
+../src/multi_choice_quiz/tests/test_views.py
+# Correct is index 2
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Import the standardized logging setup
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Set up logging for this verification test
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Log under the app
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Create a quiz with known questions and answers
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Correct Index: 0
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Correct Index: 1
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Correct Index: 2
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Simulate answers:
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Q1: User chose index 1 (Opt B) - Incorrect (Correct is 0)
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Q2: User chose index 1 (Opt Y) - Correct
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Q3: User chose index 0 (Opt 1) - Incorrect (Correct is 2)
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Incorrect
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Correct
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Incorrect
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Only Q2 was correct
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# --- Assertions ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Verify the created QuizAttempt in the database
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Define the expected mistakes structure
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Q1 was wrong
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Q3 was wrong
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Simulate all correct answers:
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Correct
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Correct
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Correct
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# --- Assertions ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Allow either None or an empty dict, as both indicate no mistakes
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Example score
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# 'attempt_details' is missing
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# --- Assertions ---
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase6_verification.py
+# Verify basic data was still saved
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Import the standardized logging setup
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Set up logging for this verification test
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Log under the app
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Q1: Mistake (Correct=A[0], User=B[1])
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Q2: Correct (Correct=Y[1], User=Y[1]) - Not in details
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Attempt WITH mistake details
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Only Q1 mistake
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Attempt WITHOUT mistake details (e.g., perfect score or older attempt)
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Explicitly None
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Attempt with EMPTY mistake details dict
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Empty dict
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Check link IS present for the attempt WITH details
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Check link is NOT present for the attempt with NO details (None)
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Check link is NOT present for the attempt with EMPTY details ({})
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Check for key elements in the rendered HTML
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Check specific mistake details for Q1
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# User chose B (idx 1)
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Correct is A (idx 0)
+--------------------
+
+
+../src/multi_choice_quiz/tests/mistake_tracking/test_phase7_verification.py
+# Ensure Q2 (which was correct) is NOT listed as a mistake
+--------------------
+
+
+../src/pages/admin.py
+# src/pages/admin.py
+--------------------
+
+
+../src/pages/admin.py
+# Helps auto-populate slug based on name
+--------------------
+
+
+../src/pages/admin.py
+# Use a more user-friendly widget for M2M
+--------------------
+
+
+../src/pages/admin.py
+# Method to display the number of quizzes in this category
+--------------------
+
+
+../src/pages/admin.py
+# Use a more user-friendly widget for M2M
+--------------------
+
+
+../src/pages/admin.py
+# These are auto-managed
+--------------------
+
+
+../src/pages/admin.py
+# Method to display the number of quizzes in this collection
+--------------------
+
+
+../src/pages/forms.py
+# src/pages/forms.py
+--------------------
+
+
+../src/pages/forms.py
+# Import UserCollection model
+--------------------
+
+
+../src/pages/forms.py
+# <<< ADD THIS IMPORT
+--------------------
+
+
+../src/pages/forms.py
+# Get the custom user model if you ever define one, otherwise the default User
+--------------------
+
+
+../src/pages/forms.py
+# You can add extra fields here if needed (e.g., email)
+--------------------
+
+
+../src/pages/forms.py
+# By default, UserCreationForm includes username, password1, password2
+--------------------
+
+
+../src/pages/forms.py
+# Specify fields to include, adding email
+--------------------
+
+
+../src/pages/forms.py
+# Add other fields like 'first_name', 'last_name' if desired
+--------------------
+
+
+../src/pages/forms.py
+# You could add custom validation here if required
+--------------------
+
+
+../src/pages/forms.py
+# def clean_email(self):
+--------------------
+
+
+../src/pages/forms.py
+#     ...
+--------------------
+
+
+../src/pages/forms.py
+# --- Existing EditProfileForm ---
+--------------------
+
+
+../src/pages/forms.py
+# Add 'first_name', 'last_name' here if you want to edit them too
+--------------------
+
+
+../src/pages/forms.py
+# You can add custom initialization here if needed,
+--------------------
+
+
+../src/pages/forms.py
+# e.g., making fields not required if they are optional
+--------------------
+
+
+../src/pages/forms.py
+# For now, email is required by default based on the User model.
+--------------------
+
+
+../src/pages/forms.py
+# Optional: Add custom email validation if needed,
+--------------------
+
+
+../src/pages/forms.py
+# e.g., checking if the email is already in use by another user (excluding the current user)
+--------------------
+
+
+../src/pages/forms.py
+# For simplicity, we'll rely on Django's default unique check for email if it's set on the User model.
+--------------------
+
+
+../src/pages/forms.py
+# If User model doesn't enforce unique email, you might want to add a check here:
+--------------------
+
+
+../src/pages/forms.py
+# if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+--------------------
+
+
+../src/pages/forms.py
+#     raise forms.ValidationError("This email address is already in use.")
+--------------------
+
+
+../src/pages/forms.py
+# --- NEW FORM FOR UserCollection ---
+--------------------
+
+
+../src/pages/forms.py
+# We don't include 'user' here because it will be set automatically in the view.
+--------------------
+
+
+../src/pages/forms.py
+# We don't include 'quizzes' as they will be managed separately.
+--------------------
+
+
+../src/pages/models.py
+# src/pages/models.py
+--------------------
+
+
+../src/pages/models.py
+# Import the Quiz model from the other app
+--------------------
+
+
+../src/pages/models.py
+# Use a try-except block for robustness, although direct import is usually fine
+--------------------
+
+
+../src/pages/models.py
+# if apps are correctly installed.
+--------------------
+
+
+../src/pages/models.py
+# This fallback is unlikely to be fully functional but prevents server startup errors
+--------------------
+
+
+../src/pages/models.py
+# if the app structure is temporarily broken during development.
+--------------------
+
+
+../src/pages/models.py
+# A better approach is ensuring apps are correctly installed and configured.
+--------------------
+
+
+../src/pages/models.py
+# Slightly longer than name to accommodate potential suffixes
+--------------------
+
+
+../src/pages/models.py
+# Allow blank initially, will be auto-populated
+--------------------
+
+
+../src/pages/models.py
+# Use string notation to avoid circular import issues
+--------------------
+
+
+../src/pages/models.py
+# A category might exist before quizzes are added
+--------------------
+
+
+../src/pages/models.py
+# Ensure uniqueness if slug already exists
+--------------------
+
+
+../src/pages/models.py
+# If user is deleted, their collections are too
+--------------------
+
+
+../src/pages/models.py
+# Use string notation
+--------------------
+
+
+../src/pages/models.py
+# A collection might be created before adding quizzes
+--------------------
+
+
+../src/pages/models.py
+# Ensure a user cannot have two collections with the same name
+--------------------
+
+
+../src/pages/models.py
+# --- Verification Steps ---
+--------------------
+
+
+../src/pages/models.py
+# 1. Replace the content of `src/pages/models.py` with the code above.
+--------------------
+
+
+../src/pages/models.py
+# 2. Run `python manage.py makemigrations pages`
+--------------------
+
+
+../src/pages/models.py
+# 3. Run `python manage.py migrate`
+--------------------
+
+
+../src/pages/models.py
+# 4. Run `python manage.py check` to ensure there are no model issues.
+--------------------
+
+
+../src/pages/urls.py
+# src/pages/urls.py
+--------------------
+
+
+../src/pages/urls.py
+# --- NEW URL PATTERN for adding a quiz to a specific collection ---
+--------------------
+
+
+../src/pages/urls.py
+# We will create this view next
+--------------------
+
+
+../src/pages/views.py
+# src/pages/views.py
+--------------------
+
+
+../src/pages/views.py
+# Changed variable name to indicate it's a queryset initially
+--------------------
+
+
+../src/pages/views.py
+# Use the queryset for aggregate
+--------------------
+
+
+../src/pages/views.py
+# --- START: Calculate attempt counts per quiz for this user ---
+--------------------
+
+
+../src/pages/views.py
+# --- END: Calculate attempt counts per quiz ---
+--------------------
+
+
+../src/pages/views.py
+# Attach the count to each attempt object for easier template access
+--------------------
+
+
+../src/pages/views.py
+# This is one way; another is to pass quiz_attempt_counts_dict directly
+--------------------
+
+
+../src/pages/views.py
+# and look up in the template. For simplicity in the template, let's try attaching.
+--------------------
+
+
+../src/pages/views.py
+# Note: This modifies the queryset results in memory.
+--------------------
+
+
+../src/pages/views.py
+# Iterate over the original queryset
+--------------------
+
+
+../src/pages/views.py
+# Pass the modified list
+--------------------
+
+
+../src/pages/views.py
+# Also pass the dict for flexibility or alternative use
+--------------------
+
+
+../src/pages/migrations/0001_initial.py
+# Generated by Django 5.1.8 on 2025-05-14 08:23
+--------------------
+
+
+../src/pages/tests/test_models.py
+# src/pages/tests/test_models.py (Revised UserCollectionModelTests)
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Import models from the app being tested
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Import models from related apps
+--------------------
+
+
+../src/pages/tests/test_models.py
+# --- Replace existing logger setup with this ---
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Reuse existing logger setup
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Log under 'pages' app
+--------------------
+
+
+../src/pages/tests/test_models.py
+# --- End Replacement ---
+--------------------
+
+
+../src/pages/tests/test_models.py
+# --- SystemCategoryModelTests remains unchanged above ---
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Create a quiz to associate later
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Test with a simple name
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Test with a name needing more slugify work
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Create the first category
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Create a *different* category whose name slugifies to the same thing
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Different name
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Should get suffix
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Create a third one
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Different name again
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Should get next suffix
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Trying to create another with the same name should raise IntegrityError
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Check reverse relationship
+--------------------
+
+
+../src/pages/tests/test_models.py
+# --- START REVISED UserCollectionModelTests ---
+--------------------
+
+
+../src/pages/tests/test_models.py
+# <<< RENAMED TEST
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Trying to create another with the same name for the same user should fail
+--------------------
+
+
+../src/pages/tests/test_models.py
+# <<< NEW TEST
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Creating with the same name for a *different* user should be fine
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Check reverse relationship
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Create a user specifically for this test to avoid conflicts
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Delete the user
+--------------------
+
+
+../src/pages/tests/test_models.py
+# Verify the collection associated with the user is also deleted
+--------------------
+
+
+../src/pages/tests/test_models.py
+# --- END REVISED UserCollectionModelTests ---
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# src/pages/tests/test_responsive.py
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# --- Django Setup ---
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# --- Model Imports for Test Data ---
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# --- Import UserCollection for fixture verification (optional, but good for context) ---
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# --- Configuration Constants ---
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# Timeouts
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# --- Helper Function ---
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# --- Test Function for NON-PROFILE, ANONYMOUS pages ---
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# Home, Quizzes, About, Login, Sign Up
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# --- Test Function for AUTHENTICATED standard pages ---
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# Used for both desktop and mobile
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# Used for both desktop and mobile
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# Home, Quizzes, About, Profile Link, Logout Button
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# Common assertions for authenticated nav state
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# Close menu
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# --- Test Function for PROFILE page ---
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# --- START: New tests for collapsible collections ---
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# Assuming "Admin Fixture Collection" is the first/only one due to fixture setup
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# And it has "Fixture Test Quiz for Collection"
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# Locate the specific collection by its data-testid or name
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# The profile.html now wraps each collection in a div with x-data and data-testid
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# The button to toggle
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# 1. Initial state: Collapsed
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# 2. Expand
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# For Alpine transition
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# 3. Collapse
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# For Alpine transition
+--------------------
+
+
+../src/pages/tests/test_responsive.py
+# --- END: New tests for collapsible collections ---
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# src/pages/tests/test_templates.py (Corrected for Profile Structure Changes)
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# --- Constants ---
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# --- Tests ---
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# --- Desktop checks ---
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# --- Mobile checks ---
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# src/pages/tests/test_templates.py
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# ... (other imports and tests) ...
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# page.reload() # Consider if reload is necessary after viewport change; usually not for nav elements
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# page.wait_for_load_state("networkidle")
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# --- MODIFIED AVATAR SPAN LOCATOR (Desktop) ---
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# --- END MODIFIED ---
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# --- MODIFIED AVATAR SPAN LOCATOR (Mobile) ---
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# --- END MODIFIED ---
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# --- START MODIFICATION ---
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# Check for "Collections" button instead of "Favorites"
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# Optionally, assert "Favorites" is NOT visible
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# --- END MODIFICATION ---
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# Check within the history tab content
+--------------------
+
+
+../src/pages/tests/test_templates.py
+# Ensure example attempt text is not visible
+--------------------
+
+
+../src/pages/tests/test_views.py
+# src/pages/tests/test_views.py
+--------------------
+
+
+../src/pages/tests/test_views.py
+# Ensure Avg is imported
+--------------------
+
+
+../src/pages/tests/test_views.py
+# --- Users ---
+--------------------
+
+
+../src/pages/tests/test_views.py
+# --- NEW USER FOR ATTEMPT COUNT TEST ---
+--------------------
+
+
+../src/pages/tests/test_views.py
+# --- System Categories ---
+--------------------
+
+
+../src/pages/tests/test_views.py
+# --- Quizzes ---
+--------------------
+
+
+../src/pages/tests/test_views.py
+# Assign categories
+--------------------
+
+
+../src/pages/tests/test_views.py
+# Attempts for user_with_data
+--------------------
+
+
+../src/pages/tests/test_views.py
+# Attempts for user_for_ordering_tests
+--------------------
+
+
+../src/pages/tests/test_views.py
+# --- NEW ATTEMPTS FOR ATTEMPT COUNT TEST ---
+--------------------
+
+
+../src/pages/tests/test_views.py
+# User 'attempt_counter_user' takes quiz_t1 three times
+--------------------
+
+
+../src/pages/tests/test_views.py
+# User 'attempt_counter_user' takes quiz_h1 once
+--------------------
+
+
+../src/pages/tests/test_views.py
+# Collections
+--------------------
+
+
+../src/pages/tests/test_views.py
+# user_with_data has 2 attempts
+--------------------
+
+
+../src/pages/tests/test_views.py
+# Was .count() which is for querysets
+--------------------
+
+
+../src/pages/tests/test_views.py
+# Was .count()
+--------------------
+
+
+../src/pages/tests/test_views.py
+# --- NEW TEST FOR ATTEMPT COUNTS ---
+--------------------
+
+
+../src/pages/tests/test_views.py
+# Check the quiz_attempt_counts dictionary in context
+--------------------
+
+
+../src/pages/tests/test_views.py
+# quiz_t1 taken 3 times
+--------------------
+
+
+../src/pages/tests/test_views.py
+# quiz_h1 taken 1 time
+--------------------
+
+
+../src/pages/tests/test_views.py
+# quiz_t2 not taken by this user
+--------------------
+
+
+../src/pages/tests/test_views.py
+# Check the individual_quiz_attempt_count attribute on attempt objects
+--------------------
+
+
+../src/pages/tests/test_views.py
+# 3 for quiz_t1, 1 for quiz_h1
+--------------------
+
+
+../src/pages/tests/test_views.py
+# Verify counts on the actual attempt objects (which are ordered by -end_time)
+--------------------
+
+
+../src/pages/tests/test_views.py
+# First attempt in list should be for quiz_h1 (most recent)
+--------------------
+
+
+../src/pages/tests/test_views.py
+# The other three attempts should be for quiz_t1
+--------------------
+
+
+../src/pages/tests/__init__.py
+# Pages app tests package
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# src/pages/tests/collections_mgmt/test_phase10_verification.py
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# Add reverse_lazy if needed
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# Import urlencode
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# Ensure quiz IDs are stable and known for tests
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# Using explicit IDs can help if tests rely on specific quiz IDs.
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# However, if they are just being created, relying on cls.quizX.id is usually fine.
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# URLs
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# Added for consistency
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# Collections for user1
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# Collection for user2 (for permission tests)
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# --- Create Collection Tests ---
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# --- START MODIFIED ASSERTION for /quizzes/ page ---
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# We expect the href to START WITH this base_add_link_quiz1 and include "?next="
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# --- END MODIFIED ASSERTION ---
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# For the home page, it's harder to predict which quiz will be featured and thus its exact ID.
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# The original assertion `self.assertContains(response_home, 'title="Add to Collection"')`
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# is good enough if at least one featured quiz makes it to the template.
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# We need to ensure that the setUpTestData creates quizzes that will be featured.
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# If Quiz.objects.all() are listed, then we can check one of them:
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# For quiz1 (ID=1):
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# This check assumes quiz1 will be rendered on the homepage. If not, it might fail.
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# A more robust check if homepage content is dynamic:
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# self.assertRegex(response_home.content.decode(), r'href="/quiz/\d+/add-to-collection/\?next=')
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# For now, let's keep the title check as it's less likely to break due to quiz ID ordering on home page.
+--------------------
+
+
+../src/pages/tests/collections_mgmt/test_phase10_verification.py
+# Check base part
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# src/pages/tests/user_profile/test_phase5_verification.py
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# Import necessary models
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# Import the view function to check URL resolution (optional but good for confirmation)
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# <<< ADD resolve HERE
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# TestCase handles DB setup automatically
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# Create a user needed for testing the logged-in profile view
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# Create a quiz needed for attempt creation test (though not strictly necessary for field check)
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# Create a fresh client for each test
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# --- Verification for Req 5.a ---
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# Optional: Check help_text if you want to be very specific
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# self.assertIn("Stores detailed mistake data", field.help_text)
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# --- Verification for Req 5.b (URL Mapping) ---
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# Check the path resolves as expected
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# Check it resolves to the correct view function
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# --- Verification for Req 5.d (Login Required for Profile) ---
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# Check the redirect points to the correct login URL with the 'next' parameter
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# --- Verification for Req 5.f, 5.g (Basic Mockup 1 Structure) ---
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# 1. Stats section presence
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# 2. Alpine tabs container
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# 3. Tab Buttons (History & Collections)
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# 4. Ensure removed tabs are NOT present
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# --- START MODIFIED ASSERTIONS for Tab Content ---
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# 5. Tab Content Area Headings - Check presence within the correct div
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# Use re.DOTALL to make '.' match newlines
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# --- END MODIFIED ASSERTIONS ---
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase5_verification.py
+# ... (other tests remain the same) ...
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# src/pages/tests/user_profile/test_phase9_verification.py
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Assuming models are in pages.models
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# For creating test data
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Data for profile stats and collections (can be expanded)
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Add a question to make it "active" for some views
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Data for category browsing
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# --- Tests for Step 9.7: Basic Edit Profile ---
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Check if form is pre-filled with user's current email
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Should redirect to login
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Should redirect on success
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Check for success message
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Should re-render form with errors
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Check email field has errors
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Ensure email was not changed
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Check for error message
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# --- Placeholder for tests for dynamic stats/collections on profile (Req 9.c, 9.d) ---
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# This test would verify that self.user's stats (1 attempt, 100% avg)
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# and "My P9 Collection" are displayed correctly on the profile page.
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# It can be more detailed than the ones in test_views.py if needed.
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# For now, let's ensure it runs without error.
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Based on setUpTestData
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Based on setUpTestData
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# --- Placeholder for tests for SystemCategory filtering (Req 9.e, 9.f) ---
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# This test would verify that navigating to /quizzes/?category=p9-cat-1
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# correctly filters and shows only self.quiz1.
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# For now, let's ensure it runs without error.
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Check category filter display
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# --- Placeholder for tests for homepage SystemCategory display (Req 9.g) ---
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# This test would verify that self.cat1 (P9 Category 1) appears on the homepage
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# if it meets the criteria for "popular".
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# For now, let's ensure it runs without error.
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# Check if "P9 Category 1" is displayed (it has 1 active quiz with questions)
+--------------------
+
+
+../src/pages/tests/user_profile/test_phase9_verification.py
+# The view orders by -num_active_quizzes, name. So it should be among the top 5 if there aren't 5 others with more quizzes.
+--------------------
+
