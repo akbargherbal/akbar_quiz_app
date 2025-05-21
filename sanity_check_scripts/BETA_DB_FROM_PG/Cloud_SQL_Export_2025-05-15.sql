@@ -6608,6 +6608,11 @@ COPY public.multi_choice_quiz_quizattempt (id, score, total_questions, percentag
 9	13	20	65	2025-05-16 13:00:44.607419+00	2025-05-16 13:00:44.001+00	{"870": {"user_answer_idx": 3, "correct_answer_idx": 1}, "871": {"user_answer_idx": 0, "correct_answer_idx": 4}, "876": {"user_answer_idx": 2, "correct_answer_idx": 1}, "878": {"user_answer_idx": 1, "correct_answer_idx": 4}, "879": {"user_answer_idx": 3, "correct_answer_idx": 2}, "880": {"user_answer_idx": 2, "correct_answer_idx": 3}, "885": {"user_answer_idx": 3, "correct_answer_idx": 2}}	50	1
 10	15	20	75	2025-05-16 15:49:24.521798+00	2025-05-16 15:49:19.534+00	{"851": {"user_answer_idx": 3, "correct_answer_idx": 0}, "853": {"user_answer_idx": 0, "correct_answer_idx": 4}, "861": {"user_answer_idx": 4, "correct_answer_idx": 3}, "862": {"user_answer_idx": 1, "correct_answer_idx": 2}, "866": {"user_answer_idx": 3, "correct_answer_idx": 0}}	49	1
 11	13	20	65	2025-05-17 06:55:57.03839+00	2025-05-17 06:55:55.332+00	{"812": {"user_answer_idx": 1, "correct_answer_idx": 2}, "813": {"user_answer_idx": 4, "correct_answer_idx": 0}, "817": {"user_answer_idx": 2, "correct_answer_idx": 1}, "819": {"user_answer_idx": 2, "correct_answer_idx": 4}, "822": {"user_answer_idx": 3, "correct_answer_idx": 1}, "825": {"user_answer_idx": 2, "correct_answer_idx": 0}, "826": {"user_answer_idx": 3, "correct_answer_idx": 4}}	47	1
+12	16	20	80	2025-05-18 19:48:41.17752+00	2025-05-18 19:48:38.171+00	{"798": {"user_answer_idx": 0, "correct_answer_idx": 4}, "802": {"user_answer_idx": 0, "correct_answer_idx": 1}, "803": {"user_answer_idx": 1, "correct_answer_idx": 0}, "804": {"user_answer_idx": 0, "correct_answer_idx": 4}}	46	1
+13	20	20	100	2025-05-18 20:01:57.540375+00	2025-05-18 20:01:56.972+00	\N	45	1
+14	18	20	90	2025-05-20 06:45:02.931979+00	2025-05-20 06:45:03.584+00	{"756": {"user_answer_idx": 2, "correct_answer_idx": 1}, "766": {"user_answer_idx": 2, "correct_answer_idx": 4}}	44	1
+15	18	20	90	2025-05-21 06:50:49.913374+00	2025-05-21 06:50:49.326+00	{"740": {"user_answer_idx": 4, "correct_answer_idx": 1}, "749": {"user_answer_idx": 0, "correct_answer_idx": 2}}	43	1
+16	16	20	80	2025-05-21 12:26:28.297127+00	2025-05-21 12:26:29.872+00	{"712": {"user_answer_idx": 1, "correct_answer_idx": 4}, "721": {"user_answer_idx": 1, "correct_answer_idx": 2}, "725": {"user_answer_idx": 1, "correct_answer_idx": 4}, "728": {"user_answer_idx": 0, "correct_answer_idx": 1}}	42	1
 \.
 
 
@@ -6855,7 +6860,7 @@ SELECT pg_catalog.setval('public.multi_choice_quiz_quiz_topics_id_seq', 55, true
 -- Name: multi_choice_quiz_quizattempt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.multi_choice_quiz_quizattempt_id_seq', 11, true);
+SELECT pg_catalog.setval('public.multi_choice_quiz_quizattempt_id_seq', 16, true);
 
 
 --

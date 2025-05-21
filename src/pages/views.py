@@ -39,6 +39,9 @@ def home(request):
 
     featured_quizzes_list = []
 
+    # log view and name of file:
+    logger.info(f"View: home, File: {__file__}")
+
     if request.user.is_authenticated:
         attempted_quiz_ids = list(
             QuizAttempt.objects.filter(user=request.user)

@@ -41,6 +41,8 @@ def home(request):
         quiz_id_to_pass = None
         quiz_data = []
         quiz_title_for_log = "Demo Quiz"
+        # log view and name of file:
+        logger.info(f"View: home, File: {__file__}")
 
         if quiz:
             questions = quiz.questions.filter(is_active=True).order_by("position")
